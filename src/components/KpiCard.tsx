@@ -1,6 +1,7 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { motion, useInView } from "framer-motion";
 
 interface KpiCardProps {
   title: string;
@@ -12,17 +13,58 @@ interface KpiCardProps {
   gradient?: boolean;
 }
 
+function AnimatedValue({ value }: { value: string | number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true });
+  const [display, setDisplay] = useState("0");
+
+  useEffect(() => {
+    if (!isInView) return;
+    const str = String(value);
+    // Extract the numeric part for animation
+    const match = str.match(/^([\d,.]+)/);
+    if (!match) { setDisplay(str); return; }
+    const numStr = match[1].replace(/,/g, "");
+    const target = parseFloat(numStr);
+    if (isNaN(target)) { setDisplay(str); return; }
+    const suffix = str.slice(match[0].length); // e.g. "%", "K", "M", " / 6"
+    const hasDecimal = numStr.includes(".");
+    const decimals = hasDecimal ? (numStr.split(".")[1]?.length || 1) : 0;
+    const duration = 800;
+    const startTime = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const current = eased * target;
+      setDisplay(current.toFixed(decimals) + suffix);
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [isInView, value]);
+
+  return <span ref={ref}>{display}</span>;
+}
+
 export function KpiCard({ title, value, subtitle, trend, icon, className, gradient }: KpiCardProps) {
   return (
-    <div className={cn(
-      "rounded-xl border p-4 md:p-5 transition-shadow hover:shadow-md",
-      gradient ? "gradient-ai text-primary-foreground border-transparent" : "bg-card border-border",
-      className
-    )}>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className={cn(
+        "rounded-xl border p-4 md:p-5 transition-shadow hover:shadow-md",
+        gradient ? "gradient-ai text-primary-foreground border-transparent" : "bg-card border-border",
+        className
+      )}
+    >
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className={cn("text-xs font-medium", gradient ? "text-primary-foreground/70" : "text-muted-foreground")}>{title}</p>
-          <p className="text-2xl md:text-3xl font-bold tracking-tight animate-count">{value}</p>
+          <p className="text-2xl md:text-3xl font-bold tracking-tight">
+            <AnimatedValue value={value} />
+          </p>
           {subtitle && (
             <p className={cn("text-xs", gradient ? "text-primary-foreground/60" : "text-muted-foreground")}>{subtitle}</p>
           )}
@@ -46,6 +88,6 @@ export function KpiCard({ title, value, subtitle, trend, icon, className, gradie
           <span className={cn("text-xs", gradient ? "text-primary-foreground/50" : "text-muted-foreground")}>{trend.label}</span>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
