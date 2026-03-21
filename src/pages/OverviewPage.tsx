@@ -1,45 +1,83 @@
-import { useState, useMemo } from "react";
-import { KpiCard } from "@/components/KpiCard";
-import { orgData, teams, users, weeklyTrend, formatNumber } from "@/data/dashboard-data";
-import { Users, Zap, Code2, GitMerge, Coins, FileDown, CalendarIcon } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
+import { useState, useMemo, useEffect } from "react";
+import { MetricCard } from "@/components/ui/MetricCard";
+import { EnhancedChart } from "@/components/ui/EnhancedChart";
+import { orgData, teams, users, weeklyTrend, formatNumber, productivityData, securityData } from "@/data/dashboard-data";
+import {
+  Users,
+  Zap,
+  Code2,
+  GitMerge,
+  Coins,
+  FileDown,
+  CalendarIcon,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  ShieldAlert,
+  ShieldCheck,
+  Activity,
+  Sparkles,
+  ArrowRight,
+  Trophy,
+  CheckCircle
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { StatusBadge } from "@/components/StatusBadge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { socketService } from "@/lib/socket-service";
 import { exportToPdf } from "@/lib/export-pdf";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isWithinInterval, parse } from "date-fns";
+import { format, parse } from "date-fns";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAppStore } from "@/store/app-store";
+import { RoiCalculator } from "@/lib/roi-calculator";
 
 // Map week labels to date ranges
 const weekDateRanges = weeklyTrend.map((w) => {
-  const [start, end] = w.label.split(" - ").map((d) => parse(d.trim(), "MMM d", new Date(2025, 0)));
-  // Fix year
-  start.setFullYear(2025);
-  end.setFullYear(2025);
+  const [start, end] = w.label.split(" - ").map((d) => parse(d.trim(), "MMM d, yyyy", new Date()));
   return { ...w, start, end };
 });
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload) return null;
-  return (
-    <div className="rounded-lg border bg-card p-3 shadow-lg">
-      <p className="text-xs font-medium text-foreground mb-1">{label}</p>
-      {payload.map((p: any, i: number) => (
-        <p key={i} className="text-xs" style={{ color: p.color }}>
-          {p.name}: {formatNumber(p.value)} LoC
-        </p>
-      ))}
-    </div>
-  );
-};
 
 export default function OverviewPage() {
   const navigate = useNavigate();
   const topUsers = users.filter((u) => u.rank <= 3);
+  const { monthlySeatCost, manualHourlyRate } = useAppStore();
+
+  const fiscalStats = useMemo(() => RoiCalculator.calculate({
+    monthlySeatCost,
+    manualHourlyRate,
+    teamSize: orgData.totalDevelopers,
+    aiLoC: orgData.aiLoC,
+    manualLoC: orgData.manualLoC,
+    timeSavedHours: productivityData.timeSavedHours,
+    aiFeatures: productivityData.tasksMatched,
+    manualFeatures: 450
+  }), [monthlySeatCost, manualHourlyRate]);
 
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [liveEvents, setLiveEvents] = useState<any[]>([]);
+
+  useEffect(() => {
+    socketService.connect();
+    const handleMetricUpdate = (data: any) => {
+      setLiveEvents(prev => [data, ...prev].slice(0, 5));
+      toast.info(`Real-time: ${data.source} commit detected`, {
+        description: `Commit ${data.commitId} processed`,
+        position: "bottom-right",
+        duration: 3000
+      });
+    };
+    socketService.on('METRIC_UPDATE', handleMetricUpdate);
+    socketService.simulateLiveStream();
+    return () => {
+      socketService.off('METRIC_UPDATE', handleMetricUpdate);
+    };
+  }, []);
 
   const filteredTrend = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return weeklyTrend;
@@ -59,146 +97,400 @@ export default function OverviewPage() {
     ? dateRange.to
       ? `${format(dateRange.from, "MMM d")} – ${format(dateRange.to, "MMM d")}`
       : format(dateRange.from, "MMM d")
-    : "All Weeks";
+    : "All Time";
 
   return (
-    <div className="space-y-6 max-w-7xl" id="overview-content">
-      <div className="flex items-center justify-between">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="space-y-8 max-w-[1600px] mx-auto pb-12"
+      id="overview-content"
+    >
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
-          <p className="text-sm text-muted-foreground mt-1">TechCorp Inc. — AI Code Intelligence</p>
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-5 w-5 text-indigo-500 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Live Insights</span>
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tighter text-slate-900 md:text-5xl">
+            Executive <span className="text-indigo-600">Overview</span>
+          </h1>
+          <p className="text-base text-slate-500 mt-2 font-medium">
+            TechCorp Inc. Performance Tracking — <span className="text-slate-900">{dateLabel}</span>
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-3">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal", !dateRange.from && "text-muted-foreground")}>
-                <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
+              <Button variant="outline" className="h-11 rounded-xl px-5 font-bold shadow-sm hover:shadow-md transition-all border-slate-200">
+                <CalendarIcon className="h-4 w-4 mr-2 text-slate-400" />
                 {dateLabel}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
+            <PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl border-slate-100 overflow-hidden" align="end">
               <Calendar
                 mode="range"
                 selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
                 onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
                 numberOfMonths={1}
                 defaultMonth={new Date(2025, 1)}
+                className="p-4"
               />
               {dateRange.from && (
-                <div className="p-2 border-t">
-                  <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setDateRange({})}>
-                    Clear filter
+                <div className="p-3 bg-slate-50 border-t border-slate-100">
+                  <Button variant="ghost" size="sm" className="w-full text-xs font-bold" onClick={() => setDateRange({})}>
+                    Clear Filters
                   </Button>
                 </div>
               )}
             </PopoverContent>
           </Popover>
-          <Button variant="outline" size="sm" onClick={() => exportToPdf("overview-content", "overview-report")}>
-            <FileDown className="h-3.5 w-3.5 mr-1.5" />Export PDF
+          <Button
+            className="h-11 rounded-xl px-6 bg-slate-900 text-white font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
+            onClick={() => exportToPdf("overview-content", "overview-report")}
+          >
+            <FileDown className="h-4 w-4 mr-2" />
+            Export Report
           </Button>
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        <KpiCard title="Total Developers" value={orgData.totalDevelopers} icon={<Users className="h-4 w-4 text-muted-foreground" />} />
-        <KpiCard title="Active AI Users" value={`${orgData.activeAIUsers} / ${orgData.totalDevelopers}`} subtitle={`${orgData.aiAdoptionRate}% adoption`} icon={<Zap className="h-4 w-4 text-ai" />} trend={{ value: 12, label: "vs last month" }} />
-        <KpiCard title="AI Code %" value={`${orgData.aiCodePercent}%`} icon={<Code2 className="h-4 w-4 text-ai" />} trend={{ value: 10.2, label: "vs last month" }} gradient />
-        <KpiCard title="AI Merge Rate" value={`${orgData.aiMergeRate}%`} icon={<GitMerge className="h-4 w-4 text-success" />} trend={{ value: 5.1, label: "vs last month" }} />
-        <KpiCard title="Total AI Tokens" value={formatNumber(orgData.totalTokens)} icon={<Coins className="h-4 w-4 text-warning" />} />
+      {/* Hero Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+        <MetricCard
+          title="Avg. AI Code %"
+          value={orgData.aiCodePercent}
+          suffix="%"
+          gradient="ai"
+          icon={<Zap className="h-6 w-6" />}
+          trend={{ value: 10.2, isPositive: true }}
+          subtitle={`${formatNumber(orgData.aiLoC)} AI LoC generated`}
+        />
+        <MetricCard
+          title="Velocity Boost"
+          value={productivityData.velocityBoostPercent}
+          suffix="%"
+          gradient="success"
+          icon={<TrendingUp className="h-6 w-6" />}
+          trend={{ value: 5.4, isPositive: true }}
+          subtitle="Real-world productivity gain"
+        />
+        <MetricCard
+          title="Active AI Users"
+          value={orgData.activeAIUsers}
+          subtitle={`${orgData.aiAdoptionRate}% adoption rate`}
+          icon={<Users className="h-6 w-6" />}
+          decimals={0}
+        />
+        <MetricCard
+          title="Monthly ROI"
+          value={fiscalStats.roiPercentage}
+          suffix="%"
+          gradient="warning"
+          icon={<Coins className="h-6 w-6" />}
+          trend={{ value: 12.8, isPositive: true }}
+          subtitle={`Estimated $${formatNumber(fiscalStats.monthlySavings)} saved`}
+        />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Trend Chart */}
-        <div className="lg:col-span-2 rounded-xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">AI vs Manual Code — {dateRange.from ? dateLabel : "4 Week Trend"}</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={filteredTrend}>
-              <defs>
-                <linearGradient id="aiGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(245, 58%, 51%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(245, 58%, 51%)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="manualGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(215, 16%, 47%)" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="hsl(215, 16%, 47%)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
-              <XAxis dataKey="week" tick={{ fontSize: 11 }} stroke="hsl(215, 16%, 47%)" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(215, 16%, 47%)" tickFormatter={(v) => formatNumber(v)} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="aiLoC" name="AI LoC" stroke="hsl(245, 58%, 51%)" fill="url(#aiGrad)" strokeWidth={2} />
-              <Area type="monotone" dataKey="manualLoC" name="Manual LoC" stroke="hsl(215, 16%, 47%)" fill="url(#manualGrad)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
+      {/* Main Analysis Section */}
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* Trend Analysis */}
+        <div className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <TrendingUp className="h-32 w-32 text-indigo-600" />
+          </div>
+
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-black tracking-tight text-slate-900">Adoption & Output Trend</h3>
+              <p className="text-sm text-slate-500 mt-1">Comparing AI assistance vs manual craftsmanship</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-indigo-500" />
+                <span className="text-xs font-bold text-slate-600 uppercase">AI Output</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-slate-300" />
+                <span className="text-xs font-bold text-slate-600 uppercase">Manual</span>
+              </div>
+            </div>
+          </div>
+
+          <EnhancedChart
+            type="area"
+            data={filteredTrend}
+            index="week"
+            categories={['aiLoC', 'manualLoC']}
+            colors={['#6366f1', '#94a3b8']}
+            valueFormatter={(v) => formatNumber(v as number)}
+            height={350}
+          />
         </div>
 
-        {/* Team Comparison */}
-        <div className="rounded-xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">Team AI Code %</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={teams} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke="hsl(215, 16%, 47%)" />
-              <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={100} stroke="hsl(215, 16%, 47%)" />
-              <Tooltip formatter={(v: number) => `${v}%`} contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid hsl(214, 32%, 91%)' }} />
-              <Bar dataKey="aiCodePercent" fill="hsl(245, 58%, 51%)" radius={[0, 4, 4, 0]} barSize={20} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Bottom Row */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Top Contributors */}
-        <div className="rounded-xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">Top Contributors</h3>
-          <div className="space-y-3">
-            {topUsers.map((user, idx) => (
-              <button key={user.id} onClick={() => navigate(`/users/${user.id}`)} className="w-full flex items-center gap-3 rounded-lg p-3 hover:bg-accent transition-colors text-left">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full gradient-ai text-xs font-bold text-primary-foreground">
-                  {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
+        {/* Team Leadership */}
+        <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <h3 className="text-xl font-black tracking-tight text-slate-900 mb-6">Team Proficiency</h3>
+          <div className="space-y-6">
+            {teams.map((team) => (
+              <div key={team.id} className="space-y-2">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{team.name}</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">{team.headCount} DEVS • {team.primaryTool}</p>
+                  </div>
+                  <span className="text-lg font-black font-metric text-indigo-600">{team.aiCodePercent}%</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.team}</p>
+                <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${team.aiCodePercent}%` }}
+                    transition={{ duration: 1.5, ease: "circOut" }}
+                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                  />
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold gradient-ai-text">{user.aiPercent}%</p>
-                  <p className="text-[10px] text-muted-foreground">AI Code</p>
-                </div>
-                <StatusBadge status={user.status} />
-              </button>
+              </div>
             ))}
           </div>
+
+          <Button
+            variant="ghost"
+            className="w-full mt-8 h-12 rounded-xl text-slate-600 font-bold hover:bg-slate-50 group transition-all"
+            onClick={() => navigate('/teams')}
+          >
+            Full Team Analytics <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Productivity & Security Grid */}
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Cycle Time Analysis */}
+        <div className="rounded-3xl border border-slate-200 bg-slate-900 p-8 shadow-xl relative overflow-hidden">
+          <div className="absolute -bottom-8 -left-8 h-32 w-32 bg-indigo-500/10 blur-[80px] rounded-full" />
+
+          <div className="relative z-10">
+            <h3 className="text-xl font-black tracking-tight text-white mb-8 flex items-center gap-2">
+              <Clock className="h-6 w-6 text-indigo-400" /> Efficiency Gain
+            </h3>
+
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center pr-1">
+                  <span className="text-xs font-bold text-indigo-300 uppercase tracking-widest">AI Assisted</span>
+                  <span className="text-xl font-black text-white font-metric">{productivityData.aiCycleTimeAvg}m</span>
+                </div>
+                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(productivityData.aiCycleTimeAvg / productivityData.manualCycleTimeAvg) * 100}%` }}
+                    className="h-full bg-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.5)]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center pr-1">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Manual Only</span>
+                  <span className="text-xl font-black text-white font-metric">{productivityData.manualCycleTimeAvg}m</span>
+                </div>
+                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
+                    className="h-full bg-slate-500"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 backdrop-blur-sm">
+                  <p className="text-xs font-bold text-indigo-300 uppercase tracking-tighter mb-1">Impact Summary</p>
+                  <p className="text-3xl font-black text-white tracking-tighter">
+                    {productivityData.velocityBoostPercent}% <span className="text-lg font-bold text-indigo-400 uppercase tracking-normal">Faster Delivery</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="rounded-xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">Quick Stats</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-lg bg-accent/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">Copilot Accept Rate</p>
-              <p className="text-xl font-bold">{orgData.copilotAcceptRate}%</p>
+        {/* Security Health */}
+        <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <ShieldCheck className="h-6 w-6 text-emerald-500" /> Guardrail Efficiency
+              </h3>
+              <p className="text-sm text-slate-500 mt-1">AI Risks detected and mitigated across repositories</p>
             </div>
-            <div className="rounded-lg bg-accent/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">Cursor Completions</p>
-              <p className="text-xl font-bold">{formatNumber(orgData.cursorCompletionsAccepted)}</p>
-            </div>
-            <div className="rounded-lg bg-accent/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">PR Merge Rate</p>
-              <p className="text-xl font-bold">~{orgData.prMergeRate}%</p>
-            </div>
-            <div className="rounded-lg bg-accent/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">Total LoC</p>
-              <p className="text-xl font-bold">{formatNumber(orgData.totalLoC)}</p>
+            <Badge className="bg-emerald-100 text-emerald-700 font-black rounded-lg px-3 py-1 ring-1 ring-emerald-200">
+              HEALTHY SCORE: {(100 - orgData.aiRiskScore).toFixed(1)}/100
+            </Badge>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <EnhancedChart
+              type="bar"
+              data={securityData.interventionTrend}
+              index="week"
+              categories={['interventions', 'flaws']}
+              colors={['#10b981', '#cbd5e1']}
+              height={220}
+            />
+
+            <div className="space-y-4">
+              <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Detections by category</h4>
+              {securityData.topRiskTypes.map((risk) => (
+                <div key={risk.type} className="group">
+                  <div className="flex justify-between mb-1.5">
+                    <span className="text-sm font-bold text-slate-700">{risk.type}</span>
+                    <span className="text-sm font-black font-metric text-slate-900">{risk.count}</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(risk.count / 700) * 100}%` }}
+                      className={cn(
+                        "h-full transition-all group-hover:opacity-80",
+                        risk.type === "Unsafe Patterns" ? "bg-rose-500" : risk.type === "Hardcoded Secrets" ? "bg-amber-500" : "bg-indigo-500"
+                      )}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Live Activity & Top Contributors */}
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* Live Feed */}
+        <div className="lg:col-span-12 xl:col-span-7 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-pulse" />
+
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 border border-slate-100">
+                <Activity className="h-5 w-5 text-indigo-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black tracking-tight text-slate-900">Real-time Telemetry</h3>
+                <p className="text-sm text-slate-500 font-medium">Streaming global AI events from VCS webhooks</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Live: Connected</span>
+            </div>
+          </div>
+
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
+              {liveEvents.map((event, i) => (
+                <motion.div
+                  key={event.commitId || i}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4 }}
+                  className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-200 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "h-12 w-12 rounded-xl flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform",
+                      event.source === 'AI'
+                        ? 'bg-indigo-600 text-white shadow-indigo-200'
+                        : 'bg-white text-slate-900 border border-slate-200 shadow-slate-100'
+                    )}>
+                      {event.source === 'AI' ? <Zap className="h-5 w-5" /> : <Code2 className="h-5 w-5 text-slate-400" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">Commit {event.commitId?.substring(0, 8) || "Processing"}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                        <span>{event.repository || "System"}</span>
+                        <span>•</span>
+                        <span>{new Date(event.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Confidence</p>
+                      <p className="text-sm font-black font-metric text-indigo-600">{Math.round((event.confidence || 0) * 100)}%</p>
+                    </div>
+                    <div className="h-10 w-10 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm">
+                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {liveEvents.length === 0 && (
+              <div className="py-20 text-center space-y-4">
+                <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                  <Activity className="h-10 w-10 text-slate-200 animate-pulse" />
+                </div>
+                <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Listening for live deployment telemetry...</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Top Contributors Card */}
+        <div className="lg:col-span-12 xl:col-span-5 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-black tracking-tight text-slate-900">Leaderboard</h3>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Top AI Engineers</span>
+          </div>
+
+          <div className="space-y-4">
+            {topUsers.map((user, idx) => (
+              <motion.button
+                key={user.id}
+                whileHover={{ scale: 1.02, x: 5 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate(`/users/${user.id}`)}
+                className="w-full flex items-center gap-4 rounded-2xl p-4 bg-slate-50 border border-slate-100 hover:bg-indigo-50/50 hover:border-indigo-100 transition-all text-left group"
+              >
+                <div className="relative">
+                  <UserAvatar name={user.name} size="md" />
+                  <div className={cn(
+                    "absolute -top-2 -left-2 h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-black shadow-md",
+                    idx === 0 ? "bg-amber-400 text-amber-900" : idx === 1 ? "bg-slate-300 text-slate-700" : "bg-orange-300 text-orange-900"
+                  )}>
+                    {idx + 1}
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-black text-slate-900 truncate">{user.name}</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{user.team}</p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-xl font-black font-metric text-indigo-600">{user.aiPercent}%</p>
+                  <StatusBadge status={user.status} size="sm" />
+                </div>
+              </motion.button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            className="w-full mt-6 h-12 rounded-xl text-slate-600 font-black border-slate-200 hover:bg-slate-50 group transition-all"
+            onClick={() => navigate('/leaderboard')}
+          >
+            View Full Rankings <Trophy className="h-4 w-4 ml-2 group-hover:rotate-12 transition-transform text-amber-500" />
+          </Button>
+        </div>
+      </div>
+    </motion.div>
   );
 }

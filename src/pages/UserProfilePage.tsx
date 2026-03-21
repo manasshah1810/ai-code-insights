@@ -1,132 +1,252 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { users, formatNumber } from "@/data/dashboard-data";
-import { KpiCard } from "@/components/KpiCard";
-import { StatusBadge, ToolBadge } from "@/components/StatusBadge";
-import { GitCommit, Code2, GitMerge, Coins, FileCode, CheckCircle } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { MetricCard } from "@/components/ui/MetricCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { EnhancedChart } from "@/components/ui/EnhancedChart";
+import { DataTable } from "@/components/ui/DataTable";
+import {
+  GitCommit,
+  Code2,
+  GitMerge,
+  Coins,
+  FileCode,
+  CheckCircle,
+  ChevronLeft,
+  Lock,
+  Zap,
+  ShieldCheck,
+  TrendingUp,
+  Cpu,
+  MousePointer2
+} from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAppStore } from "@/store/app-store";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export default function UserProfilePage() {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { strictPrivacyMode, currentRole } = useAppStore();
   const user = users.find(u => u.id === Number(userId));
 
-  if (!user) return <p className="p-6 text-muted-foreground">User not found</p>;
+  if (strictPrivacyMode && currentRole !== "Admin") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh] text-center space-y-6">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="h-24 w-24 rounded-3xl bg-rose-50 flex items-center justify-center text-rose-500 mb-2 border border-rose-100 shadow-xl shadow-rose-100/50"
+        >
+          <Lock className="h-10 w-10" />
+        </motion.div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black tracking-tight text-slate-900">Privacy Restricted</h2>
+          <p className="max-w-md text-slate-500 font-medium leading-relaxed">
+            Individual engineering performance dashboards are disabled under the current
+            <span className="text-slate-900 font-bold"> Strict Privacy Mode</span> configuration.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="lg"
+          className="rounded-xl font-bold border-slate-200 px-8"
+          onClick={() => navigate("/dashboard")}
+        >
+          Return to Dashboard
+        </Button>
+      </div>
+    );
+  }
+
+  if (!user) return <div className="p-12 text-center font-black uppercase text-slate-300 tracking-widest">Engineer profile not found</div>;
 
   const pieData = [
     { name: "AI Code", value: user.aiLoC },
     { name: "Manual Code", value: user.manualLoC },
   ];
 
-  const isIdle = user.status === "License Idle";
+  const prColumns = [
+    {
+      header: "Pull Request Title",
+      accessorKey: "title",
+      cell: (val: string) => <span className="font-bold text-slate-900">{val}</span>
+    },
+    {
+      header: "AI Contribution",
+      accessorKey: "aiPercent",
+      cell: (val: number) => (
+        <div className="flex items-center gap-2">
+          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-500" style={{ width: `${val}%` }} />
+          </div>
+          <span className="font-bold font-metric text-indigo-600">{val}%</span>
+        </div>
+      )
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      cell: (val: string) => (
+        <Badge className={cn(
+          "font-bold px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider",
+          val === "Merged" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200" :
+            val === "Open" ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-indigo-200" :
+              "bg-rose-100 text-rose-700 hover:bg-rose-200 border-rose-200"
+        )}>
+          {val}
+        </Badge>
+      )
+    },
+    {
+      header: "Date",
+      accessorKey: "date",
+      cell: (val: string) => <span className="font-bold text-slate-400 text-xs">{val}</span>
+    }
+  ];
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <button onClick={() => navigate(-1)} className="text-xs text-muted-foreground hover:text-foreground">← Back</button>
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-8 max-w-6xl mx-auto pb-12"
+    >
+      <button
+        onClick={() => navigate(-1)}
+        className="group flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
+      >
+        <ChevronLeft className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" />
+        Back to Fleet
+      </button>
 
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="h-14 w-14 rounded-full gradient-ai flex items-center justify-center text-lg font-bold text-primary-foreground">
-          {user.avatar}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">{user.name}</h1>
-            <StatusBadge status={user.status} size="md" />
+      {/* Profile Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2rem] border border-slate-200 shadow-premium">
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <UserAvatar name={user.name} size="xl" />
+            <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white border-4 border-white shadow-lg">
+              <Zap className="h-4 w-4" fill="currentColor" />
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">{user.role} · {user.team}</p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-black tracking-tighter text-slate-900">{user.name}</h1>
+              <StatusBadge status={user.status} size="md" />
+            </div>
+            <p className="text-base text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2">
+              {user.role} <span className="h-1 w-1 rounded-full bg-slate-300" /> {user.team}
+            </p>
+          </div>
         </div>
-        <ToolBadge tool={user.primaryTool} />
+
+        <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div className="text-right">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Primary Engine</p>
+            <p className="text-sm font-black text-slate-900">{user.primaryTool}</p>
+          </div>
+          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 shadow-sm">
+            <Cpu className="h-5 w-5 text-indigo-500" />
+          </div>
+        </div>
       </div>
 
-      {isIdle ? (
-        <div className="rounded-xl border-2 border-dashed border-warning/30 bg-warning/5 p-8 text-center">
-          <p className="text-lg font-semibold text-warning mb-2">No AI Activity</p>
-          <p className="text-sm text-muted-foreground mb-4">This developer hasn't used any AI coding tools yet.</p>
-          <Button variant="outline" className="border-warning text-warning hover:bg-warning/10">Activate License</Button>
-        </div>
-      ) : null}
-
-      {/* KPI Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard title="Commits" value={user.commits} icon={<GitCommit className="h-3.5 w-3.5 text-muted-foreground" />} />
-        <KpiCard title="Total LoC" value={formatNumber(user.totalLoC)} icon={<Code2 className="h-3.5 w-3.5 text-muted-foreground" />} />
-        <KpiCard title="AI Code %" value={`${user.aiPercent}%`} icon={<FileCode className="h-3.5 w-3.5 text-ai" />} gradient={user.aiPercent >= 50} />
-        <KpiCard title="AI Merge Rate" value={`${user.aiMergeRate}%`} icon={<GitMerge className="h-3.5 w-3.5 text-success" />} />
-        <KpiCard title="Tokens Used" value={formatNumber(user.tokensUsed)} icon={<Coins className="h-3.5 w-3.5 text-warning" />} />
-        <KpiCard title="PR Merge Rate" value={`${user.prMergeRate}%`} icon={<CheckCircle className="h-3.5 w-3.5 text-success" />} />
+      {/* KPI Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <MetricCard title="Commits" value={user.commits} icon={<GitCommit className="h-4 w-4" />} decimals={0} />
+        <MetricCard title="LoC Output" value={user.totalLoC} icon={<Code2 className="h-4 w-4" />} suffix="" />
+        <MetricCard title="AI Contribution" value={user.aiPercent} icon={<Zap className="h-4 w-4" />} suffix="%" gradient="ai" />
+        <MetricCard title="AI Merge Rate" value={user.aiMergeRate} icon={<GitMerge className="h-4 w-4" />} suffix="%" gradient="success" />
+        <MetricCard title="Tokens" value={user.tokensUsed} icon={<Coins className="h-4 w-4" />} suffix="" />
+        <MetricCard title="PR Success" value={user.prMergeRate} icon={<CheckCircle className="h-4 w-4" />} suffix="%" gradient="warning" />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Donut */}
-        <div className="rounded-xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">AI vs Manual Breakdown</h3>
-          <div className="flex items-center justify-center gap-6">
-            <ResponsiveContainer width={160} height={160}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} dataKey="value">
-                  <Cell fill="hsl(245, 58%, 51%)" />
-                  <Cell fill="hsl(215, 16%, 47%)" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-ai" /><span>AI: {user.aiPercent}%</span></div>
-              <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-manual" /><span>Manual: {(100 - user.aiPercent).toFixed(0)}%</span></div>
-              {user.primaryTool.includes("Cursor") && (
-                <div className="mt-3 pt-3 border-t space-y-1">
-                  <p className="text-muted-foreground">Fast tokens: {formatNumber(user.cursorFastTokens)}</p>
-                  <p className="text-muted-foreground">Slow tokens: {formatNumber(user.cursorSlowTokens)}</p>
-                </div>
-              )}
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* Composition Chart */}
+        <div className="lg:col-span-5 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <h3 className="text-xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-2">
+            <MousePointer2 className="h-5 w-5 text-indigo-500" /> Craftsmanship vs. AI
+          </h3>
+          <div className="flex flex-col items-center">
+            <div className="relative h-[220px] w-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={100}
+                    paddingAngle={8}
+                    dataKey="value"
+                    animationBegin={0}
+                    animationDuration={1500}
+                  >
+                    <Cell fill="#6366f1" stroke="transparent" />
+                    <Cell fill="#e2e8f0" stroke="transparent" />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-3xl font-black font-metric text-indigo-600">{user.aiPercent}%</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Power</p>
+              </div>
+            </div>
+
+            <div className="w-full mt-8 grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">AI Generated</p>
+                <p className="text-xl font-black text-indigo-700 font-metric">{formatNumber(user.aiLoC)}</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Human Written</p>
+                <p className="text-xl font-black text-slate-700 font-metric">{formatNumber(user.manualLoC)}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 30-day trend */}
-        <div className="rounded-xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">30-Day AI % Trend</h3>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={user.weeklyTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
-              <XAxis dataKey="week" tick={{ fontSize: 10 }} stroke="hsl(215, 16%, 47%)" />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} stroke="hsl(215, 16%, 47%)" />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number) => `${v}%`} />
-              <Line type="monotone" dataKey="aiPercent" stroke="hsl(245, 58%, 51%)" strokeWidth={2} dot={{ fill: "hsl(245, 58%, 51%)", r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
+        {/* Momentum Chart */}
+        <div className="lg:col-span-7 rounded-3xl border border-slate-200 bg-slate-900 p-8 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <TrendingUp className="h-40 w-40 text-white" />
+          </div>
+          <h3 className="text-xl font-black tracking-tight text-white mb-8 relative z-10 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-indigo-400" /> Adoption Momentum (30D)
+          </h3>
+          <div className="relative z-10">
+            <EnhancedChart
+              type="area"
+              data={user.weeklyTrend}
+              index="week"
+              categories={['aiPercent']}
+              colors={['#818cf8']}
+              valueFormatter={(v) => `${v}%`}
+              height={250}
+            />
+          </div>
+          <div className="mt-6 flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm relative z-10">
+            <ShieldCheck className="h-6 w-6 text-emerald-400" />
+            <div>
+              <p className="text-xs font-bold text-white uppercase tracking-widest">Consistency Rating</p>
+              <p className="text-sm text-slate-400 font-medium">Engineer exhibits steady growth in AI proficiency with zero recorded regressions.</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Recent PRs */}
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="p-5 border-b"><h3 className="text-sm font-semibold">Recent Pull Requests</h3></div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/30">
-              <th className="text-left p-3 font-medium text-muted-foreground text-xs">Title</th>
-              <th className="text-right p-3 font-medium text-muted-foreground text-xs">AI %</th>
-              <th className="text-left p-3 font-medium text-muted-foreground text-xs">Status</th>
-              <th className="text-left p-3 font-medium text-muted-foreground text-xs">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {user.recentPRs.map((pr, i) => (
-              <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
-                <td className="p-3 text-xs font-medium">{pr.title}</td>
-                <td className="p-3 text-right text-xs">{pr.aiPercent}%</td>
-                <td className="p-3">
-                  <Badge variant={pr.status === "Merged" ? "default" : pr.status === "Open" ? "secondary" : "destructive"} className="text-[10px]">
-                    {pr.status}
-                  </Badge>
-                </td>
-                <td className="p-3 text-xs text-muted-foreground">{pr.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* PR Table */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+            <Code2 className="h-6 w-6 text-indigo-500" /> Recent Pull Requests
+          </h3>
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{user.recentPRs.length} SUBMISSIONS</span>
+        </div>
+        <DataTable data={user.recentPRs} columns={prColumns as any} className="shadow-premium" />
       </div>
-    </div>
+    </motion.div>
   );
 }

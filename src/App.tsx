@@ -11,6 +11,7 @@ import TeamsPage from "@/pages/TeamsPage";
 import UserProfilePage from "@/pages/UserProfilePage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import SettingsPage from "@/pages/SettingsPage";
+import GlossaryPage from "@/pages/GlossaryPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/users/:userId" element={<UserProfilePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/glossary" element={<GlossaryPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

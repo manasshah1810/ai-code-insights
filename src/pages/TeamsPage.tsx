@@ -1,11 +1,23 @@
 import { teams, users, formatNumber } from "@/data/dashboard-data";
 import { useNavigate, useParams } from "react-router-dom";
-import { KpiCard } from "@/components/KpiCard";
-import { StatusBadge, ToolBadge } from "@/components/StatusBadge";
-import { Users as UsersIcon, Zap, GitMerge, Trophy, FileDown } from "lucide-react";
+import { MetricCard } from "@/components/ui/MetricCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { DataTable } from "@/components/ui/DataTable";
+import {
+  Users as UsersIcon,
+  Zap,
+  GitMerge,
+  Trophy,
+  FileDown,
+  ChevronLeft,
+  ArrowRight,
+  Download
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
 import { exportToPdf } from "@/lib/export-pdf";
+import { motion } from "framer-motion";
 
 export default function TeamsPage() {
   const navigate = useNavigate();
@@ -13,9 +25,10 @@ export default function TeamsPage() {
 
   if (teamId) {
     const team = teams.find(t => t.id === teamId);
-    if (!team) return <p>Team not found</p>;
+    if (!team) return <div className="flex items-center justify-center min-h-[400px] text-slate-500 font-bold uppercase tracking-widest">Team not found</div>;
+
     const teamMembers = users.filter(u => u.teamId === teamId);
-    const topPerformer = teamMembers.reduce((a, b) => a.aiPercent > b.aiPercent ? a : b);
+    const topPerformer = [...teamMembers].sort((a, b) => b.aiPercent - a.aiPercent)[0];
 
     const exportCSV = () => {
       const csv = Papa.unparse(teamMembers.map(u => ({
@@ -27,87 +40,189 @@ export default function TeamsPage() {
       const a = document.createElement("a"); a.href = url; a.download = `${teamId}-team.csv`; a.click();
     };
 
+    const columns = [
+      {
+        header: "Developer",
+        accessorKey: "name",
+        cell: (val: string, row: any) => (
+          <div className="flex items-center gap-3">
+            <UserAvatar name={val} size="sm" />
+            <div>
+              <p className="font-bold text-slate-900 leading-tight">{val}</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{row.role}</p>
+            </div>
+          </div>
+        )
+      },
+      {
+        header: "AI Code %",
+        accessorKey: "aiPercent",
+        cell: (val: number) => (
+          <div className="flex items-center gap-3 min-w-[120px]">
+            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${val}%` }}
+                className="h-full bg-indigo-500"
+              />
+            </div>
+            <span className="font-black font-metric text-indigo-600 w-10 text-right">{val}%</span>
+          </div>
+        )
+      },
+      {
+        header: "Merge Rate",
+        accessorKey: "aiMergeRate",
+        cell: (val: number) => (
+          <span className="font-bold text-slate-700 font-metric">{val}%</span>
+        )
+      },
+      {
+        header: "Commits",
+        accessorKey: "commits",
+        cell: (val: number) => (
+          <span className="font-bold text-slate-600 font-metric">{val}</span>
+        )
+      },
+      {
+        header: "Tokens",
+        accessorKey: "tokensUsed",
+        cell: (val: number) => (
+          <span className="font-bold font-metric text-slate-500">{formatNumber(val)}</span>
+        )
+      },
+      {
+        header: "Status",
+        accessorKey: "status",
+        cell: (val: string) => <StatusBadge status={val} size="sm" />
+      }
+    ];
+
     return (
-      <div className="space-y-6 max-w-7xl" id="team-detail-content">
-        <div className="flex items-center justify-between">
-          <div>
-            <button onClick={() => navigate("/teams")} className="text-xs text-muted-foreground hover:text-foreground mb-1 block">← All Teams</button>
-            <h1 className="text-2xl font-bold tracking-tight">{team.name}</h1>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.99 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="space-y-8 max-w-7xl mx-auto pb-12"
+        id="team-detail-content"
+      >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate("/teams")}
+              className="group flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
+            >
+              <ChevronLeft className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" />
+              All Teams
+            </button>
+            <h1 className="text-4xl font-black tracking-tighter text-slate-900">{team.name}</h1>
+            <p className="text-slate-500 font-medium">Performance metrics and engineer breakdown</p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => exportToPdf("team-detail-content", `${teamId}-report`)} variant="outline" size="sm">
-              <FileDown className="h-3.5 w-3.5 mr-1.5" />PDF
+          <div className="flex gap-3">
+            <Button
+              onClick={() => exportToPdf("team-detail-content", `${teamId}-report`)}
+              variant="outline"
+              className="h-11 rounded-xl font-bold border-slate-200"
+            >
+              <FileDown className="h-4 w-4 mr-2 text-rose-500" />
+              Export PDF
             </Button>
-            <Button onClick={exportCSV} variant="outline" size="sm">Export CSV</Button>
+            <Button
+              onClick={exportCSV}
+              variant="outline"
+              className="h-11 rounded-xl font-bold border-slate-200"
+            >
+              <Download className="h-4 w-4 mr-2 text-indigo-500" />
+              CSV Data
+            </Button>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiCard title="Team Size" value={team.headCount} icon={<UsersIcon className="h-4 w-4 text-muted-foreground" />} />
-          <KpiCard title="AI Adoption" value={`${Math.round((team.aiUsers / team.headCount) * 100)}%`} icon={<Zap className="h-4 w-4 text-ai" />} />
-          <KpiCard title="AI Merge Rate" value={`${team.aiMergeRate}%`} icon={<GitMerge className="h-4 w-4 text-success" />} />
-          <KpiCard title="Top Performer" value={topPerformer.name} icon={<Trophy className="h-4 w-4 text-warning" />} />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <MetricCard title="Force Size" value={team.headCount} icon={<UsersIcon className="h-5 w-5" />} suffix=" Engineers" decimals={0} />
+          <MetricCard title="Team Adoption" value={(team.aiUsers / team.headCount) * 100} icon={<Zap className="h-5 w-5" />} suffix="%" gradient="ai" />
+          <MetricCard title="Merge Success" value={team.aiMergeRate} icon={<GitMerge className="h-5 w-5" />} suffix="%" gradient="success" />
+          <MetricCard title="Top Gun" value={topPerformer.aiPercent} icon={<Trophy className="h-5 w-5" />} suffix="%" subtitle={topPerformer.name} gradient="warning" />
         </div>
-        <div className="rounded-xl border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/30">
-                {["Developer", "AI Code %", "AI Merge Rate", "Commits", "Tokens Used", "Tool", "Status"].map(h => (
-                  <th key={h} className="text-left p-3 font-medium text-muted-foreground text-xs">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {teamMembers.map(u => (
-                <tr key={u.id} className="border-b last:border-0 hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => navigate(`/users/${u.id}`)}>
-                  <td className="p-3"><div className="flex items-center gap-2"><div className="h-7 w-7 rounded-full gradient-ai flex items-center justify-center text-[10px] font-bold text-primary-foreground">{u.avatar}</div><span className="text-xs font-medium">{u.name}</span></div></td>
-                  <td className="p-3 text-xs font-medium gradient-ai-text">{u.aiPercent}%</td>
-                  <td className="p-3 text-xs">{u.aiMergeRate}%</td>
-                  <td className="p-3 text-xs">{u.commits}</td>
-                  <td className="p-3 text-xs">{formatNumber(u.tokensUsed)}</td>
-                  <td className="p-3"><ToolBadge tool={u.primaryTool} /></td>
-                  <td className="p-3"><StatusBadge status={u.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-lg font-black tracking-tight text-slate-900">Engineer Breakdown</h3>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{teamMembers.length} ACTIVE DEVELOPERS</span>
+          </div>
+          <DataTable
+            data={teamMembers}
+            columns={columns}
+            className="shadow-premium"
+          />
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Teams</h1>
-        <p className="text-sm text-muted-foreground mt-1">Team-level AI adoption and performance metrics</p>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-8 max-w-7xl mx-auto"
+    >
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-6">
+        <div>
+          <h1 className="text-4xl font-black tracking-tighter text-slate-900">Engineering <span className="text-indigo-600">Squads</span></h1>
+          <p className="text-base text-slate-500 mt-2 font-medium">Team-level AI deployment and efficiency benchmarking</p>
+        </div>
       </div>
-      <div className="grid md:grid-cols-3 gap-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {teams.map(team => (
-          <button key={team.id} onClick={() => navigate(`/teams/${team.id}`)} className="rounded-xl border bg-card p-5 text-left hover:shadow-md transition-all group">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold group-hover:text-ai transition-colors">{team.name}</h3>
-              <span className="text-xs text-muted-foreground">{team.headCount} members</span>
+          <motion.button
+            key={team.id}
+            whileHover={{ y: -8, boxShadow: 'var(--shadow-xl)' }}
+            onClick={() => navigate(`/teams/${team.id}`)}
+            className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm text-left hover:border-indigo-100 transition-all group relative overflow-hidden"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 text-slate-900 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                <UsersIcon className="h-6 w-6" />
+              </div>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{team.headCount} MEMBERS</span>
             </div>
-            <div className="space-y-3">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">AI Code %</span>
-                <span className="font-semibold gradient-ai-text">{team.aiCodePercent}%</span>
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{team.name}</h3>
+                <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">{team.primaryTool}</p>
               </div>
-              <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full rounded-full gradient-ai" style={{ width: `${team.aiCodePercent}%` }} />
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-slate-400">AI Contribution</span>
+                    <span className="text-indigo-600">{team.aiCodePercent}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-50 overflow-hidden border border-slate-100 p-0.5">
+                    <div className="h-full rounded-full bg-indigo-500" style={{ width: `${team.aiCodePercent}%` }} />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 bg-opacity-50">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Merge Rate</p>
+                    <p className="text-sm font-black font-metric text-slate-900">{team.aiMergeRate}%</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Output</p>
+                    <p className="text-sm font-black font-metric text-slate-900">{formatNumber(team.aiLoC)} LoC</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">AI Merge Rate</span>
-                <span className="font-medium">{team.aiMergeRate}%</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Primary Tool</span>
-                <ToolBadge tool={team.primaryTool} />
+
+              <div className="flex items-center justify-center pt-2 text-xs font-bold text-indigo-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                View Squadron Details <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </div>
-          </button>
+          </motion.button>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,64 +1,4 @@
-export const orgData = {
-  totalDevelopers: 6,
-  activeAIUsers: 5,
-  aiAdoptionRate: 83,
-  totalLoC: 124800,
-  aiLoC: 61152,
-  manualLoC: 63648,
-  aiCodePercent: 49.0,
-  aiMergeRate: 73.4,
-  totalTokens: 4218500,
-  copilotSuggestionsShown: 38400,
-  copilotAcceptRate: 61.2,
-  cursorCompletionsAccepted: 22750,
-  prMergeRate: 85,
-};
-
-export const teams = [
-  {
-    id: "platform-engineering",
-    name: "Platform Engineering",
-    headCount: 2,
-    aiUsers: 2,
-    aiCodePercent: 62.1,
-    aiMergeRate: 81.0,
-    primaryTool: "Cursor",
-    totalTokens: 1840000,
-    totalLoC: 46400,
-    aiLoC: 28814,
-    manualLoC: 17586,
-    members: [1, 2],
-  },
-  {
-    id: "frontend-product",
-    name: "Frontend Product",
-    headCount: 2,
-    aiUsers: 2,
-    aiCodePercent: 51.4,
-    aiMergeRate: 74.2,
-    primaryTool: "GitHub Copilot",
-    totalTokens: 1510000,
-    totalLoC: 40800,
-    aiLoC: 20971,
-    manualLoC: 19829,
-    members: [3, 4],
-  },
-  {
-    id: "data-ml",
-    name: "Data & ML Engineering",
-    headCount: 2,
-    aiUsers: 1,
-    aiCodePercent: 28.3,
-    aiMergeRate: 58.5,
-    primaryTool: "GitHub Copilot",
-    totalTokens: 868500,
-    totalLoC: 37600,
-    aiLoC: 10639,
-    manualLoC: 26961,
-    members: [5, 6],
-  },
-];
-
+// Types and Interfaces
 export interface User {
   id: number;
   name: string;
@@ -89,285 +29,214 @@ export interface User {
   recentPRs: { title: string; status: "Merged" | "Open" | "Rejected"; aiPercent: number; date: string }[];
 }
 
-export const users: User[] = [
-  {
-    id: 1,
-    name: "Jordan Lee",
-    role: "Senior Engineer",
-    team: "Platform Engineering",
-    teamId: "platform-engineering",
-    primaryTool: "Cursor",
-    commits: 84,
-    totalLoC: 26400,
-    aiLoC: 18480,
-    manualLoC: 7920,
-    aiPercent: 70.0,
-    aiMergeRate: 86.0,
-    tokensUsed: 1120000,
-    cursorFastTokens: 780000,
-    cursorSlowTokens: 340000,
-    cursorCompletions: 14200,
-    cursorAcceptRate: 74.3,
-    copilotSuggestions: 0,
-    copilotAcceptRate: 0,
-    prsOpened: 21,
-    prsMerged: 19,
-    prMergeRate: 90.5,
-    rank: 1,
-    status: "Power User",
-    avatar: "JL",
-    weeklyTrend: [
-      { week: "Week 1", aiPercent: 62 },
-      { week: "Week 2", aiPercent: 66 },
-      { week: "Week 3", aiPercent: 72 },
-      { week: "Week 4", aiPercent: 78 },
-    ],
-    recentPRs: [
-      { title: "feat: Add API rate limiter", status: "Merged", aiPercent: 75, date: "Mar 19" },
-      { title: "refactor: Auth middleware", status: "Merged", aiPercent: 68, date: "Mar 17" },
-      { title: "fix: Cache invalidation bug", status: "Merged", aiPercent: 82, date: "Mar 15" },
-      { title: "feat: Webhook retry logic", status: "Open", aiPercent: 71, date: "Mar 14" },
-      { title: "chore: Update dependencies", status: "Merged", aiPercent: 45, date: "Mar 12" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Alex Reyes",
-    role: "Staff Engineer",
-    team: "Platform Engineering",
-    teamId: "platform-engineering",
-    primaryTool: "Cursor + Copilot",
-    commits: 72,
-    totalLoC: 20000,
-    aiLoC: 10800,
-    manualLoC: 9200,
-    aiPercent: 54.0,
-    aiMergeRate: 76.0,
-    tokensUsed: 720000,
-    cursorFastTokens: 420000,
-    cursorSlowTokens: 180000,
-    cursorCompletions: 8550,
-    cursorAcceptRate: 68.1,
-    copilotSuggestions: 12000,
-    copilotAcceptRate: 58.4,
-    prsOpened: 18,
-    prsMerged: 15,
-    prMergeRate: 83.3,
-    rank: 2,
-    status: "Power User",
-    avatar: "AR",
-    weeklyTrend: [
-      { week: "Week 1", aiPercent: 48 },
-      { week: "Week 2", aiPercent: 52 },
-      { week: "Week 3", aiPercent: 55 },
-      { week: "Week 4", aiPercent: 60 },
-    ],
-    recentPRs: [
-      { title: "feat: GraphQL schema gen", status: "Merged", aiPercent: 62, date: "Mar 18" },
-      { title: "feat: Service mesh config", status: "Merged", aiPercent: 55, date: "Mar 16" },
-      { title: "fix: gRPC timeout handling", status: "Rejected", aiPercent: 48, date: "Mar 14" },
-      { title: "refactor: DB migrations", status: "Merged", aiPercent: 51, date: "Mar 11" },
-      { title: "docs: API documentation", status: "Merged", aiPercent: 70, date: "Mar 9" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Sam Okafor",
-    role: "Mid-Level Engineer",
-    team: "Frontend Product",
-    teamId: "frontend-product",
-    primaryTool: "GitHub Copilot",
-    commits: 65,
-    totalLoC: 22400,
-    aiLoC: 13440,
-    manualLoC: 8960,
-    aiPercent: 60.0,
-    aiMergeRate: 72.0,
-    tokensUsed: 890000,
-    cursorFastTokens: 0,
-    cursorSlowTokens: 0,
-    cursorCompletions: 0,
-    cursorAcceptRate: 0,
-    copilotSuggestions: 15200,
-    copilotAcceptRate: 65.8,
-    prsOpened: 16,
-    prsMerged: 13,
-    prMergeRate: 81.3,
-    rank: 3,
-    status: "Active",
-    avatar: "SO",
-    weeklyTrend: [
-      { week: "Week 1", aiPercent: 52 },
-      { week: "Week 2", aiPercent: 57 },
-      { week: "Week 3", aiPercent: 62 },
-      { week: "Week 4", aiPercent: 68 },
-    ],
-    recentPRs: [
-      { title: "feat: Dashboard widgets", status: "Merged", aiPercent: 65, date: "Mar 19" },
-      { title: "feat: Dark mode support", status: "Merged", aiPercent: 58, date: "Mar 17" },
-      { title: "fix: Layout shifts on mobile", status: "Merged", aiPercent: 72, date: "Mar 15" },
-      { title: "feat: Chart animations", status: "Open", aiPercent: 61, date: "Mar 13" },
-      { title: "refactor: Component library", status: "Merged", aiPercent: 55, date: "Mar 10" },
-    ],
-  },
-  {
-    id: 4,
-    name: "Maya Thornton",
-    role: "Junior Engineer",
-    team: "Frontend Product",
-    teamId: "frontend-product",
-    primaryTool: "GitHub Copilot",
-    commits: 48,
-    totalLoC: 18400,
-    aiLoC: 7360,
-    manualLoC: 11040,
-    aiPercent: 40.0,
-    aiMergeRate: 65.0,
-    tokensUsed: 620000,
-    cursorFastTokens: 0,
-    cursorSlowTokens: 0,
-    cursorCompletions: 0,
-    cursorAcceptRate: 0,
-    copilotSuggestions: 11200,
-    copilotAcceptRate: 55.3,
-    prsOpened: 12,
-    prsMerged: 10,
-    prMergeRate: 83.3,
-    rank: 4,
-    status: "Active",
-    avatar: "MT",
-    weeklyTrend: [
-      { week: "Week 1", aiPercent: 32 },
-      { week: "Week 2", aiPercent: 36 },
-      { week: "Week 3", aiPercent: 42 },
-      { week: "Week 4", aiPercent: 48 },
-    ],
-    recentPRs: [
-      { title: "feat: Form validation", status: "Merged", aiPercent: 42, date: "Mar 18" },
-      { title: "feat: User onboarding flow", status: "Merged", aiPercent: 38, date: "Mar 16" },
-      { title: "fix: Accessibility issues", status: "Merged", aiPercent: 35, date: "Mar 14" },
-      { title: "style: Design system updates", status: "Open", aiPercent: 50, date: "Mar 12" },
-      { title: "test: Unit test coverage", status: "Merged", aiPercent: 44, date: "Mar 10" },
-    ],
-  },
-  {
-    id: 5,
-    name: "Daniel Kim",
-    role: "Senior Engineer",
-    team: "Data & ML Engineering",
-    teamId: "data-ml",
-    primaryTool: "GitHub Copilot",
-    commits: 56,
-    totalLoC: 21600,
-    aiLoC: 10800,
-    manualLoC: 10800,
-    aiPercent: 50.0,
-    aiMergeRate: 58.5,
-    tokensUsed: 868500,
-    cursorFastTokens: 0,
-    cursorSlowTokens: 0,
-    cursorCompletions: 0,
-    cursorAcceptRate: 0,
-    copilotSuggestions: 9800,
-    copilotAcceptRate: 62.1,
-    prsOpened: 14,
-    prsMerged: 11,
-    prMergeRate: 78.6,
-    rank: 5,
-    status: "Active",
-    avatar: "DK",
-    weeklyTrend: [
-      { week: "Week 1", aiPercent: 42 },
-      { week: "Week 2", aiPercent: 46 },
-      { week: "Week 3", aiPercent: 51 },
-      { week: "Week 4", aiPercent: 58 },
-    ],
-    recentPRs: [
-      { title: "feat: ML pipeline refactor", status: "Merged", aiPercent: 52, date: "Mar 19" },
-      { title: "feat: Data validation layer", status: "Merged", aiPercent: 48, date: "Mar 16" },
-      { title: "fix: Model drift detection", status: "Rejected", aiPercent: 55, date: "Mar 14" },
-      { title: "feat: Feature store integration", status: "Merged", aiPercent: 45, date: "Mar 11" },
-      { title: "chore: Update ML dependencies", status: "Merged", aiPercent: 60, date: "Mar 8" },
-    ],
-  },
-  {
-    id: 6,
-    name: "Priya Nair",
-    role: "Mid-Level Engineer",
-    team: "Data & ML Engineering",
-    teamId: "data-ml",
-    primaryTool: "None",
-    commits: 42,
-    totalLoC: 16000,
-    aiLoC: 0,
-    manualLoC: 16000,
-    aiPercent: 0,
-    aiMergeRate: 0,
-    tokensUsed: 0,
-    cursorFastTokens: 0,
-    cursorSlowTokens: 0,
-    cursorCompletions: 0,
-    cursorAcceptRate: 0,
-    copilotSuggestions: 0,
-    copilotAcceptRate: 0,
-    prsOpened: 10,
-    prsMerged: 9,
-    prMergeRate: 90.0,
-    rank: 6,
-    status: "License Idle",
-    avatar: "PN",
-    weeklyTrend: [
-      { week: "Week 1", aiPercent: 0 },
-      { week: "Week 2", aiPercent: 0 },
-      { week: "Week 3", aiPercent: 0 },
-      { week: "Week 4", aiPercent: 0 },
-    ],
-    recentPRs: [
-      { title: "feat: ETL pipeline optimization", status: "Merged", aiPercent: 0, date: "Mar 18" },
-      { title: "fix: Data quality checks", status: "Merged", aiPercent: 0, date: "Mar 15" },
-      { title: "feat: Batch processing module", status: "Merged", aiPercent: 0, date: "Mar 13" },
-      { title: "refactor: Query optimizer", status: "Open", aiPercent: 0, date: "Mar 11" },
-      { title: "docs: Data dictionary update", status: "Merged", aiPercent: 0, date: "Mar 8" },
-    ],
-  },
-];
+export interface Team {
+  id: string;
+  name: string;
+  headCount: number;
+  aiUsers: number;
+  aiCodePercent: number;
+  aiMergeRate: number;
+  primaryTool: string;
+  totalTokens: number;
+  totalLoC: number;
+  aiLoC: number;
+  manualLoC: number;
+  members: number[];
+}
 
-export const weeklyTrend = [
-  { week: "Week 1", label: "Feb 22 - Mar 1", aiLoC: 12800, manualLoC: 17200, aiPercent: 42.7, aiMergeRate: 68.2 },
-  { week: "Week 2", label: "Mar 2 - Mar 8", aiLoC: 14100, manualLoC: 16400, aiPercent: 46.2, aiMergeRate: 71.0 },
-  { week: "Week 3", label: "Mar 9 - Mar 15", aiLoC: 16200, manualLoC: 15800, aiPercent: 50.6, aiMergeRate: 74.5 },
-  { week: "Week 4", label: "Mar 16 - Mar 20", aiLoC: 18052, manualLoC: 14248, aiPercent: 55.9, aiMergeRate: 79.3 },
-];
-
-export const repositories = [
-  { name: "api-gateway", team: "Platform Engineering", totalLoC: 14200, aiPercent: 68, mergeRate: 88, primaryTool: "Cursor" },
-  { name: "auth-service", team: "Platform Engineering", totalLoC: 12200, aiPercent: 55, mergeRate: 82, primaryTool: "Cursor" },
-  { name: "web-dashboard", team: "Frontend Product", totalLoC: 18400, aiPercent: 58, mergeRate: 76, primaryTool: "Copilot" },
-  { name: "component-library", team: "Frontend Product", totalLoC: 10200, aiPercent: 42, mergeRate: 71, primaryTool: "Copilot" },
-  { name: "ml-pipeline", team: "Data & ML Engineering", totalLoC: 15600, aiPercent: 35, mergeRate: 62, primaryTool: "Copilot" },
-  { name: "data-ingestion", team: "Data & ML Engineering", totalLoC: 11400, aiPercent: 18, mergeRate: 55, primaryTool: "None" },
-  { name: "shared-utils", team: "Platform Engineering", totalLoC: 8800, aiPercent: 62, mergeRate: 85, primaryTool: "Cursor" },
-  { name: "design-system", team: "Frontend Product", totalLoC: 7200, aiPercent: 48, mergeRate: 73, primaryTool: "Copilot" },
-];
-
-export const mergeAnalytics = {
-  aiLoCWritten: 61152,
-  aiLoCInPRs: 55400,
-  aiLoCMerged: 44866,
-  manualMergeRate: 82,
-  rejectedPRs: [
-    { title: "feat: Auto-generated API tests", author: "Alex Reyes", aiPercent: 92, reason: "Code quality issues", date: "Mar 14" },
-    { title: "feat: ML model serving layer", author: "Daniel Kim", aiPercent: 88, reason: "Performance regression", date: "Mar 12" },
-    { title: "refactor: Auto-migrate schemas", author: "Jordan Lee", aiPercent: 85, reason: "Breaking changes", date: "Mar 8" },
-    { title: "feat: Generated UI components", author: "Sam Okafor", aiPercent: 78, reason: "Design inconsistency", date: "Mar 6" },
-    { title: "feat: Automated data pipeline", author: "Daniel Kim", aiPercent: 74, reason: "Missing error handling", date: "Mar 3" },
-  ],
-};
-
-export type UserRole = "Admin" | "Manager" | "Developer";
-
+// Helper for formatting
 export const formatNumber = (n: number): string => {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
   if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + "K";
   return n.toString();
 };
+
+// --- DATA GENERATION ---
+
+export const teams: Team[] = [
+  { id: "platform", name: "Platform Engineering", headCount: 12, aiUsers: 10, aiCodePercent: 68.4, aiMergeRate: 84.2, primaryTool: "Cursor", totalTokens: 8420000, totalLoC: 245000, aiLoC: 167580, manualLoC: 77420, members: [] },
+  { id: "frontend", name: "Frontend Core", headCount: 15, aiUsers: 14, aiCodePercent: 72.1, aiMergeRate: 78.5, primaryTool: "Cursor", totalTokens: 9200000, totalLoC: 312000, aiLoC: 224952, manualLoC: 87048, members: [] },
+  { id: "data-ml", name: "Data & ML", headCount: 10, aiUsers: 8, aiCodePercent: 42.5, aiMergeRate: 62.1, primaryTool: "Copilot", totalTokens: 4150000, totalLoC: 184000, aiLoC: 78200, manualLoC: 105800, members: [] },
+  { id: "security", name: "Cyber Security", headCount: 8, aiUsers: 6, aiCodePercent: 35.2, aiMergeRate: 91.0, primaryTool: "Copilot", totalTokens: 2800000, totalLoC: 92000, aiLoC: 32384, manualLoC: 59616, members: [] },
+  { id: "mobile", name: "Mobile App", headCount: 14, aiUsers: 12, aiCodePercent: 58.0, aiMergeRate: 75.4, primaryTool: "Cursor", totalTokens: 6700000, totalLoC: 198000, aiLoC: 114840, manualLoC: 83160, members: [] },
+  { id: "infra", name: "Infrastructure/SRE", headCount: 9, aiUsers: 9, aiCodePercent: 81.5, aiMergeRate: 88.0, primaryTool: "Cursor", totalTokens: 7100000, totalLoC: 145000, aiLoC: 118175, manualLoC: 26825, members: [] },
+  { id: "devtools", name: "Developer Experience", headCount: 7, aiUsers: 7, aiCodePercent: 92.0, aiMergeRate: 94.5, primaryTool: "Cursor", totalTokens: 5200000, totalLoC: 112000, aiLoC: 103040, manualLoC: 8960, members: [] },
+  { id: "product-api", name: "Product API", headCount: 11, aiUsers: 9, aiCodePercent: 54.6, aiMergeRate: 71.2, primaryTool: "Copilot", totalTokens: 4800000, totalLoC: 176000, aiLoC: 96096, manualLoC: 79904, members: [] },
+  { id: "growth", name: "Growth & Experiments", headCount: 6, aiUsers: 6, aiCodePercent: 65.4, aiMergeRate: 68.9, primaryTool: "Cursor", totalTokens: 3100000, totalLoC: 78000, aiLoC: 51012, manualLoC: 26988, members: [] },
+  { id: "qa-aut", name: "QA Automation", headCount: 8, aiUsers: 8, aiCodePercent: 88.2, aiMergeRate: 82.1, primaryTool: "Copilot", totalTokens: 3900000, totalLoC: 84000, aiLoC: 74088, manualLoC: 9912, members: [] },
+];
+
+const firstNames = ["James", "Mary", "Robert", "Patricia", "John", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle", "Kenneth", "Dorothy", "Kevin", "Carol", "Brian", "Amanda", "George", "Melissa", "Edward", "Deborah", "Ronald", "Stephanie"];
+const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores", "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts"];
+
+const roles = ["Senior Engineer", "Mid-Level Engineer", "Junior Engineer", "Staff Engineer", "Principal Engineer", "Tech Lead"];
+
+// Generate 80 Users
+export const users: User[] = Array.from({ length: 80 }).map((_, i) => {
+  const team = teams[i % teams.length];
+  const id = i + 1;
+  const name = `${firstNames[i % firstNames.length]} ${lastNames[(i * 3) % lastNames.length]}`;
+  const totalLoC = 5000 + Math.floor(Math.random() * 45000);
+  const aiPercent = i < 5 ? 85 + Math.random() * 10 : Math.random() < 0.1 ? 0 : 20 + Math.random() * 60;
+  const aiLoC = Math.floor((totalLoC * aiPercent) / 100);
+  const commits = 20 + Math.floor(Math.random() * 200);
+  const tokens = aiLoC * 60 + Math.floor(Math.random() * 10000);
+
+  const status: "Power User" | "Active" | "License Idle" =
+    aiPercent > 75 ? "Power User" :
+      aiPercent === 0 ? "License Idle" : "Active";
+
+  team.members.push(id);
+
+  return {
+    id,
+    name,
+    role: roles[i % roles.length],
+    team: team.name,
+    teamId: team.id,
+    primaryTool: team.primaryTool,
+    commits,
+    totalLoC,
+    aiLoC,
+    manualLoC: totalLoC - aiLoC,
+    aiPercent: parseFloat(aiPercent.toFixed(1)),
+    aiMergeRate: parseFloat((60 + Math.random() * 35).toFixed(1)),
+    tokensUsed: tokens,
+    cursorFastTokens: team.primaryTool === "Cursor" ? Math.floor(tokens * 0.7) : 0,
+    cursorSlowTokens: team.primaryTool === "Cursor" ? Math.floor(tokens * 0.3) : 0,
+    cursorCompletions: Math.floor(tokens / 120),
+    cursorAcceptRate: 65 + Math.random() * 25,
+    copilotSuggestions: team.primaryTool === "Copilot" ? tokens / 50 : 0,
+    copilotAcceptRate: 50 + Math.random() * 30,
+    prsOpened: Math.floor(commits / 4),
+    prsMerged: Math.floor(commits / 4.5),
+    prMergeRate: parseFloat((70 + Math.random() * 25).toFixed(1)),
+    rank: 0, // Will sort later
+    status,
+    avatar: name.split(' ').map(n => n[0]).join(''),
+    weeklyTrend: [
+      { week: "Week 1", aiPercent: Math.max(0, aiPercent - 15) },
+      { week: "Week 2", aiPercent: Math.max(0, aiPercent - 10) },
+      { week: "Week 3", aiPercent: Math.max(0, aiPercent - 5) },
+      { week: "Week 4", aiPercent: aiPercent },
+    ],
+    recentPRs: [
+      { title: `feat: Integrated ${team.id} module`, status: "Merged", aiPercent: Math.floor(aiPercent + 5), date: "Mar 19" },
+      { title: `fix: Resolved ${team.id} latency`, status: "Merged", aiPercent: Math.floor(aiPercent - 4), date: "Mar 17" },
+      { title: `refactor: Optimize ${team.id} logic`, status: "Rejected", aiPercent: 92, date: "Mar 15" },
+      { title: `feat: Added ${team.id} tests`, status: "Open", aiPercent: 45, date: "Mar 14" },
+    ]
+  };
+});
+
+// Calculate Ranks
+users.sort((a, b) => b.aiPercent - a.aiPercent);
+users.forEach((u, i) => u.rank = i + 1);
+
+export const orgData = {
+  totalDevelopers: users.length,
+  activeAIUsers: users.filter(u => u.aiPercent > 0).length,
+  aiAdoptionRate: parseFloat(((users.filter(u => u.aiPercent > 0).length / users.length) * 100).toFixed(1)),
+  totalLoC: users.reduce((acc, u) => acc + u.totalLoC, 0),
+  aiLoC: users.reduce((acc, u) => acc + u.aiLoC, 0),
+  manualLoC: users.reduce((acc, u) => acc + u.manualLoC, 0),
+  aiCodePercent: 0, // Calculated below
+  aiMergeRate: 78.2,
+  totalTokens: users.reduce((acc, u) => acc + u.tokensUsed, 0),
+  copilotSuggestionsShown: 412000,
+  copilotAcceptRate: 64.5,
+  cursorCompletionsAccepted: 285400,
+  prMergeRate: 82.4,
+  aiRiskScore: 14.8,
+  aiRiskInterventionRate: 19.5,
+};
+orgData.aiCodePercent = parseFloat(((orgData.aiLoC / orgData.totalLoC) * 100).toFixed(1));
+
+// --- 32 WEEKS (8 MONTHS) OF TREND DATA ---
+const monthNames = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+export const weeklyTrend = Array.from({ length: 32 }).map((_, i) => {
+  const monthIdx = Math.floor(i / 4) % 12;
+  const weekInMonth = (i % 4) + 1;
+  const monthName = monthNames[Math.floor(i / 4)];
+  const year = i < 20 ? 2025 : 2026; // Aug-Dec: 2025, Jan-Mar: 2026
+
+  const label = `${monthName} ${weekInMonth * 7 - 6}, ${year} - ${monthName} ${weekInMonth * 7}, ${year}`;
+
+  // Progression: AI LoC grows from 80k to 240k over 8 months
+  const aiLoC = 80000 + i * 5000 + Math.floor(Math.random() * 5000);
+  // Manual LoC stays between 150k and 180k
+  const manualLoC = 180000 - i * 1000 + Math.floor(Math.random() * 5000);
+  const total = aiLoC + manualLoC;
+
+  return {
+    week: `W${i + 1}`,
+    label,
+    aiLoC,
+    manualLoC,
+    aiPercent: parseFloat(((aiLoC / total) * 100).toFixed(1)),
+    aiMergeRate: parseFloat((62 + (i * 0.6) + Math.random() * 3).toFixed(1))
+  };
+});
+
+export const repositories = [
+  { name: "core-api-service", team: "Platform Engineering", totalLoC: 84000, aiPercent: 72, mergeRate: 89, primaryTool: "Cursor" },
+  { name: "web-client-v2", team: "Frontend Core", totalLoC: 124000, aiPercent: 65, mergeRate: 82, primaryTool: "Cursor" },
+  { name: "auth-central", team: "Platform Engineering", totalLoC: 45000, aiPercent: 58, mergeRate: 94, primaryTool: "Cursor" },
+  { name: "data-lake-ingestion", team: "Data & ML", totalLoC: 92000, aiPercent: 34, mergeRate: 64, primaryTool: "Copilot" },
+  { name: "mobile-ios-app", team: "Mobile App", totalLoC: 76000, aiPercent: 61, mergeRate: 78, primaryTool: "Cursor" },
+  { name: "mobile-android-app", team: "Mobile App", totalLoC: 78000, aiPercent: 59, mergeRate: 75, primaryTool: "Cursor" },
+  { name: "security-scanner", team: "Cyber Security", totalLoC: 34000, aiPercent: 88, mergeRate: 96, primaryTool: "Cursor" },
+  { name: "infra-provisioner", team: "Infrastructure/SRE", totalLoC: 56000, aiPercent: 82, mergeRate: 87, primaryTool: "Cursor" },
+  { name: "ml-training-hub", team: "Data & ML", totalLoC: 68000, aiPercent: 41, mergeRate: 59, primaryTool: "Copilot" },
+  { name: "design-system-react", team: "Frontend Core", totalLoC: 28000, aiPercent: 74, mergeRate: 85, primaryTool: "Cursor" },
+  { name: "legacy-payment-gw", team: "Product API", totalLoC: 145000, aiPercent: 12, mergeRate: 45, primaryTool: "None" },
+  { name: "customer-portal", team: "Product API", totalLoC: 52000, aiPercent: 48, mergeRate: 72, primaryTool: "Copilot" },
+  { name: "analytics-edge", team: "Data & ML", totalLoC: 41000, aiPercent: 55, mergeRate: 70, primaryTool: "Cursor" },
+  { name: "dev-portal-v3", team: "Developer Experience", totalLoC: 32000, aiPercent: 91, mergeRate: 98, primaryTool: "Cursor" },
+  { name: "experiment-engine", team: "Growth & Experiments", totalLoC: 18000, aiPercent: 70, mergeRate: 81, primaryTool: "Cursor" },
+];
+
+export const mergeAnalytics = {
+  aiLoCWritten: orgData.aiLoC,
+  aiLoCInPRs: Math.floor(orgData.aiLoC * 0.9),
+  aiLoCMerged: Math.floor(orgData.aiLoC * 0.75),
+  manualMergeRate: 84.5,
+  rejectedPRs: users.slice(0, 15).map(u => ({
+    title: `feat: Auto-generated ${u.teamId} logic`,
+    author: u.name,
+    aiPercent: Math.floor(Math.random() * 20 + 80),
+    reason: ["High complexity", "Unit test failure", "Security vulnerability", "Performance regression", "Coding standard violation"][Math.floor(Math.random() * 5)],
+    date: "Mar 18"
+  }))
+};
+
+export const productivityData = {
+  aiCycleTimeAvg: 38,
+  manualCycleTimeAvg: 124,
+  velocityBoostPercent: 72.1,
+  timeSavedHours: 8420,
+  tasksMatched: 3450,
+  roiMetrics: Array.from({ length: 32 }).map((_, i) => ({
+    week: `W${i + 1}`,
+    boost: 35 + (i * 1.2) + Math.random() * 5
+  }))
+};
+
+export const securityData = {
+  totalAIFlawsDetected: 12450,
+  interventionsCount: 2840,
+  interventionTrend: Array.from({ length: 32 }).map((_, i) => ({
+    week: `W${i + 1}`,
+    interventions: 80 + i * 15,
+    flaws: 300 + i * 45
+  })),
+  topRiskTypes: [
+    { type: "Insecure Credential Storage", count: 2840 },
+    { type: "Injection Vulnerabilities", count: 1950 },
+    { type: "Inefficient Loops", count: 4100 },
+    { type: "Memory Leaks", count: 1240 },
+    { type: "Non-standard Imports", count: 2320 },
+  ]
+};
+
+export type UserRole = "Admin" | "Manager" | "Developer";

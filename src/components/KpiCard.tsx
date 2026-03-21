@@ -70,7 +70,7 @@ export function KpiCard({ title, value, subtitle, trend, icon, className, gradie
           )}
         </div>
         {icon && (
-          <div className={cn("rounded-lg p-2", gradient ? "bg-white/15" : "bg-accent")}>
+          <div className={cn("rounded-lg p-2 text-slate-700", gradient ? "bg-white/80" : "bg-accent")}> 
             {icon}
           </div>
         )}

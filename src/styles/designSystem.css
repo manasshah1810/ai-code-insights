@@ -1,0 +1,90 @@
+/* AI Code Intelligence - Design System Tokens */
+:root {
+  /* AI-Generated Code Theme: Intelligence, Innovation, Future */
+  --ai-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --ai-secondary: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  --ai-glow: rgba(99, 102, 241, 0.15);
+  --ai-border: rgba(99, 102, 241, 0.3);
+
+  /* Manual Code Theme: Craftsmanship, Human Touch, Precision */
+  --manual-primary: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  --manual-secondary: #94a3b8;
+  --manual-glow: rgba(100, 116, 139, 0.1);
+
+  /* Success/Performance Theme: Achievement, Growth */
+  --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --success-glow: rgba(16, 185, 129, 0.2);
+
+  /* Warning/Attention Theme: Urgency, Opportunity */
+  --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --warning-glow: rgba(245, 158, 11, 0.2);
+
+  /* Data Visualization Palette (8-color, colorblind-safe) */
+  --data-viz-1: #6366f1;
+  --data-viz-2: #3b82f6;
+  --data-viz-3: #10b981;
+  --data-viz-4: #f59e0b;
+  --data-viz-5: #ec4899;
+  --data-viz-6: #8b5cf6;
+  --data-viz-7: #14b8a6;
+  --data-viz-8: #f97316;
+
+  /* Glassmorphism Effects */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-blur: blur(10px);
+
+  /* Spacing Scale (8px base) */
+  --space-1: 0.5rem;   /* 8px */
+  --space-2: 1rem;     /* 16px */
+  --space-3: 1.5rem;   /* 24px */
+  --space-4: 2rem;     /* 32px */
+  --space-6: 3rem;     /* 48px */
+  --space-8: 4rem;     /* 64px */
+  --space-12: 6rem;    /* 96px */
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Animations */
+@keyframes blob {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+.animate-blob {
+  animation: blob 7s infinite alternate;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Glassmorphism Classes */
+.glass-pane {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+/* Typography Utility */
+.font-metric {
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.heading-hero {
+  letter-spacing: -0.04em;
+  font-weight: 800;
+}
