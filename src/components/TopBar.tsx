@@ -1,15 +1,18 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, Download, RefreshCcw, Search } from "lucide-react";
+import { Bell, Download, RefreshCcw, Search, FileDown, Loader2 } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
+import { exportReport } from "@/lib/export-pdf";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export function TopBar() {
-  const { currentRole, setRole, lastUpdated, refreshTimestamp } = useAppStore();
+  const { currentRole, setRole, lastUpdated, refreshTimestamp, developerUserId, managerUserId, managerTeamId } = useAppStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(refreshTimestamp, 300000);
@@ -20,6 +23,25 @@ export function TopBar() {
     setIsRefreshing(true);
     refreshTimestamp();
     setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    try {
+      const userId = currentRole === "Developer" ? developerUserId : currentRole === "Manager" ? managerUserId : undefined;
+      const teamId = currentRole === "Manager" ? managerTeamId : undefined;
+      await exportReport(currentRole, userId, teamId);
+      toast.success("PDF Report Exported", {
+        description: `${currentRole} report has been downloaded successfully.`,
+      });
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Export Failed", {
+        description: "Please try again.",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -46,6 +68,22 @@ export function TopBar() {
           </div>
           <span className="text-xs font-bold text-slate-500">Auto-sync: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
+
+        {/* Export PDF Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden md:flex items-center gap-2 rounded-xl border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs h-10 px-4 transition-all"
+          onClick={handleExportPdf}
+          disabled={isExporting}
+        >
+          {isExporting ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <FileDown className="h-3.5 w-3.5" />
+          )}
+          {isExporting ? "Exporting..." : "Export PDF"}
+        </Button>
 
         <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
           <Button
@@ -84,3 +122,4 @@ export function TopBar() {
     </header>
   );
 }
+

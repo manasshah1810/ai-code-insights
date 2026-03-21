@@ -152,20 +152,20 @@ export const orgData = {
 };
 orgData.aiCodePercent = parseFloat(((orgData.aiLoC / orgData.totalLoC) * 100).toFixed(1));
 
-// --- 32 WEEKS (8 MONTHS) OF TREND DATA ---
-const monthNames = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
-export const weeklyTrend = Array.from({ length: 32 }).map((_, i) => {
+// --- 16 WEEKS (4 MONTHS) OF TREND DATA ---
+const monthNames = ["Dec", "Jan", "Feb", "Mar"];
+export const weeklyTrend = Array.from({ length: 16 }).map((_, i) => {
   const monthIdx = Math.floor(i / 4) % 12;
   const weekInMonth = (i % 4) + 1;
   const monthName = monthNames[Math.floor(i / 4)];
-  const year = i < 20 ? 2025 : 2026; // Aug-Dec: 2025, Jan-Mar: 2026
+  const year = i < 4 ? 2025 : 2026; // Dec: 2025, Jan-Mar: 2026
 
   const label = `${monthName} ${weekInMonth * 7 - 6}, ${year} - ${monthName} ${weekInMonth * 7}, ${year}`;
 
-  // Progression: AI LoC grows from 80k to 240k over 8 months
-  const aiLoC = 80000 + i * 5000 + Math.floor(Math.random() * 5000);
+  // Progression: AI LoC grows from 80k to 240k over 4 months
+  const aiLoC = 80000 + i * 10000 + Math.floor(Math.random() * 5000);
   // Manual LoC stays between 150k and 180k
-  const manualLoC = 180000 - i * 1000 + Math.floor(Math.random() * 5000);
+  const manualLoC = 180000 - i * 2000 + Math.floor(Math.random() * 5000);
   const total = aiLoC + manualLoC;
 
   return {
@@ -174,7 +174,7 @@ export const weeklyTrend = Array.from({ length: 32 }).map((_, i) => {
     aiLoC,
     manualLoC,
     aiPercent: parseFloat(((aiLoC / total) * 100).toFixed(1)),
-    aiMergeRate: parseFloat((62 + (i * 0.6) + Math.random() * 3).toFixed(1))
+    aiMergeRate: parseFloat((62 + (i * 1.2) + Math.random() * 3).toFixed(1))
   };
 });
 
@@ -216,19 +216,19 @@ export const productivityData = {
   velocityBoostPercent: 72.1,
   timeSavedHours: 8420,
   tasksMatched: 3450,
-  roiMetrics: Array.from({ length: 32 }).map((_, i) => ({
+  roiMetrics: Array.from({ length: 16 }).map((_, i) => ({
     week: `W${i + 1}`,
-    boost: 35 + (i * 1.2) + Math.random() * 5
+    boost: 35 + (i * 2.4) + Math.random() * 5
   }))
 };
 
 export const securityData = {
   totalAIFlawsDetected: 12450,
   interventionsCount: 2840,
-  interventionTrend: Array.from({ length: 32 }).map((_, i) => ({
+  interventionTrend: Array.from({ length: 16 }).map((_, i) => ({
     week: `W${i + 1}`,
-    interventions: 80 + i * 15,
-    flaws: 300 + i * 45
+    interventions: 180 + i * 30,
+    flaws: 600 + i * 90
   })),
   topRiskTypes: [
     { type: "Insecure Credential Storage", count: 2840 },
@@ -238,5 +238,174 @@ export const securityData = {
     { type: "Non-standard Imports", count: 2320 },
   ]
 };
+
+// --- AI TOOL ATTRIBUTION DATA ---
+
+export interface AITool {
+  id: string;
+  name: string;
+  shortName: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: string; // emoji fallback
+  totalLoC: number;
+  percentOfAI: number;
+  mergeRate: number;
+  avgAcceptRate: number;
+  avgConfidence: number;
+  activeUsers: number;
+  totalTokens: number;
+  avgCycleTime: number; // minutes
+}
+
+export const aiTools: AITool[] = [
+  {
+    id: "claude",
+    name: "Claude (Anthropic)",
+    shortName: "Claude",
+    color: "#D97706",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+    icon: "🧠",
+    totalLoC: Math.floor(orgData.aiLoC * 0.32),
+    percentOfAI: 32.0,
+    mergeRate: 91.2,
+    avgAcceptRate: 78.4,
+    avgConfidence: 94.1,
+    activeUsers: 28,
+    totalTokens: Math.floor(orgData.totalTokens * 0.34),
+    avgCycleTime: 32,
+  },
+  {
+    id: "copilot",
+    name: "GitHub Copilot",
+    shortName: "Copilot",
+    color: "#6366F1",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200",
+    icon: "🤖",
+    totalLoC: Math.floor(orgData.aiLoC * 0.28),
+    percentOfAI: 28.0,
+    mergeRate: 82.5,
+    avgAcceptRate: 64.5,
+    avgConfidence: 87.3,
+    activeUsers: 35,
+    totalTokens: Math.floor(orgData.totalTokens * 0.26),
+    avgCycleTime: 41,
+  },
+  {
+    id: "cursor",
+    name: "Cursor AI / Windsurf",
+    shortName: "Cursor",
+    color: "#8B5CF6",
+    bgColor: "bg-violet-50",
+    borderColor: "border-violet-200",
+    icon: "⚡",
+    totalLoC: Math.floor(orgData.aiLoC * 0.22),
+    percentOfAI: 22.0,
+    mergeRate: 88.7,
+    avgAcceptRate: 72.1,
+    avgConfidence: 91.8,
+    activeUsers: 22,
+    totalTokens: Math.floor(orgData.totalTokens * 0.24),
+    avgCycleTime: 35,
+  },
+  {
+    id: "gemini",
+    name: "Gemini (Google)",
+    shortName: "Gemini",
+    color: "#2563EB",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    icon: "💎",
+    totalLoC: Math.floor(orgData.aiLoC * 0.12),
+    percentOfAI: 12.0,
+    mergeRate: 85.9,
+    avgAcceptRate: 68.2,
+    avgConfidence: 89.5,
+    activeUsers: 14,
+    totalTokens: Math.floor(orgData.totalTokens * 0.10),
+    avgCycleTime: 38,
+  },
+  {
+    id: "chatgpt",
+    name: "ChatGPT (OpenAI)",
+    shortName: "ChatGPT",
+    color: "#10B981",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    icon: "💬",
+    totalLoC: Math.floor(orgData.aiLoC * 0.06),
+    percentOfAI: 6.0,
+    mergeRate: 74.3,
+    avgAcceptRate: 58.1,
+    avgConfidence: 82.4,
+    activeUsers: 8,
+    totalTokens: Math.floor(orgData.totalTokens * 0.06),
+    avgCycleTime: 48,
+  },
+];
+
+// Per-team tool usage breakdown
+export const teamToolUsage = teams.map((team) => {
+  const isBackend = ["platform", "infra", "product-api", "security"].includes(team.id);
+  const isML = team.id === "data-ml";
+  const isFrontend = ["frontend", "mobile", "growth", "devtools"].includes(team.id);
+
+  return {
+    teamId: team.id,
+    teamName: team.name,
+    tools: [
+      { toolId: "claude", percent: isBackend ? 38 : isML ? 42 : 28, loC: Math.floor(team.aiLoC * (isBackend ? 0.38 : isML ? 0.42 : 0.28)) },
+      { toolId: "copilot", percent: isFrontend ? 32 : isML ? 18 : 26, loC: Math.floor(team.aiLoC * (isFrontend ? 0.32 : isML ? 0.18 : 0.26)) },
+      { toolId: "cursor", percent: isFrontend ? 24 : isBackend ? 20 : 16, loC: Math.floor(team.aiLoC * (isFrontend ? 0.24 : isBackend ? 0.20 : 0.16)) },
+      { toolId: "gemini", percent: isML ? 18 : 10, loC: Math.floor(team.aiLoC * (isML ? 0.18 : 0.10)) },
+      { toolId: "chatgpt", percent: isML ? 6 : isFrontend ? 4 : 6, loC: Math.floor(team.aiLoC * (isML ? 0.06 : isFrontend ? 0.04 : 0.06)) },
+    ],
+  };
+});
+
+// Monthly trend per AI tool (4 months)
+export const aiToolMonthlyTrend = Array.from({ length: 4 }).map((_, i) => {
+  const months = ["Dec '25", "Jan '26", "Feb '26", "Mar '26"];
+  const baseGrowth = 1 + i * 0.24;
+  return {
+    month: months[i],
+    claude: Math.floor(12000 * baseGrowth + Math.random() * 3000),
+    copilot: Math.floor(14000 * (1 + i * 0.12) + Math.random() * 2000),
+    cursor: Math.floor(8000 * (1 + i * 0.36) + Math.random() * 2500),
+    gemini: Math.floor(5000 * (1 + i * 0.30) + Math.random() * 1500),
+    chatgpt: Math.floor(3000 * (1 + i * 0.08) + Math.random() * 1000),
+  };
+});
+
+// Repository-level tool attribution
+export const repoToolAttribution = repositories.map((repo) => {
+  const isBackendRepo = ["core-api-service", "auth-central", "infra-provisioner", "security-scanner"].includes(repo.name);
+  const isMLRepo = ["data-lake-ingestion", "ml-training-hub", "analytics-edge"].includes(repo.name);
+
+  return {
+    repoName: repo.name,
+    team: repo.team,
+    totalAiLoC: Math.floor(repo.totalLoC * repo.aiPercent / 100),
+    tools: [
+      { toolId: "claude", percent: isBackendRepo ? 40 : isMLRepo ? 45 : 28 },
+      { toolId: "copilot", percent: isBackendRepo ? 25 : isMLRepo ? 15 : 35 },
+      { toolId: "cursor", percent: isBackendRepo ? 20 : isMLRepo ? 15 : 22 },
+      { toolId: "gemini", percent: isMLRepo ? 20 : 10 },
+      { toolId: "chatgpt", percent: isMLRepo ? 5 : 5 },
+    ],
+  };
+});
+
+// Quality metrics per AI tool
+export const aiToolQualityMetrics = [
+  { toolId: "claude", bugRate: 2.1, securityFlaws: 14, codeSmells: 8.2, testCoverage: 82.4, docQuality: 91 },
+  { toolId: "copilot", bugRate: 3.8, securityFlaws: 28, codeSmells: 14.1, testCoverage: 71.2, docQuality: 65 },
+  { toolId: "cursor", bugRate: 2.6, securityFlaws: 18, codeSmells: 10.5, testCoverage: 78.9, docQuality: 84 },
+  { toolId: "gemini", bugRate: 3.2, securityFlaws: 22, codeSmells: 12.3, testCoverage: 74.5, docQuality: 78 },
+  { toolId: "chatgpt", bugRate: 5.4, securityFlaws: 38, codeSmells: 18.7, testCoverage: 62.1, docQuality: 58 },
+];
 
 export type UserRole = "Admin" | "Manager" | "Developer";

@@ -22,15 +22,22 @@ import {
   ChevronRight,
   LogOut,
   User,
-  BookOpen
+  BookOpen,
+  Bot,
+  Shield,
+  UserCircle
 } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
+import { users } from "@/data/dashboard-data";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
-const navItems = [
+// Full admin navigation
+const adminNavItems = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
   { title: "Code Breakdown", url: "/code-breakdown", icon: Code2 },
+  { title: "AI Tools", url: "/ai-tools", icon: Bot },
   { title: "Merge Analytics", url: "/merge-analytics", icon: GitMerge },
   { title: "Teams", url: "/teams", icon: Users },
   { title: "Leaderboard", url: "/leaderboard", icon: Trophy, requiresOptIn: true },
@@ -38,10 +45,63 @@ const navItems = [
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
+// Manager: team-scoped, no individual user browsing or org-wide analytics
+const managerNavItems = [
+  { title: "Team Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "AI Tools", url: "/ai-tools", icon: Bot },
+  { title: "Glossary", url: "/glossary", icon: BookOpen },
+];
+
+// Developer: personal dashboard only
+const developerNavItems = [
+  { title: "My Dashboard", url: "/dashboard", icon: UserCircle },
+  { title: "Glossary", url: "/glossary", icon: BookOpen },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
+  const { currentRole, developerUserId, managerUserId } = useAppStore();
+
+  // Choose nav items based on role
+  const navItems = currentRole === "Developer"
+    ? developerNavItems
+    : currentRole === "Manager"
+      ? managerNavItems
+      : adminNavItems;
+
+  // Persona info for the bottom card
+  const devUser = users.find(u => u.id === developerUserId);
+  const mgrUser = users.find(u => u.id === managerUserId);
+
+  const personaInfo = currentRole === "Developer"
+    ? {
+      name: devUser?.name || "Developer",
+      email: devUser ? `${devUser.name.toLowerCase().replace(" ", ".")}@techcorp.com` : "developer@techcorp.com",
+      initials: devUser?.avatar || "RG",
+      role: "Developer"
+    }
+    : currentRole === "Manager"
+      ? {
+        name: mgrUser?.name || "Manager",
+        email: mgrUser ? `${mgrUser.name.toLowerCase().replace(" ", ".")}@techcorp.com` : "manager@techcorp.com",
+        initials: mgrUser?.avatar || "JL",
+        role: "Team Lead"
+      }
+      : { name: "Admin User", email: "admin@techcorp.com", initials: "AM", role: "Admin" };
+
+  const roleColor = currentRole === "Developer"
+    ? "from-emerald-500 to-teal-500"
+    : currentRole === "Manager"
+      ? "from-blue-500 to-cyan-500"
+      : "from-indigo-500 to-purple-500";
+
+  const roleBadgeColor = currentRole === "Developer"
+    ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+    : currentRole === "Manager"
+      ? "bg-blue-50 text-blue-600 border-blue-200"
+      : "bg-indigo-50 text-indigo-600 border-indigo-200";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-200 bg-white/50 backdrop-blur-xl">
@@ -49,9 +109,9 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ rotate: 15, scale: 1.1 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ai-primary)] shadow-lg shadow-indigo-200"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-indigo-200 overflow-hidden"
           >
-            <Sparkles className="h-5 w-5 text-white" />
+            <img src="/logo.png" alt="Cogniify Code AI" className="h-8 w-8 object-contain" />
           </motion.div>
           {!isCollapsed && (
             <motion.div
@@ -59,7 +119,7 @@ export function AppSidebar() {
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col"
             >
-              <span className="text-base font-black tracking-tight text-slate-900">CodeIQ</span>
+              <span className="text-base font-black tracking-tight text-white">Cogniify Code AI</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Analytics Pro</span>
             </motion.div>
           )}
@@ -67,11 +127,20 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">
+        {/* Role Badge */}
+        {!isCollapsed && (
+          <div className="px-3 mb-4">
+            <Badge className={cn("w-full justify-center py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg border", roleBadgeColor)}>
+              {currentRole === "Developer" ? "👤 Developer View" : currentRole === "Manager" ? "👥 Manager View" : "🛡️ Admin View"}
+            </Badge>
+          </div>
+        )}
+
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {navItems
-                .filter(item => !item.requiresOptIn || !useAppStore.getState().strictPrivacyMode)
+                .filter(item => !('requiresOptIn' in item && item.requiresOptIn) || !useAppStore.getState().strictPrivacyMode)
                 .map((item) => {
                   const isActive = location.pathname === item.url ||
                     (item.url === "/teams" && location.pathname.startsWith("/teams")) ||
@@ -122,12 +191,15 @@ export function AppSidebar() {
       {!isCollapsed && (
         <div className="mt-auto border-t border-slate-100 p-4">
           <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-            <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
-              AM
+            <div className={cn(
+              "h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-tr flex items-center justify-center text-white font-bold shadow-sm text-xs",
+              roleColor
+            )}>
+              {personaInfo.initials}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-slate-900 truncate">Admin User</span>
-              <span className="text-[10px] text-slate-500 truncate">admin@techcorp.com</span>
+              <span className="text-xs font-bold text-slate-900 truncate">{personaInfo.name}</span>
+              <span className="text-[10px] text-slate-500 truncate">{personaInfo.email}</span>
             </div>
             <button className="ml-auto text-slate-400 hover:text-slate-600 transition-colors">
               <LogOut className="h-4 w-4" />
@@ -138,3 +210,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

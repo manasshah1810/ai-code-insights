@@ -1,6 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TopBar } from "@/components/TopBar";
+import { ChatBot } from "@/components/ChatBot";
 import { Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,6 +33,9 @@ export function DashboardLayout() {
             </AnimatePresence>
           </main>
         </div>
+
+        {/* Floating ChatBot */}
+        <ChatBot />
       </div>
     </SidebarProvider>
   );

@@ -30,10 +30,41 @@ import { cn } from "@/lib/utils";
 export default function UserProfilePage() {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const { strictPrivacyMode, currentRole } = useAppStore();
+  const { strictPrivacyMode, currentRole, developerUserId, managerUserId, managerTeamId } = useAppStore();
   const user = users.find(u => u.id === Number(userId));
 
-  if (strictPrivacyMode && currentRole !== "Admin") {
+  // ─── Role-based access control ───────────────────────────
+  // Admin: can view any user profile
+  // Manager: can view only their own team members
+  // Developer: can view only their own profile
+  const isAdmin = currentRole === "Admin";
+  const isManager = currentRole === "Manager";
+  const isDeveloper = currentRole === "Developer";
+
+  const canAccess = (() => {
+    if (strictPrivacyMode && !isAdmin) return false;
+    if (isAdmin) return true;
+    if (isManager) {
+      // Manager can view members of their own team
+      const teamMembers = users.filter(u => u.teamId === managerTeamId);
+      return teamMembers.some(m => m.id === Number(userId));
+    }
+    if (isDeveloper) {
+      // Developer can only view their own profile
+      return Number(userId) === developerUserId;
+    }
+    return false;
+  })();
+
+  if (!canAccess) {
+    const reason = strictPrivacyMode
+      ? "Individual engineering performance dashboards are disabled under the current Strict Privacy Mode configuration."
+      : isDeveloper
+        ? "As a Developer, you can only view your own profile. Team-wide and organization-wide profiles are restricted."
+        : isManager
+          ? "As a Manager, you can only view profiles of engineers on your team."
+          : "You do not have permission to view this profile.";
+
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] text-center space-y-6">
         <motion.div
@@ -44,10 +75,9 @@ export default function UserProfilePage() {
           <Lock className="h-10 w-10" />
         </motion.div>
         <div className="space-y-2">
-          <h2 className="text-3xl font-black tracking-tight text-slate-900">Privacy Restricted</h2>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900">Access Restricted</h2>
           <p className="max-w-md text-slate-500 font-medium leading-relaxed">
-            Individual engineering performance dashboards are disabled under the current
-            <span className="text-slate-900 font-bold"> Strict Privacy Mode</span> configuration.
+            {reason}
           </p>
         </div>
         <Button

@@ -12,9 +12,21 @@ import UserProfilePage from "@/pages/UserProfilePage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import SettingsPage from "@/pages/SettingsPage";
 import GlossaryPage from "@/pages/GlossaryPage";
+import AIToolsPage from "@/pages/AIToolsPage";
+import DeveloperDashboard from "@/pages/DeveloperDashboard";
+import ManagerDashboard from "@/pages/ManagerDashboard";
 import NotFound from "@/pages/NotFound";
+import { useAppStore } from "@/store/app-store";
 
 const queryClient = new QueryClient();
+
+// Role-based dashboard router
+function RoleBasedDashboard() {
+  const { currentRole } = useAppStore();
+  if (currentRole === "Developer") return <DeveloperDashboard />;
+  if (currentRole === "Manager") return <ManagerDashboard />;
+  return <OverviewPage />;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,8 +37,11 @@ const App = () => (
         <Routes>
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<OverviewPage />} />
+            <Route path="/dashboard" element={<RoleBasedDashboard />} />
+            <Route path="/developer-dashboard" element={<DeveloperDashboard />} />
+            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
             <Route path="/code-breakdown" element={<CodeBreakdownPage />} />
+            <Route path="/ai-tools" element={<AIToolsPage />} />
             <Route path="/merge-analytics" element={<MergeAnalyticsPage />} />
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/teams/:teamId" element={<TeamsPage />} />
@@ -43,3 +58,4 @@ const App = () => (
 );
 
 export default App;
+

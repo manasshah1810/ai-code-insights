@@ -7,6 +7,13 @@ interface AppState {
   lastUpdated: Date;
   refreshTimestamp: () => void;
 
+  // Role-based identity
+  // Developer persona: Robert Garcia (user id=3, Data & ML, Junior Engineer)
+  // Manager persona: Jennifer Lopez (user id=6, Infrastructure/SRE, Tech Lead)
+  developerUserId: number;
+  managerUserId: number;
+  managerTeamId: string;
+
   // Privacy & Compliance
   strictPrivacyMode: boolean;
   setStrictPrivacyMode: (enabled: boolean) => void;
@@ -25,6 +32,12 @@ export const useAppStore = create<AppState>((set) => ({
   lastUpdated: new Date(),
   refreshTimestamp: () => set({ lastUpdated: new Date() }),
 
+  // Developer persona: user index 2 → id 3 (Robert Garcia, Junior Engineer, Data & ML)
+  developerUserId: 3,
+  // Manager persona: user index 5 → id 6 (Jennifer Lopez, Tech Lead, Infrastructure/SRE)
+  managerUserId: 6,
+  managerTeamId: "infra",
+
   strictPrivacyMode: false,
   setStrictPrivacyMode: (enabled) => set({ strictPrivacyMode: enabled }),
   userOptInList: {},
@@ -39,3 +52,4 @@ export const useAppStore = create<AppState>((set) => ({
   manualHourlyRate: 85,
   setFiscalConfig: (config) => set((state) => ({ ...state, ...config })),
 }));
+

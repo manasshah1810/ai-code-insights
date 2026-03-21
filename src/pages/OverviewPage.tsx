@@ -19,7 +19,8 @@ import {
   Sparkles,
   ArrowRight,
   Trophy,
-  CheckCircle
+  CheckCircle,
+  Hammer
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -28,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { socketService } from "@/lib/socket-service";
-import { exportToPdf } from "@/lib/export-pdf";
+import { exportReport } from "@/lib/export-pdf";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, parse } from "date-fns";
@@ -150,7 +151,7 @@ export default function OverviewPage() {
           </Popover>
           <Button
             className="h-11 rounded-xl px-6 bg-slate-900 text-white font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
-            onClick={() => exportToPdf("overview-content", "overview-report")}
+            onClick={() => exportReport("Admin")}
           >
             <FileDown className="h-4 w-4 mr-2" />
             Export Report
@@ -159,7 +160,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Hero Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <MetricCard
           title="Avg. AI Code %"
           value={orgData.aiCodePercent}
@@ -168,6 +169,15 @@ export default function OverviewPage() {
           icon={<Zap className="h-6 w-6" />}
           trend={{ value: 10.2, isPositive: true }}
           subtitle={`${formatNumber(orgData.aiLoC)} AI LoC generated`}
+        />
+        <MetricCard
+          title="Manual Code %"
+          value={parseFloat((100 - orgData.aiCodePercent).toFixed(1))}
+          suffix="%"
+          gradient="manual"
+          icon={<Hammer className="h-6 w-6" />}
+          trend={{ value: 10.2, isPositive: false }}
+          subtitle={`${formatNumber(orgData.manualLoC)} lines hand-crafted`}
         />
         <MetricCard
           title="Velocity Boost"
@@ -491,6 +501,6 @@ export default function OverviewPage() {
           </Button>
         </div>
       </div>
-    </motion.div>
+    </motion.div >
   );
 }
