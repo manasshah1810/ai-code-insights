@@ -1,11 +1,25 @@
+import { useState, useMemo } from "react";
 import { KpiCard } from "@/components/KpiCard";
 import { orgData, teams, users, weeklyTrend, formatNumber } from "@/data/dashboard-data";
-import { Users, Zap, Code2, GitMerge, Coins, FileDown } from "lucide-react";
+import { Users, Zap, Code2, GitMerge, Coins, FileDown, CalendarIcon } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { exportToPdf } from "@/lib/export-pdf";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, isWithinInterval, parse } from "date-fns";
+import { cn } from "@/lib/utils";
+
+// Map week labels to date ranges
+const weekDateRanges = weeklyTrend.map((w) => {
+  const [start, end] = w.label.split(" - ").map((d) => parse(d.trim(), "MMM d", new Date(2025, 0)));
+  // Fix year
+  start.setFullYear(2025);
+  end.setFullYear(2025);
+  return { ...w, start, end };
+});
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
@@ -23,7 +37,29 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function OverviewPage() {
   const navigate = useNavigate();
-  const topUsers = users.filter(u => u.rank <= 3);
+  const topUsers = users.filter((u) => u.rank <= 3);
+
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+
+  const filteredTrend = useMemo(() => {
+    if (!dateRange.from && !dateRange.to) return weeklyTrend;
+    return weekDateRanges
+      .filter((w) => {
+        if (dateRange.from && dateRange.to) {
+          return w.end >= dateRange.from && w.start <= dateRange.to;
+        }
+        if (dateRange.from) return w.end >= dateRange.from;
+        if (dateRange.to) return w.start <= dateRange.to;
+        return true;
+      })
+      .map(({ start, end, ...rest }) => rest);
+  }, [dateRange]);
+
+  const dateLabel = dateRange.from
+    ? dateRange.to
+      ? `${format(dateRange.from, "MMM d")} – ${format(dateRange.to, "MMM d")}`
+      : format(dateRange.from, "MMM d")
+    : "All Weeks";
 
   return (
     <div className="space-y-6 max-w-7xl" id="overview-content">
@@ -32,9 +68,35 @@ export default function OverviewPage() {
           <h1 className="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
           <p className="text-sm text-muted-foreground mt-1">TechCorp Inc. — AI Code Intelligence</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => exportToPdf("overview-content", "overview-report")}>
-          <FileDown className="h-3.5 w-3.5 mr-1.5" />Export PDF
-        </Button>
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal", !dateRange.from && "text-muted-foreground")}>
+                <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
+                {dateLabel}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="range"
+                selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
+                onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                numberOfMonths={1}
+                defaultMonth={new Date(2025, 1)}
+              />
+              {dateRange.from && (
+                <div className="p-2 border-t">
+                  <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setDateRange({})}>
+                    Clear filter
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+          <Button variant="outline" size="sm" onClick={() => exportToPdf("overview-content", "overview-report")}>
+            <FileDown className="h-3.5 w-3.5 mr-1.5" />Export PDF
+          </Button>
+        </div>
       </div>
 
       {/* KPI Row */}
@@ -50,9 +112,9 @@ export default function OverviewPage() {
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Trend Chart */}
         <div className="lg:col-span-2 rounded-xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">AI vs Manual Code — 4 Week Trend</h3>
+          <h3 className="text-sm font-semibold mb-4">AI vs Manual Code — {dateRange.from ? dateLabel : "4 Week Trend"}</h3>
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={weeklyTrend}>
+            <AreaChart data={filteredTrend}>
               <defs>
                 <linearGradient id="aiGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(245, 58%, 51%)" stopOpacity={0.3} />
