@@ -26,10 +26,15 @@ export default function OverviewPage() {
   const topUsers = users.filter(u => u.rank <= 3);
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
-        <p className="text-sm text-muted-foreground mt-1">TechCorp Inc. — AI Code Intelligence</p>
+    <div className="space-y-6 max-w-7xl" id="overview-content">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
+          <p className="text-sm text-muted-foreground mt-1">TechCorp Inc. — AI Code Intelligence</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => exportToPdf("overview-content", "overview-report")}>
+          <FileDown className="h-3.5 w-3.5 mr-1.5" />Export PDF
+        </Button>
       </div>
 
       {/* KPI Row */}
