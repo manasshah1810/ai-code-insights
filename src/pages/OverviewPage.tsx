@@ -1,9 +1,11 @@
 import { KpiCard } from "@/components/KpiCard";
 import { orgData, teams, users, weeklyTrend, formatNumber } from "@/data/dashboard-data";
-import { Users, Zap, Code2, GitMerge, Coins } from "lucide-react";
+import { Users, Zap, Code2, GitMerge, Coins, FileDown } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { exportToPdf } from "@/lib/export-pdf";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
