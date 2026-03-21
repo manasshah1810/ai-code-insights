@@ -2,9 +2,10 @@ import { teams, users, formatNumber } from "@/data/dashboard-data";
 import { useNavigate, useParams } from "react-router-dom";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusBadge, ToolBadge } from "@/components/StatusBadge";
-import { Users as UsersIcon, Zap, GitMerge, Trophy } from "lucide-react";
+import { Users as UsersIcon, Zap, GitMerge, Trophy, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
+import { exportToPdf } from "@/lib/export-pdf";
 
 export default function TeamsPage() {
   const navigate = useNavigate();
@@ -27,13 +28,18 @@ export default function TeamsPage() {
     };
 
     return (
-      <div className="space-y-6 max-w-7xl">
+      <div className="space-y-6 max-w-7xl" id="team-detail-content">
         <div className="flex items-center justify-between">
           <div>
             <button onClick={() => navigate("/teams")} className="text-xs text-muted-foreground hover:text-foreground mb-1 block">← All Teams</button>
             <h1 className="text-2xl font-bold tracking-tight">{team.name}</h1>
           </div>
-          <Button onClick={exportCSV} variant="outline" size="sm">Export CSV</Button>
+          <div className="flex gap-2">
+            <Button onClick={() => exportToPdf("team-detail-content", `${teamId}-report`)} variant="outline" size="sm">
+              <FileDown className="h-3.5 w-3.5 mr-1.5" />PDF
+            </Button>
+            <Button onClick={exportCSV} variant="outline" size="sm">Export CSV</Button>
+          </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <KpiCard title="Team Size" value={team.headCount} icon={<UsersIcon className="h-4 w-4 text-muted-foreground" />} />
