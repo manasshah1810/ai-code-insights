@@ -2,9 +2,10 @@ import { teams, users, formatNumber } from "@/data/dashboard-data";
 import { useNavigate, useParams } from "react-router-dom";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusBadge, ToolBadge } from "@/components/StatusBadge";
-import { Users as UsersIcon, Zap, GitMerge, Trophy } from "lucide-react";
+import { Users as UsersIcon, Zap, GitMerge, Trophy, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
+import { exportToPdf } from "@/lib/export-pdf";
 
 export default function TeamsPage() {
   const navigate = useNavigate();
