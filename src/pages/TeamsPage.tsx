@@ -38,7 +38,8 @@ export default function TeamsPage() {
             <Button onClick={() => exportToPdf("team-detail-content", `${teamId}-report`)} variant="outline" size="sm">
               <FileDown className="h-3.5 w-3.5 mr-1.5" />PDF
             </Button>
-          <Button onClick={exportCSV} variant="outline" size="sm">Export CSV</Button>
+            <Button onClick={exportCSV} variant="outline" size="sm">Export CSV</Button>
+          </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <KpiCard title="Team Size" value={team.headCount} icon={<UsersIcon className="h-4 w-4 text-muted-foreground" />} />
