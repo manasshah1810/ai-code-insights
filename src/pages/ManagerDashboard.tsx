@@ -17,10 +17,9 @@ import { useAppStore } from "@/store/app-store";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
-    Users as UsersIcon, Zap, Code2, GitMerge, Coins,
-    TrendingUp, ShieldCheck, Sparkles, Hammer, Clock,
-    Target, Activity, ArrowRight, Trophy, BarChart3,
-    Database, Bot
+    Users as UsersIcon, Zap, Code2, GitMerge,
+    TrendingUp, ShieldCheck, Sparkles, Target, Activity,
+    ArrowRight, Trophy, BarChart3, Database, Bot, Cpu
 } from "lucide-react";
 
 export default function ManagerDashboard() {
@@ -84,10 +83,13 @@ export default function ManagerDashboard() {
             header: "Engineer",
             accessorKey: "name",
             cell: (val: string, row: any) => (
-                <div className="flex items-center gap-3">
+                <div
+                    className="flex items-center gap-3 cursor-pointer group/user"
+                    onClick={() => navigate(`/users/${row.id}`)}
+                >
                     <UserAvatar name={val} size="sm" />
                     <div>
-                        <p className="text-sm font-bold text-slate-900">{val}</p>
+                        <p className="text-sm font-bold text-slate-900 group-hover/user:text-indigo-600 transition-colors">{val}</p>
                         <p className="text-[10px] text-slate-400 font-bold uppercase">{row.role}</p>
                     </div>
                 </div>
@@ -136,6 +138,11 @@ export default function ManagerDashboard() {
             accessorKey: "status",
             cell: (val: string) => <StatusBadge status={val as any} size="sm" />,
         },
+        {
+            header: "Date",
+            accessorKey: "lastActiveDate",
+            cell: (val: string) => <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{val}</span>
+        }
     ];
 
     return (
@@ -149,14 +156,14 @@ export default function ManagerDashboard() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <UsersIcon className="h-5 w-5 text-blue-500 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">Team Manager View</span>
+                        <Sparkles className="h-5 w-5 text-indigo-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Team Insights</span>
                     </div>
                     <h1 className="text-4xl font-extrabold tracking-tighter text-slate-900 md:text-5xl">
-                        {team.name} <span className="text-blue-600">Dashboard</span>
+                        Squad <span className="text-indigo-600">Leaderboard</span>
                     </h1>
                     <p className="text-base text-slate-500 mt-2 font-medium">
-                        Team performance managed by <span className="text-slate-900 font-bold">{manager.name}</span> — {team.headCount} engineers
+                        Performance metrics for <span className="text-slate-900 font-bold">{team.name}</span>
                     </p>
                 </div>
                 <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-50 border border-blue-100">
@@ -168,8 +175,30 @@ export default function ManagerDashboard() {
                 </div>
             </div>
 
+            {/* AI Summary Card */}
+            <div className="grid grid-cols-1 gap-6">
+                <div className="bg-indigo-600 rounded-3xl p-8 shadow-xl shadow-indigo-100 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                        <Activity className="h-32 w-32 text-white" />
+                    </div>
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/20">
+                            <Bot className="h-5 w-5 text-white" />
+                        </div>
+                        <h2 className="text-xl font-black text-white tracking-tight">Squad AI Performance Intel</h2>
+                    </div>
+                    <p className="text-indigo-100 text-lg font-medium leading-relaxed max-w-4xl">
+                        Your squad is outputting <span className="text-white font-black">{teamAiPercent}% AI code</span> with a
+                        successful <span className="text-white font-black">{avgMergeRate}% merge rate</span>.
+                        The team has consumed <span className="text-white font-black">{formatNumber(teamTokens)} tokens</span> to produce <span className="text-white font-black">{formatNumber(teamAiLoC)} lines of code</span>,
+                        achieving an efficiency of <span className="text-white font-black">{Math.floor((teamAiLoC / teamTokens) * 1000000)} lines per 1M tokens</span>.
+                        Active AI adoption within the squad is sitting at <span className="text-white font-black">{Math.floor((activeUsers / teamMembers.length) * 100)}%</span>.
+                    </p>
+                </div>
+            </div>
+
             {/* Team KPI Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 <MetricCard
                     title="Team AI Code %"
                     value={teamAiPercent}
@@ -179,12 +208,28 @@ export default function ManagerDashboard() {
                     subtitle={`${formatNumber(teamAiLoC)} AI LoC`}
                 />
                 <MetricCard
-                    title="Manual Code %"
-                    value={teamManualPercent}
+                    title="Token Efficiency"
+                    value={Math.floor((teamAiLoC / teamTokens) * 1000000)}
+                    icon={<Cpu className="h-5 w-5" />}
+                    decimals={0}
+                    suffix=" L/1M-T"
+                    gradient="success"
+                    subtitle="Output vs Consumption"
+                />
+                <MetricCard
+                    title="Avg Merge Rate"
+                    value={avgMergeRate}
                     suffix="%"
-                    gradient="manual"
-                    icon={<Hammer className="h-5 w-5" />}
-                    subtitle={`${formatNumber(teamManualLoC)} hand-crafted`}
+                    gradient="warning"
+                    icon={<GitMerge className="h-5 w-5" />}
+                    subtitle="AI code quality"
+                />
+                <MetricCard
+                    title="Power Users"
+                    value={powerUsers}
+                    decimals={0}
+                    icon={<Trophy className="h-5 w-5" />}
+                    subtitle={`${((powerUsers / teamMembers.length) * 100).toFixed(0)}% of squad`}
                 />
                 <MetricCard
                     title="Team Size"
@@ -193,323 +238,137 @@ export default function ManagerDashboard() {
                     icon={<UsersIcon className="h-5 w-5" />}
                     subtitle={`${activeUsers} active AI users`}
                 />
-                <MetricCard
-                    title="Avg Merge Rate"
-                    value={avgMergeRate}
-                    suffix="%"
-                    gradient="success"
-                    icon={<GitMerge className="h-5 w-5" />}
-                    subtitle="AI code quality"
-                />
-                <MetricCard
-                    title="Total Commits"
-                    value={teamTotalCommits}
-                    decimals={0}
-                    icon={<Activity className="h-5 w-5" />}
-                    subtitle="This cycle"
-                />
-                <MetricCard
-                    title="Power Users"
-                    value={powerUsers}
-                    decimals={0}
-                    gradient="warning"
-                    icon={<Trophy className="h-5 w-5" />}
-                    subtitle={`${((powerUsers / teamMembers.length) * 100).toFixed(0)}% of squad`}
-                />
             </div>
 
             {/* Team Trend + AI Split */}
             <div className="grid lg:grid-cols-12 gap-8">
                 {/* Team AI Adoption Trend */}
-                <div className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden">
+                <div className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-5">
                         <TrendingUp className="h-32 w-32 text-blue-600" />
                     </div>
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-xl font-black tracking-tight text-slate-900">Team AI Adoption Trend</h3>
-                            <p className="text-sm text-slate-500 mt-1">Average AI % across your {teamMembers.length} engineers</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-blue-500" />
-                                <span className="text-[10px] font-black text-slate-500 uppercase">Avg AI %</span>
-                            </div>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Squad velocity tracking</p>
                         </div>
                     </div>
-                    <EnhancedChart
-                        type="area"
-                        data={memberTrendData}
-                        index="week"
-                        categories={["aiPercent"]}
-                        colors={["#3b82f6"]}
-                        valueFormatter={(v) => `${v}%`}
-                        height={300}
-                    />
+                    <div className="h-[300px]">
+                        <EnhancedChart
+                            type="area"
+                            data={memberTrendData}
+                            index="week"
+                            categories={['aiPercent']}
+                            colors={['#3b82f6']}
+                            valueFormatter={(v) => `${v}%`}
+                        />
+                    </div>
                 </div>
 
-                {/* Team Code Split */}
-                <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-slate-900 p-8 shadow-xl relative overflow-hidden flex flex-col items-center justify-center">
-                    <div className="absolute top-0 right-0 p-6 opacity-10">
-                        <Code2 className="h-32 w-32 text-blue-400" />
-                    </div>
-                    <h3 className="text-lg font-black tracking-widest text-blue-400 uppercase mb-6 relative z-10">Team Code Split</h3>
-
-                    <div className="relative h-48 w-48 mb-6 z-10">
+                {/* Team Code Mix Pie */}
+                <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <h3 className="text-xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-2">
+                        <Code2 className="h-5 w-5 text-indigo-500" /> Codebase Mix
+                    </h3>
+                    <div className="h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={teamPie} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={5} dataKey="value" animationDuration={1500}>
-                                    <Cell fill="#3b82f6" stroke="transparent" />
-                                    <Cell fill="#334155" stroke="transparent" />
+                                <Pie
+                                    data={teamPie}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    <Cell fill="#6366f1" />
+                                    <Cell fill="#e2e8f0" />
                                 </Pie>
-                                <RechartsTooltip
-                                    contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "12px", fontSize: "10px", color: "white" }}
-                                    itemStyle={{ color: "white" }}
-                                    formatter={(value: number) => formatNumber(value)}
-                                />
+                                <RechartsTooltip />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <p className="text-2xl font-black text-white font-metric">{teamAiPercent}%</p>
-                            <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest">AI Powered</p>
-                        </div>
                     </div>
-
-                    <div className="space-y-3 w-full relative z-10">
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                            <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-blue-500" />
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI LoC</span>
-                            </div>
-                            <span className="text-sm font-black text-white font-metric">{formatNumber(teamAiLoC)}</span>
+                    <div className="mt-6 flex flex-col gap-3">
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50 border border-indigo-100">
+                            <span className="text-xs font-black text-indigo-700 uppercase">AI Produced</span>
+                            <span className="text-sm font-black font-metric text-indigo-700">{teamAiPercent}%</span>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                            <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-slate-500" />
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manual LoC</span>
-                            </div>
-                            <span className="text-sm font-black text-white font-metric">{formatNumber(teamManualLoC)}</span>
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                            <span className="text-xs font-black text-slate-600 uppercase">Hand Crafted</span>
+                            <span className="text-sm font-black font-metric text-slate-600">{teamManualPercent}%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* AI Tools Used by Team + Member Proficiency */}
-            <div className="grid lg:grid-cols-12 gap-8">
-                {/* AI Tools Used */}
-                <div className="lg:col-span-5 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                    <h3 className="text-xl font-black tracking-tight text-slate-900 mb-6 flex items-center gap-2">
-                        <Bot className="h-5 w-5 text-violet-500" /> Team AI Tools
-                    </h3>
-                    <p className="text-sm text-slate-500 mb-6">Which AI engines your team generates code with</p>
+            {/* Member Proficiency Breakdown */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                    <h3 className="text-xl font-black tracking-tight text-slate-900 uppercase">Member Proficiency Breakdown</h3>
+                    <Badge variant="outline" className="text-[10px] font-black tracking-widest uppercase border-slate-200 text-slate-400">
+                        {teamMembers.length} ACTIVE DEVELOPERS
+                    </Badge>
+                </div>
+                <DataTable
+                    data={teamMembers}
+                    columns={memberColumns}
+                    className="shadow-premium"
+                />
+            </div>
 
+            {/* Team Repositories */}
+            <div className="grid lg:grid-cols-2 gap-8">
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <h3 className="text-xl font-black tracking-tight text-slate-900 mb-6 flex items-center gap-2">
+                        <Database className="h-5 w-5 text-indigo-500" /> Managed Repositories
+                    </h3>
                     <div className="space-y-4">
-                        {toolDistribution.map((tool) => (
-                            <div key={tool.name} className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: tool.color }} />
-                                        <span className="text-sm font-bold text-slate-900">{tool.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xs font-bold text-slate-500">{formatNumber(tool.loC)} LoC</span>
-                                        <span className="text-lg font-black font-metric" style={{ color: tool.color }}>{tool.percent}%</span>
-                                    </div>
+                        {teamRepos.map(repo => (
+                            <div key={repo.name} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer group">
+                                <div>
+                                    <p className="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors">{repo.name}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Primary: {repo.primaryTool}</p>
                                 </div>
-                                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${tool.percent}%` }}
-                                        transition={{ duration: 1.2, ease: "circOut" }}
-                                        className="h-full rounded-full"
-                                        style={{ backgroundColor: tool.color }}
-                                    />
+                                <div className="text-right">
+                                    <p className="text-xs font-black font-metric text-slate-900">{repo.aiPercent}% AI</p>
+                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-tighter">{repo.mergeRate}% Success</p>
                                 </div>
                             </div>
                         ))}
                     </div>
-
-                    {/* Stacked total bar */}
-                    <div className="mt-6 pt-6 border-t border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Combined Distribution</p>
-                        <div className="flex h-4 w-full rounded-full overflow-hidden bg-slate-100">
-                            {toolDistribution.map((tool) => (
-                                <motion.div
-                                    key={tool.name}
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${tool.percent}%` }}
-                                    transition={{ duration: 1, ease: "circOut" }}
-                                    className="h-full"
-                                    style={{ backgroundColor: tool.color }}
-                                />
-                            ))}
-                        </div>
-                    </div>
                 </div>
 
-                {/* Member Proficiency List */}
-                <div className="lg:col-span-7 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-                            <Target className="h-5 w-5 text-blue-500" /> Member Proficiency
-                        </h3>
-                        <Badge className="bg-slate-100 text-slate-500 border-slate-200 font-bold">{teamMembers.length} ENGINEERS</Badge>
-                    </div>
-                    <div className="space-y-3">
-                        {teamMembers
-                            .sort((a, b) => b.aiPercent - a.aiPercent)
-                            .map((member, idx) => (
-                                <motion.div
-                                    key={member.id}
-                                    initial={{ opacity: 0, x: -12 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    onClick={() => navigate(`/users/${member.id}`)}
-                                    className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-blue-50/50 hover:border-blue-200 transition-all group cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative">
-                                            <UserAvatar name={member.name} size="sm" />
-                                            {idx < 3 && (
-                                                <div className={cn(
-                                                    "absolute -top-1 -left-1 h-5 w-5 rounded-full flex items-center justify-center text-[8px] font-black shadow-sm",
-                                                    idx === 0 ? "bg-amber-400 text-amber-900" : idx === 1 ? "bg-slate-300 text-slate-700" : "bg-orange-300 text-orange-900"
-                                                )}>
-                                                    {idx + 1}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">{member.name}</p>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{member.role} • {formatNumber(member.totalLoC)} LoC</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-xs font-bold text-slate-400">Manual</p>
-                                            <p className="text-sm font-black font-metric text-slate-500">{(100 - member.aiPercent).toFixed(1)}%</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xs font-bold text-indigo-400">AI</p>
-                                            <p className="text-xl font-black font-metric text-indigo-600">{member.aiPercent}%</p>
-                                        </div>
-                                        <StatusBadge status={member.status} size="sm" />
-                                        <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
-                                    </div>
-                                </motion.div>
-                            ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Team Repos */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-                            <Database className="h-5 w-5 text-blue-500" /> Team Repositories
-                        </h3>
-                        <Badge className="bg-slate-100 text-slate-500 border-slate-200 font-bold">{teamRepos.length} REPOS</Badge>
-                    </div>
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {teamRepos.map((repo) => (
-                        <motion.div
-                            key={repo.name}
-                            whileHover={{ y: -4 }}
-                            className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
-                        >
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                    <Code2 className="h-5 w-5 text-slate-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-mono font-bold text-slate-900">{repo.name}</p>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{repo.primaryTool}</p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3 mb-4">
-                                <div className="p-3 rounded-xl bg-white border border-slate-100">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total LoC</p>
-                                    <p className="text-lg font-black text-slate-900 font-metric">{formatNumber(repo.totalLoC)}</p>
-                                </div>
-                                <div className="p-3 rounded-xl bg-white border border-slate-100">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI %</p>
-                                    <p className="text-lg font-black text-blue-600 font-metric">{repo.aiPercent}%</p>
-                                </div>
-                            </div>
-
-                            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${repo.aiPercent}%` }}
-                                    transition={{ duration: 1.2, ease: "circOut" }}
-                                    className="h-full bg-blue-500 rounded-full"
-                                />
-                            </div>
-                            <div className="flex justify-between mt-2">
-                                <span className="text-[10px] font-bold text-blue-500">AI: {repo.aiPercent}%</span>
-                                <span className="text-[10px] font-bold text-slate-400">Manual: {100 - repo.aiPercent}%</span>
-                            </div>
-                        </motion.div>
-                    ))}
-                    {teamRepos.length === 0 && (
-                        <div className="col-span-3 py-12 text-center">
-                            <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">No repositories found for your team</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Team Health Summary */}
-            <div className="rounded-3xl border border-slate-200 bg-slate-900 p-8 shadow-xl relative overflow-hidden">
-                <div className="absolute -bottom-12 -right-12 h-40 w-40 bg-blue-500/10 blur-[100px] rounded-full" />
-                <div className="absolute -top-8 -left-8 h-32 w-32 bg-emerald-500/10 blur-[80px] rounded-full" />
-                <div className="relative z-10">
-                    <h3 className="text-xl font-black tracking-tight text-white mb-8 flex items-center gap-2">
-                        <ShieldCheck className="h-6 w-6 text-emerald-400" /> Team Health Summary
+                {/* Team Quality Guardrails */}
+                <div className="rounded-3xl border border-slate-200 bg-slate-900 p-8 shadow-xl">
+                    <h3 className="text-xl font-black tracking-tight text-white mb-6 flex items-center gap-2">
+                        <ShieldCheck className="h-5 w-5 text-emerald-400" /> Squad Guardrails
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">AI Adoption</p>
-                            <p className="text-3xl font-black text-white font-metric">{teamAiPercent}%</p>
-                            <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
+                                <span>Security Compliance</span>
+                                <span className="text-emerald-400">98.2%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${teamAiPercent}%` }}
-                                    className="h-full bg-blue-500 rounded-full"
+                                    animate={{ width: "98.2%" }}
+                                    transition={{ duration: 1.5 }}
+                                    className="h-full bg-emerald-500"
                                 />
                             </div>
                         </div>
-                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Manual Craft</p>
-                            <p className="text-3xl font-black text-white font-metric">{teamManualPercent}%</p>
-                            <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${teamManualPercent}%` }}
-                                    className="h-full bg-slate-500 rounded-full"
-                                />
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
+                                <span>AI Risk Mitigation</span>
+                                <span className="text-emerald-400">Active</span>
                             </div>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Merge Quality</p>
-                            <p className="text-3xl font-black text-emerald-400 font-metric">{avgMergeRate}%</p>
-                            <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${avgMergeRate}%` }}
-                                    className="h-full bg-emerald-500 rounded-full"
-                                />
+                            <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <p className="text-xs text-slate-400 font-medium italic">
+                                    "Autonomous scan complete. No high-risk AI patterns detected in the last synchronized commits for this squad."
+                                </p>
                             </div>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Token Budget</p>
-                            <p className="text-3xl font-black text-amber-400 font-metric">{formatNumber(teamTokens)}</p>
-                            <p className="text-[10px] text-slate-500 font-bold mt-2">
-                                {formatNumber(Math.floor(teamTokens / teamMembers.length))} per engineer
-                            </p>
                         </div>
                     </div>
                 </div>

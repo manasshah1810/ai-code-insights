@@ -262,6 +262,11 @@ function generateAdminReport(doc: jsPDF) {
   // ─── Executive Summary KPIs ───
   y = drawSectionHeader(doc, "Executive Summary", y);
 
+  // Calculations for cost and efficiency
+  const tokens = users.reduce((acc, u) => acc + u.tokensUsed, 0);
+  const totalCost = aiTools.reduce((acc, t) => acc + (t.totalTokens * t.costPer1kTokens / 1000), 0);
+  const efficiency = tokens > 0 ? Math.floor((orgData.aiLoC / tokens) * 1000000) : 0;
+
   const kpiW = (CONTENT_WIDTH - 12) / 3;
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "Total Developers", `${orgData.totalDevelopers}`, COLORS.primary);
   drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "AI Adoption Rate", `${orgData.aiAdoptionRate}%`, COLORS.accent);
@@ -269,8 +274,8 @@ function generateAdminReport(doc: jsPDF) {
   y += 60;
 
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "Total Lines of Code", formatNumber(orgData.totalLoC), COLORS.dark);
-  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "AI Merge Rate", `${orgData.aiMergeRate}%`, COLORS.accent);
-  drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Velocity Boost", `${productivityData.velocityBoostPercent}%`, COLORS.warning);
+  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Efficiency (L/1MT)", `${efficiency}`, COLORS.accent);
+  drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Monthly AI Investment", `$${formatNumber(totalCost)}`, COLORS.warning);
   y += 60;
 
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "AI Lines of Code", formatNumber(orgData.aiLoC), COLORS.secondary);
@@ -439,15 +444,17 @@ function generateManagerReport(doc: jsPDF, teamId: string, managerId: number) {
   doc.text(`Manager: ${manager.name} (${manager.role})  •  ${teamMembers.length} engineers`, PAGE.marginLeft + 12, y);
   y += 18;
 
+  const efficiency = teamTokens > 0 ? Math.floor((teamAiLoC / teamTokens) * 1000000) : 0;
+
   const kpiW = (CONTENT_WIDTH - 12) / 3;
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "Team AI Code %", `${teamAiPercent}%`, COLORS.blue);
-  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Manual Code %", `${(100 - parseFloat(teamAiPercent)).toFixed(1)}%`, COLORS.manual);
+  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Efficiency (L/1MT)", `${efficiency}`, COLORS.accent);
   drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Avg Merge Rate", `${avgMergeRate}%`, COLORS.accent);
   y += 60;
 
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "Team Size", `${teamMembers.length}`, COLORS.dark);
   drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Power Users", `${powerUsers}`, COLORS.warning);
-  drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Token Budget", formatNumber(teamTokens), COLORS.secondary);
+  drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Tokens Consumed", formatNumber(teamTokens), COLORS.secondary);
   y += 70;
 
   // ─── Members ───
@@ -502,8 +509,10 @@ function generateDeveloperReport(doc: jsPDF, userId: number) {
 
   // ─── Personal KPIs ───
   const kpiW = (CONTENT_WIDTH - 12) / 3;
+  const efficiency = user.tokensUsed > 0 ? Math.floor((user.aiLoC / user.tokensUsed) * 1000000) : 0;
+
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "AI Code %", `${user.aiPercent}%`, COLORS.primary);
-  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Manual Code %", `${(100 - user.aiPercent).toFixed(1)}%`, COLORS.manual);
+  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Efficiency (L/1MT)", `${efficiency}`, COLORS.accent);
   drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Total Commits", `${user.commits}`, COLORS.dark);
   y += 60;
 
@@ -664,7 +673,7 @@ export async function exportReport(
 export async function exportToPdf(elementId: string, filename: string): Promise<void> {
   try {
     const { default: html2canvas } = await import("html2canvas");
-    
+
     const element = document.getElementById(elementId);
     if (!element) {
       console.error(`Element with ID '${elementId}' not found`);

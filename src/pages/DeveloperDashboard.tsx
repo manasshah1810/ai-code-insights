@@ -158,13 +158,11 @@ export default function DeveloperDashboard() {
             </div>
 
             {/* KPI Row */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                <MetricCard title="My Commits" value={user.commits} icon={<GitCommit className="h-4 w-4" />} decimals={0} />
-                <MetricCard title="Total LoC" value={user.totalLoC} icon={<Code2 className="h-4 w-4" />} decimals={0} />
-                <MetricCard title="AI Code %" value={user.aiPercent} icon={<Zap className="h-4 w-4" />} suffix="%" gradient="ai" />
-                <MetricCard title="Manual Code %" value={manualPercent} icon={<Hammer className="h-4 w-4" />} suffix="%" gradient="manual" />
-                <MetricCard title="Merge Rate" value={user.aiMergeRate} icon={<GitMerge className="h-4 w-4" />} suffix="%" gradient="success" />
-                <MetricCard title="PR Success" value={user.prMergeRate} icon={<CheckCircle className="h-4 w-4" />} suffix="%" gradient="warning" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard title="AI Contribution" value={user.aiPercent} icon={<Zap className="h-6 w-6" />} suffix="%" gradient="ai" trend={{ value: 12.4, isPositive: true }} />
+                <MetricCard title="Token Efficiency" value={Math.floor((user.aiLoC / user.tokensUsed) * 1000000)} icon={<Cpu className="h-6 w-6" />} decimals={0} suffix=" L/1M-T" gradient="success" subtitle="Lines per 1M Tokens" />
+                <MetricCard title="Merge Success" value={user.prMergeRate} icon={<GitMerge className="h-6 w-6" />} suffix="%" gradient="warning" trend={{ value: 4.2, isPositive: true }} />
+                <MetricCard title="Commits" value={user.commits} icon={<GitCommit className="h-6 w-6" />} decimals={0} subtitle="Total synced events" />
             </div>
 
             {/* Code Split + Trend */}
@@ -229,6 +227,26 @@ export default function DeveloperDashboard() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* AI Summary Card */}
+            <div className="bg-emerald-600 rounded-3xl p-8 shadow-xl shadow-emerald-100 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                    <Activity className="h-32 w-32 text-white" />
+                </div>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/20">
+                        <Sparkles className="h-5 w-5 text-white" />
+                    </div>
+                    <h2 className="text-xl font-black text-white tracking-tight">Personal Performance Intel</h2>
+                </div>
+                <p className="text-emerald-50 text-lg font-medium leading-relaxed max-w-4xl">
+                    You have successfully integrated <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.aiPercent}% AI code</span> into your workflow.
+                    Your efficiency is recorded at <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{Math.floor((user.aiLoC / user.tokensUsed) * 1000000)} lines per 1M tokens</span>,
+                    utilizing <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{formatNumber(user.tokensUsed)} total tokens</span>.
+                    With a <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.prMergeRate}% PR success rate</span>,
+                    you are ranked <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">#{user.rank}</span> in the engineering fleet.
+                </p>
             </div>
 
             {/* AI Tools I Use + My Repos */}

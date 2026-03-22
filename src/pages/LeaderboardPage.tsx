@@ -59,10 +59,15 @@ export default function LeaderboardPage() {
       header: "Engineer",
       accessorKey: "name",
       cell: (val: string, row: any) => (
-        <div className="flex items-center gap-3">
+        <div
+          className="flex items-center gap-3 cursor-pointer group/user"
+          onClick={() => navigate(`/users/${row.id}`)}
+        >
           <UserAvatar name={strictPrivacyMode ? "?" : val} size="sm" />
           <div>
-            <p className="font-bold text-slate-900">{strictPrivacyMode ? `Engineer # ${anonymizeIdSync(row.id)}` : val}</p>
+            <p className="font-bold text-slate-900 group-hover/user:text-indigo-600 transition-colors">
+              {strictPrivacyMode ? `Engineer # ${anonymizeIdSync(row.id)}` : val}
+            </p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{row.team}</p>
           </div>
         </div>
@@ -97,6 +102,11 @@ export default function LeaderboardPage() {
       header: "Status",
       accessorKey: "status",
       cell: (val: string) => <StatusBadge status={val} size="sm" />
+    },
+    {
+      header: "Date",
+      accessorKey: "lastActiveDate",
+      cell: (val: string) => <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{val}</span>
     }
   ];
 

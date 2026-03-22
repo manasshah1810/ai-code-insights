@@ -27,6 +27,7 @@ export interface User {
   avatar: string;
   weeklyTrend: { week: string; aiPercent: number }[];
   recentPRs: { title: string; status: "Merged" | "Open" | "Rejected"; aiPercent: number; date: string }[];
+  lastActiveDate: string;
 }
 
 export interface Team {
@@ -42,6 +43,27 @@ export interface Team {
   aiLoC: number;
   manualLoC: number;
   members: number[];
+  lastSyncDate: string;
+}
+
+export interface AITool {
+  id: string;
+  name: string;
+  shortName: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: string; // emoji fallback
+  totalLoC: number;
+  percentOfAI: number;
+  mergeRate: number;
+  avgAcceptRate: number;
+  avgConfidence: number;
+  activeUsers: number;
+  totalTokens: number;
+  avgCycleTime: number; // minutes
+  costPer1kTokens: number; // USD
+  linesAccepted: number;
 }
 
 // Helper for formatting
@@ -54,16 +76,16 @@ export const formatNumber = (n: number): string => {
 // --- DATA GENERATION ---
 
 export const teams: Team[] = [
-  { id: "platform", name: "Platform Engineering", headCount: 12, aiUsers: 10, aiCodePercent: 68.4, aiMergeRate: 84.2, primaryTool: "Cursor", totalTokens: 8420000, totalLoC: 245000, aiLoC: 167580, manualLoC: 77420, members: [] },
-  { id: "frontend", name: "Frontend Core", headCount: 15, aiUsers: 14, aiCodePercent: 72.1, aiMergeRate: 78.5, primaryTool: "Cursor", totalTokens: 9200000, totalLoC: 312000, aiLoC: 224952, manualLoC: 87048, members: [] },
-  { id: "data-ml", name: "Data & ML", headCount: 10, aiUsers: 8, aiCodePercent: 42.5, aiMergeRate: 62.1, primaryTool: "Copilot", totalTokens: 4150000, totalLoC: 184000, aiLoC: 78200, manualLoC: 105800, members: [] },
-  { id: "security", name: "Cyber Security", headCount: 8, aiUsers: 6, aiCodePercent: 35.2, aiMergeRate: 91.0, primaryTool: "Copilot", totalTokens: 2800000, totalLoC: 92000, aiLoC: 32384, manualLoC: 59616, members: [] },
-  { id: "mobile", name: "Mobile App", headCount: 14, aiUsers: 12, aiCodePercent: 58.0, aiMergeRate: 75.4, primaryTool: "Cursor", totalTokens: 6700000, totalLoC: 198000, aiLoC: 114840, manualLoC: 83160, members: [] },
-  { id: "infra", name: "Infrastructure/SRE", headCount: 9, aiUsers: 9, aiCodePercent: 81.5, aiMergeRate: 88.0, primaryTool: "Cursor", totalTokens: 7100000, totalLoC: 145000, aiLoC: 118175, manualLoC: 26825, members: [] },
-  { id: "devtools", name: "Developer Experience", headCount: 7, aiUsers: 7, aiCodePercent: 92.0, aiMergeRate: 94.5, primaryTool: "Cursor", totalTokens: 5200000, totalLoC: 112000, aiLoC: 103040, manualLoC: 8960, members: [] },
-  { id: "product-api", name: "Product API", headCount: 11, aiUsers: 9, aiCodePercent: 54.6, aiMergeRate: 71.2, primaryTool: "Copilot", totalTokens: 4800000, totalLoC: 176000, aiLoC: 96096, manualLoC: 79904, members: [] },
-  { id: "growth", name: "Growth & Experiments", headCount: 6, aiUsers: 6, aiCodePercent: 65.4, aiMergeRate: 68.9, primaryTool: "Cursor", totalTokens: 3100000, totalLoC: 78000, aiLoC: 51012, manualLoC: 26988, members: [] },
-  { id: "qa-aut", name: "QA Automation", headCount: 8, aiUsers: 8, aiCodePercent: 88.2, aiMergeRate: 82.1, primaryTool: "Copilot", totalTokens: 3900000, totalLoC: 84000, aiLoC: 74088, manualLoC: 9912, members: [] },
+  { id: "platform", name: "Platform Engineering", headCount: 12, aiUsers: 10, aiCodePercent: 68.4, aiMergeRate: 84.2, primaryTool: "Cursor", totalTokens: 8420000, totalLoC: 245000, aiLoC: 167580, manualLoC: 77420, members: [], lastSyncDate: "Mar 21" },
+  { id: "frontend", name: "Frontend Core", headCount: 15, aiUsers: 14, aiCodePercent: 72.1, aiMergeRate: 78.5, primaryTool: "Cursor", totalTokens: 9200000, totalLoC: 312000, aiLoC: 224952, manualLoC: 87048, members: [], lastSyncDate: "Mar 21" },
+  { id: "data-ml", name: "Data & ML", headCount: 10, aiUsers: 8, aiCodePercent: 42.5, aiMergeRate: 62.1, primaryTool: "Copilot", totalTokens: 4150000, totalLoC: 184000, aiLoC: 78200, manualLoC: 105800, members: [], lastSyncDate: "Mar 20" },
+  { id: "security", name: "Cyber Security", headCount: 8, aiUsers: 6, aiCodePercent: 35.2, aiMergeRate: 91.0, primaryTool: "Copilot", totalTokens: 2800000, totalLoC: 92000, aiLoC: 32384, manualLoC: 59616, members: [], lastSyncDate: "Mar 21" },
+  { id: "mobile", name: "Mobile App", headCount: 14, aiUsers: 12, aiCodePercent: 58.0, aiMergeRate: 75.4, primaryTool: "Cursor", totalTokens: 6700000, totalLoC: 198000, aiLoC: 114840, manualLoC: 83160, members: [], lastSyncDate: "Mar 19" },
+  { id: "infra", name: "Infrastructure/SRE", headCount: 9, aiUsers: 9, aiCodePercent: 81.5, aiMergeRate: 88.0, primaryTool: "Cursor", totalTokens: 7100000, totalLoC: 145000, aiLoC: 118175, manualLoC: 26825, members: [], lastSyncDate: "Mar 21" },
+  { id: "devtools", name: "Developer Experience", headCount: 7, aiUsers: 7, aiCodePercent: 92.0, aiMergeRate: 94.5, primaryTool: "Cursor", totalTokens: 5200000, totalLoC: 112000, aiLoC: 103040, manualLoC: 8960, members: [], lastSyncDate: "Mar 21" },
+  { id: "product-api", name: "Product API", headCount: 11, aiUsers: 9, aiCodePercent: 54.6, aiMergeRate: 71.2, primaryTool: "Copilot", totalTokens: 4800000, totalLoC: 176000, aiLoC: 96096, manualLoC: 79904, members: [], lastSyncDate: "Mar 18" },
+  { id: "growth", name: "Growth & Experiments", headCount: 6, aiUsers: 6, aiCodePercent: 65.4, aiMergeRate: 68.9, primaryTool: "Cursor", totalTokens: 3100000, totalLoC: 78000, aiLoC: 51012, manualLoC: 26988, members: [], lastSyncDate: "Mar 20" },
+  { id: "qa-aut", name: "QA Automation", headCount: 8, aiUsers: 8, aiCodePercent: 88.2, aiMergeRate: 82.1, primaryTool: "Copilot", totalTokens: 3900000, totalLoC: 84000, aiLoC: 74088, manualLoC: 9912, members: [], lastSyncDate: "Mar 21" },
 ];
 
 const firstNames = ["James", "Mary", "Robert", "Patricia", "John", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle", "Kenneth", "Dorothy", "Kevin", "Carol", "Brian", "Amanda", "George", "Melissa", "Edward", "Deborah", "Ronald", "Stephanie"];
@@ -125,7 +147,8 @@ export const users: User[] = Array.from({ length: 80 }).map((_, i) => {
       { title: `fix: Resolved ${team.id} latency`, status: "Merged", aiPercent: Math.floor(aiPercent - 4), date: "Mar 17" },
       { title: `refactor: Optimize ${team.id} logic`, status: "Rejected", aiPercent: 92, date: "Mar 15" },
       { title: `feat: Added ${team.id} tests`, status: "Open", aiPercent: 45, date: "Mar 14" },
-    ]
+    ],
+    lastActiveDate: `Mar ${Math.floor(Math.random() * 10 + 10)}`
   };
 });
 
@@ -133,38 +156,137 @@ export const users: User[] = Array.from({ length: 80 }).map((_, i) => {
 users.sort((a, b) => b.aiPercent - a.aiPercent);
 users.forEach((u, i) => u.rank = i + 1);
 
+const totalTokensEstimate = users.reduce((acc, u) => acc + u.tokensUsed, 0);
+const totalAiLoCEstimate = users.reduce((acc, u) => acc + u.aiLoC, 0);
+
+export const aiTools: AITool[] = [
+  {
+    id: "claude",
+    name: "Claude (Anthropic)",
+    shortName: "Claude",
+    color: "#D97706",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+    icon: "🧠",
+    totalLoC: Math.floor(totalAiLoCEstimate * 0.32),
+    percentOfAI: 32.0,
+    mergeRate: 91.2,
+    avgAcceptRate: 78.4,
+    avgConfidence: 94.1,
+    activeUsers: 28,
+    totalTokens: Math.floor(totalTokensEstimate * 0.34),
+    avgCycleTime: 32,
+    costPer1kTokens: 0.015,
+    linesAccepted: Math.floor(totalAiLoCEstimate * 0.32),
+  },
+  {
+    id: "copilot",
+    name: "GitHub Copilot",
+    shortName: "Copilot",
+    color: "#6366F1",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200",
+    icon: "🤖",
+    totalLoC: Math.floor(totalAiLoCEstimate * 0.28),
+    percentOfAI: 28.0,
+    mergeRate: 82.5,
+    avgAcceptRate: 64.5,
+    avgConfidence: 87.3,
+    activeUsers: 35,
+    totalTokens: Math.floor(totalTokensEstimate * 0.26),
+    avgCycleTime: 41,
+    costPer1kTokens: 0.01,
+    linesAccepted: Math.floor(totalAiLoCEstimate * 0.28),
+  },
+  {
+    id: "cursor",
+    name: "Cursor AI / Windsurf",
+    shortName: "Cursor",
+    color: "#8B5CF6",
+    bgColor: "bg-violet-50",
+    borderColor: "border-violet-200",
+    icon: "⚡",
+    totalLoC: Math.floor(totalAiLoCEstimate * 0.22),
+    percentOfAI: 22.0,
+    mergeRate: 88.7,
+    avgAcceptRate: 72.1,
+    avgConfidence: 91.8,
+    activeUsers: 22,
+    totalTokens: Math.floor(totalTokensEstimate * 0.24),
+    avgCycleTime: 35,
+    costPer1kTokens: 0.01,
+    linesAccepted: Math.floor(totalAiLoCEstimate * 0.22),
+  },
+  {
+    id: "gemini",
+    name: "Gemini (Google)",
+    shortName: "Gemini",
+    color: "#2563EB",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    icon: "💎",
+    totalLoC: Math.floor(totalAiLoCEstimate * 0.12),
+    percentOfAI: 12.0,
+    mergeRate: 85.9,
+    avgAcceptRate: 68.2,
+    avgConfidence: 89.5,
+    activeUsers: 14,
+    totalTokens: Math.floor(totalTokensEstimate * 0.10),
+    avgCycleTime: 38,
+    costPer1kTokens: 0.007,
+    linesAccepted: Math.floor(totalAiLoCEstimate * 0.12),
+  },
+  {
+    id: "chatgpt",
+    name: "ChatGPT (OpenAI)",
+    shortName: "ChatGPT",
+    color: "#10B981",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    icon: "💬",
+    totalLoC: Math.floor(totalAiLoCEstimate * 0.06),
+    percentOfAI: 6.0,
+    mergeRate: 74.3,
+    avgAcceptRate: 58.1,
+    avgConfidence: 82.4,
+    activeUsers: 8,
+    totalTokens: Math.floor(totalTokensEstimate * 0.06),
+    avgCycleTime: 48,
+    costPer1kTokens: 0.01,
+    linesAccepted: Math.floor(totalAiLoCEstimate * 0.06),
+  },
+];
+
 export const orgData = {
   totalDevelopers: users.length,
   activeAIUsers: users.filter(u => u.aiPercent > 0).length,
   aiAdoptionRate: parseFloat(((users.filter(u => u.aiPercent > 0).length / users.length) * 100).toFixed(1)),
   totalLoC: users.reduce((acc, u) => acc + u.totalLoC, 0),
-  aiLoC: users.reduce((acc, u) => acc + u.aiLoC, 0),
+  aiLoC: totalAiLoCEstimate,
   manualLoC: users.reduce((acc, u) => acc + u.manualLoC, 0),
   aiCodePercent: 0, // Calculated below
   aiMergeRate: 78.2,
-  totalTokens: users.reduce((acc, u) => acc + u.tokensUsed, 0),
+  totalTokens: totalTokensEstimate,
   copilotSuggestionsShown: 412000,
   copilotAcceptRate: 64.5,
   cursorCompletionsAccepted: 285400,
   prMergeRate: 82.4,
   aiRiskScore: 14.8,
   aiRiskInterventionRate: 19.5,
+  totalAiCost: aiTools.reduce((acc, t) => acc + (t.totalTokens * t.costPer1kTokens / 1000), 0),
+  linesPerMillionTokens: Math.floor((totalAiLoCEstimate / totalTokensEstimate) * 1000000), // Comparison metric
 };
 orgData.aiCodePercent = parseFloat(((orgData.aiLoC / orgData.totalLoC) * 100).toFixed(1));
 
 // --- 16 WEEKS (4 MONTHS) OF TREND DATA ---
 const monthNames = ["Dec", "Jan", "Feb", "Mar"];
 export const weeklyTrend = Array.from({ length: 16 }).map((_, i) => {
-  const monthIdx = Math.floor(i / 4) % 12;
-  const weekInMonth = (i % 4) + 1;
   const monthName = monthNames[Math.floor(i / 4)];
   const year = i < 4 ? 2025 : 2026; // Dec: 2025, Jan-Mar: 2026
-
+  const weekInMonth = (i % 4) + 1;
   const label = `${monthName} ${weekInMonth * 7 - 6}, ${year} - ${monthName} ${weekInMonth * 7}, ${year}`;
 
-  // Progression: AI LoC grows from 80k to 240k over 4 months
   const aiLoC = 80000 + i * 10000 + Math.floor(Math.random() * 5000);
-  // Manual LoC stays between 150k and 180k
   const manualLoC = 180000 - i * 2000 + Math.floor(Math.random() * 5000);
   const total = aiLoC + manualLoC;
 
@@ -179,21 +301,21 @@ export const weeklyTrend = Array.from({ length: 16 }).map((_, i) => {
 });
 
 export const repositories = [
-  { name: "core-api-service", team: "Platform Engineering", totalLoC: 84000, aiPercent: 72, mergeRate: 89, primaryTool: "Cursor" },
-  { name: "web-client-v2", team: "Frontend Core", totalLoC: 124000, aiPercent: 65, mergeRate: 82, primaryTool: "Cursor" },
-  { name: "auth-central", team: "Platform Engineering", totalLoC: 45000, aiPercent: 58, mergeRate: 94, primaryTool: "Cursor" },
-  { name: "data-lake-ingestion", team: "Data & ML", totalLoC: 92000, aiPercent: 34, mergeRate: 64, primaryTool: "Copilot" },
-  { name: "mobile-ios-app", team: "Mobile App", totalLoC: 76000, aiPercent: 61, mergeRate: 78, primaryTool: "Cursor" },
-  { name: "mobile-android-app", team: "Mobile App", totalLoC: 78000, aiPercent: 59, mergeRate: 75, primaryTool: "Cursor" },
-  { name: "security-scanner", team: "Cyber Security", totalLoC: 34000, aiPercent: 88, mergeRate: 96, primaryTool: "Cursor" },
-  { name: "infra-provisioner", team: "Infrastructure/SRE", totalLoC: 56000, aiPercent: 82, mergeRate: 87, primaryTool: "Cursor" },
-  { name: "ml-training-hub", team: "Data & ML", totalLoC: 68000, aiPercent: 41, mergeRate: 59, primaryTool: "Copilot" },
-  { name: "design-system-react", team: "Frontend Core", totalLoC: 28000, aiPercent: 74, mergeRate: 85, primaryTool: "Cursor" },
-  { name: "legacy-payment-gw", team: "Product API", totalLoC: 145000, aiPercent: 12, mergeRate: 45, primaryTool: "None" },
-  { name: "customer-portal", team: "Product API", totalLoC: 52000, aiPercent: 48, mergeRate: 72, primaryTool: "Copilot" },
-  { name: "analytics-edge", team: "Data & ML", totalLoC: 41000, aiPercent: 55, mergeRate: 70, primaryTool: "Cursor" },
-  { name: "dev-portal-v3", team: "Developer Experience", totalLoC: 32000, aiPercent: 91, mergeRate: 98, primaryTool: "Cursor" },
-  { name: "experiment-engine", team: "Growth & Experiments", totalLoC: 18000, aiPercent: 70, mergeRate: 81, primaryTool: "Cursor" },
+  { name: "core-api-service", team: "Platform Engineering", totalLoC: 84000, aiPercent: 72, mergeRate: 89, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "web-client-v2", team: "Frontend Core", totalLoC: 124000, aiPercent: 65, mergeRate: 82, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "auth-central", team: "Platform Engineering", totalLoC: 45000, aiPercent: 58, mergeRate: 94, primaryTool: "Cursor", lastCommit: "Mar 20" },
+  { name: "data-lake-ingestion", team: "Data & ML", totalLoC: 92000, aiPercent: 34, mergeRate: 64, primaryTool: "Copilot", lastCommit: "Mar 19" },
+  { name: "mobile-ios-app", team: "Mobile App", totalLoC: 76000, aiPercent: 61, mergeRate: 78, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "mobile-android-app", team: "Mobile App", totalLoC: 78000, aiPercent: 59, mergeRate: 75, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "security-scanner", team: "Cyber Security", totalLoC: 34000, aiPercent: 88, mergeRate: 96, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "infra-provisioner", team: "Infrastructure/SRE", totalLoC: 56000, aiPercent: 82, mergeRate: 87, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "ml-training-hub", team: "Data & ML", totalLoC: 68000, aiPercent: 41, mergeRate: 59, primaryTool: "Copilot", lastCommit: "Mar 18" },
+  { name: "design-system-react", team: "Frontend Core", totalLoC: 28000, aiPercent: 74, mergeRate: 85, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "legacy-payment-gw", team: "Product API", totalLoC: 145000, aiPercent: 12, mergeRate: 45, primaryTool: "None", lastCommit: "Feb 28" },
+  { name: "customer-portal", team: "Product API", totalLoC: 52000, aiPercent: 48, mergeRate: 72, primaryTool: "Copilot", lastCommit: "Mar 15" },
+  { name: "analytics-edge", team: "Data & ML", totalLoC: 41000, aiPercent: 55, mergeRate: 70, primaryTool: "Cursor", lastCommit: "Mar 20" },
+  { name: "dev-portal-v3", team: "Developer Experience", totalLoC: 32000, aiPercent: 91, mergeRate: 98, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "experiment-engine", team: "Growth & Experiments", totalLoC: 18000, aiPercent: 70, mergeRate: 81, primaryTool: "Cursor", lastCommit: "Mar 21" },
 ];
 
 export const mergeAnalytics = {
@@ -238,114 +360,6 @@ export const securityData = {
     { type: "Non-standard Imports", count: 2320 },
   ]
 };
-
-// --- AI TOOL ATTRIBUTION DATA ---
-
-export interface AITool {
-  id: string;
-  name: string;
-  shortName: string;
-  color: string;
-  bgColor: string;
-  borderColor: string;
-  icon: string; // emoji fallback
-  totalLoC: number;
-  percentOfAI: number;
-  mergeRate: number;
-  avgAcceptRate: number;
-  avgConfidence: number;
-  activeUsers: number;
-  totalTokens: number;
-  avgCycleTime: number; // minutes
-}
-
-export const aiTools: AITool[] = [
-  {
-    id: "claude",
-    name: "Claude (Anthropic)",
-    shortName: "Claude",
-    color: "#D97706",
-    bgColor: "bg-amber-50",
-    borderColor: "border-amber-200",
-    icon: "🧠",
-    totalLoC: Math.floor(orgData.aiLoC * 0.32),
-    percentOfAI: 32.0,
-    mergeRate: 91.2,
-    avgAcceptRate: 78.4,
-    avgConfidence: 94.1,
-    activeUsers: 28,
-    totalTokens: Math.floor(orgData.totalTokens * 0.34),
-    avgCycleTime: 32,
-  },
-  {
-    id: "copilot",
-    name: "GitHub Copilot",
-    shortName: "Copilot",
-    color: "#6366F1",
-    bgColor: "bg-indigo-50",
-    borderColor: "border-indigo-200",
-    icon: "🤖",
-    totalLoC: Math.floor(orgData.aiLoC * 0.28),
-    percentOfAI: 28.0,
-    mergeRate: 82.5,
-    avgAcceptRate: 64.5,
-    avgConfidence: 87.3,
-    activeUsers: 35,
-    totalTokens: Math.floor(orgData.totalTokens * 0.26),
-    avgCycleTime: 41,
-  },
-  {
-    id: "cursor",
-    name: "Cursor AI / Windsurf",
-    shortName: "Cursor",
-    color: "#8B5CF6",
-    bgColor: "bg-violet-50",
-    borderColor: "border-violet-200",
-    icon: "⚡",
-    totalLoC: Math.floor(orgData.aiLoC * 0.22),
-    percentOfAI: 22.0,
-    mergeRate: 88.7,
-    avgAcceptRate: 72.1,
-    avgConfidence: 91.8,
-    activeUsers: 22,
-    totalTokens: Math.floor(orgData.totalTokens * 0.24),
-    avgCycleTime: 35,
-  },
-  {
-    id: "gemini",
-    name: "Gemini (Google)",
-    shortName: "Gemini",
-    color: "#2563EB",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
-    icon: "💎",
-    totalLoC: Math.floor(orgData.aiLoC * 0.12),
-    percentOfAI: 12.0,
-    mergeRate: 85.9,
-    avgAcceptRate: 68.2,
-    avgConfidence: 89.5,
-    activeUsers: 14,
-    totalTokens: Math.floor(orgData.totalTokens * 0.10),
-    avgCycleTime: 38,
-  },
-  {
-    id: "chatgpt",
-    name: "ChatGPT (OpenAI)",
-    shortName: "ChatGPT",
-    color: "#10B981",
-    bgColor: "bg-emerald-50",
-    borderColor: "border-emerald-200",
-    icon: "💬",
-    totalLoC: Math.floor(orgData.aiLoC * 0.06),
-    percentOfAI: 6.0,
-    mergeRate: 74.3,
-    avgAcceptRate: 58.1,
-    avgConfidence: 82.4,
-    activeUsers: 8,
-    totalTokens: Math.floor(orgData.totalTokens * 0.06),
-    avgCycleTime: 48,
-  },
-];
 
 // Per-team tool usage breakdown
 export const teamToolUsage = teams.map((team) => {

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { EnhancedChart } from "@/components/ui/EnhancedChart";
-import { orgData, teams, users, weeklyTrend, formatNumber, productivityData, securityData } from "@/data/dashboard-data";
+import { orgData, teams, users, weeklyTrend, formatNumber, productivityData, securityData, aiTools } from "@/data/dashboard-data";
 import {
   Users,
   Zap,
@@ -20,8 +20,10 @@ import {
   ArrowRight,
   Trophy,
   CheckCircle,
-  Hammer
+  Hammer,
+  Cpu
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -46,8 +48,18 @@ const weekDateRanges = weeklyTrend.map((w) => {
 
 export default function OverviewPage() {
   const navigate = useNavigate();
-  const topUsers = users.filter((u) => u.rank <= 3);
   const { monthlySeatCost, manualHourlyRate } = useAppStore();
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [liveEvents, setLiveEvents] = useState<any[]>([]);
+
+  const topUsers = useMemo(() => {
+    let list = [...users];
+    if (platformFilter !== "all") {
+      list = list.filter(u => u.primaryTool === platformFilter);
+    }
+    return list.sort((a, b) => a.rank - b.rank).slice(0, 3);
+  }, [platformFilter]);
 
   const fiscalStats = useMemo(() => RoiCalculator.calculate({
     monthlySeatCost,
@@ -60,8 +72,41 @@ export default function OverviewPage() {
     manualFeatures: 450
   }), [monthlySeatCost, manualHourlyRate]);
 
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-  const [liveEvents, setLiveEvents] = useState<any[]>([]);
+  const filteredMetrics = useMemo(() => {
+    let currentUsers = [...users];
+    if (platformFilter !== "all") {
+      currentUsers = currentUsers.filter(u => u.primaryTool === platformFilter);
+    }
+
+    // In a real app, date filtering would happen on the backend or on a time-series of events.
+    // For this demo, we'll scale the metrics based on the date range relative to 'All Time' (4 months).
+    const daysSelected = dateRange.from && dateRange.to
+      ? Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
+      : 120; // 4 months default
+    const scaleFactor = Math.min(1, daysSelected / 120);
+
+    const aiLoC = currentUsers.reduce((acc, u) => acc + u.aiLoC, 0) * scaleFactor;
+    const totalLoC = currentUsers.reduce((acc, u) => acc + u.totalLoC, 0) * scaleFactor;
+    const tokens = currentUsers.reduce((acc, u) => acc + u.tokensUsed, 0) * scaleFactor;
+    const cost = aiTools.filter(t => platformFilter === "all" || t.shortName === platformFilter)
+      .reduce((acc, t) => acc + (t.totalTokens * t.costPer1kTokens / 1000), 0) * scaleFactor;
+
+    return {
+      aiLoC,
+      totalLoC,
+      aiCodePercent: totalLoC > 0 ? parseFloat(((aiLoC / totalLoC) * 100).toFixed(1)) : 0,
+      activeAIUsers: currentUsers.filter(u => u.aiPercent > 0).length,
+      aiAdoptionRate: currentUsers.length > 0 ? parseFloat(((currentUsers.filter(u => u.aiPercent > 0).length / currentUsers.length) * 100).toFixed(1)) : 0,
+      totalTokens: tokens,
+      totalAiCost: cost,
+      linesPerMillionTokens: tokens > 0 ? Math.floor((aiLoC / tokens) * 1000000) : 0
+    };
+  }, [platformFilter, dateRange, users, aiTools]);
+
+  const filteredTeams = useMemo(() => {
+    if (platformFilter === "all") return teams;
+    return teams.filter(t => t.primaryTool === platformFilter);
+  }, [platformFilter]);
 
   useEffect(() => {
     socketService.connect();
@@ -149,6 +194,19 @@ export default function OverviewPage() {
               )}
             </PopoverContent>
           </Popover>
+
+          <Select value={platformFilter} onValueChange={setPlatformFilter}>
+            <SelectTrigger className="h-11 w-[160px] rounded-xl border-slate-200 bg-white font-bold text-sm shadow-sm">
+              <SelectValue placeholder="Platform" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+              <SelectItem value="all" className="font-bold">All Tools</SelectItem>
+              {aiTools.map(tool => (
+                <SelectItem key={tool.id} value={tool.shortName} className="font-bold">{tool.shortName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Button
             className="h-11 rounded-xl px-6 bg-slate-900 text-white font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
             onClick={() => exportReport("Admin")}
@@ -159,25 +217,55 @@ export default function OverviewPage() {
         </div>
       </div>
 
+      {/* AI Insights Summary */}
+      <div className="grid grid-cols-1 gap-6">
+        <div className="bg-indigo-600 rounded-3xl p-8 shadow-xl shadow-indigo-100 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+            <Cpu className="h-32 w-32 text-white" />
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/20">
+              <Zap className="h-5 w-5 text-white" />
+            </div>
+            <h2 className="text-xl font-black text-white tracking-tight">AI Ecosystem Intelligence Summary</h2>
+          </div>
+          <p className="text-indigo-100 text-lg font-medium leading-relaxed max-w-4xl">
+            Currently tracking <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.activeAIUsers} engineers</span> across <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredTeams.length} teams</span>.
+            The organization has generated <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{formatNumber(filteredMetrics.aiLoC)} lines of AI code</span> with a
+            sustained <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.aiCodePercent}% output share</span>.
+            Efficiency stands at <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.linesPerMillionTokens} lines per 1M tokens</span>,
+            driving a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">${formatNumber(filteredMetrics.totalAiCost)} monthly investment</span> in AI {platformFilter !== 'all' ? platformFilter : 'tooling'}.
+            Velocity has seen a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">72.1% net improvement</span> over manual baseline.
+          </p>
+        </div>
+      </div>
+
       {/* Hero Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <MetricCard
+          title="Monthly AI Cost"
+          value={filteredMetrics.totalAiCost}
+          prefix="$"
+          gradient="warning"
+          icon={<Coins className="h-6 w-6" />}
+          trend={{ value: 12.8, isPositive: true }}
+          subtitle={`${formatNumber(filteredMetrics.totalTokens)} tokens consumed`}
+        />
+        <MetricCard
           title="Avg. AI Code %"
-          value={orgData.aiCodePercent}
+          value={filteredMetrics.aiCodePercent}
           suffix="%"
           gradient="ai"
           icon={<Zap className="h-6 w-6" />}
           trend={{ value: 10.2, isPositive: true }}
-          subtitle={`${formatNumber(orgData.aiLoC)} AI LoC generated`}
+          subtitle={`${formatNumber(filteredMetrics.aiLoC)} AI LoC generated`}
         />
         <MetricCard
-          title="Manual Code %"
-          value={parseFloat((100 - orgData.aiCodePercent).toFixed(1))}
-          suffix="%"
+          title="Lines / 1M Tokens"
+          value={filteredMetrics.linesPerMillionTokens}
           gradient="manual"
-          icon={<Hammer className="h-6 w-6" />}
-          trend={{ value: 10.2, isPositive: false }}
-          subtitle={`${formatNumber(orgData.manualLoC)} lines hand-crafted`}
+          icon={<Cpu className="h-6 w-6" />}
+          subtitle="AI Output Efficiency"
         />
         <MetricCard
           title="Velocity Boost"
@@ -190,19 +278,10 @@ export default function OverviewPage() {
         />
         <MetricCard
           title="Active AI Users"
-          value={orgData.activeAIUsers}
-          subtitle={`${orgData.aiAdoptionRate}% adoption rate`}
+          value={filteredMetrics.activeAIUsers}
+          subtitle={`${filteredMetrics.aiAdoptionRate}% adoption rate`}
           icon={<Users className="h-6 w-6" />}
           decimals={0}
-        />
-        <MetricCard
-          title="Monthly ROI"
-          value={fiscalStats.roiPercentage}
-          suffix="%"
-          gradient="warning"
-          icon={<Coins className="h-6 w-6" />}
-          trend={{ value: 12.8, isPositive: true }}
-          subtitle={`Estimated $${formatNumber(fiscalStats.monthlySavings)} saved`}
         />
       </div>
 

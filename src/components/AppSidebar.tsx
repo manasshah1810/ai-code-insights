@@ -98,18 +98,18 @@ export function AppSidebar() {
       : "from-indigo-500 to-purple-500";
 
   const roleBadgeColor = currentRole === "Developer"
-    ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
     : currentRole === "Manager"
-      ? "bg-blue-50 text-blue-600 border-blue-200"
-      : "bg-indigo-50 text-indigo-600 border-indigo-200";
+      ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+      : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-200 bg-white/50 backdrop-blur-xl">
+    <Sidebar collapsible="icon" className="border-r border-white/5 bg-slate-950">
       <SidebarHeader className="p-6">
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ rotate: 15, scale: 1.1 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-indigo-200 overflow-hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-indigo-500/20 overflow-hidden"
           >
             <img src="/logo.png" alt="Cogniify Code AI" className="h-8 w-8 object-contain" />
           </motion.div>
@@ -119,8 +119,8 @@ export function AppSidebar() {
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col"
             >
-              <span className="text-base font-black tracking-tight text-white">Cogniify Code AI</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Analytics Pro</span>
+              <span className="text-base font-black tracking-tight text-white leading-tight">Cogniify Code <span className="text-indigo-400">AI</span></span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Analytics Pro</span>
             </motion.div>
           )}
         </div>
@@ -129,9 +129,9 @@ export function AppSidebar() {
       <SidebarContent className="px-3 py-4">
         {/* Role Badge */}
         {!isCollapsed && (
-          <div className="px-3 mb-4">
+          <div className="px-3 mb-6">
             <Badge className={cn("w-full justify-center py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg border", roleBadgeColor)}>
-              {currentRole === "Developer" ? "👤 Developer View" : currentRole === "Manager" ? "👥 Manager View" : "🛡️ Admin View"}
+              {currentRole === "Developer" ? "👤 Developer" : currentRole === "Manager" ? "👥 Manager" : "🛡️ Admin"}
             </Badge>
           </div>
         )}
@@ -155,13 +155,13 @@ export function AppSidebar() {
                           className={cn(
                             "flex items-center gap-3 rounded-xl px-3 py-6 transition-all duration-300",
                             isActive
-                              ? "bg-indigo-50 text-indigo-700 shadow-sm"
-                              : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                              ? "bg-white/10 text-white shadow-sm"
+                              : "text-slate-400 hover:bg-white/5 hover:text-white"
                           )}
                         >
                           <item.icon className={cn(
                             "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
-                            isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
+                            isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"
                           )} />
                           {!isCollapsed && (
                             <span className={cn(
@@ -175,7 +175,7 @@ export function AppSidebar() {
                           {isActive && !isCollapsed && (
                             <motion.div
                               layoutId="active-nav"
-                              className="absolute right-2 h-1.5 w-1.5 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.6)]"
+                              className="absolute right-2 h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]"
                             />
                           )}
                         </NavLink>
@@ -189,8 +189,8 @@ export function AppSidebar() {
       </SidebarContent>
 
       {!isCollapsed && (
-        <div className="mt-auto border-t border-slate-100 p-4">
-          <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+        <div className="mt-auto border-t border-white/5 p-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
             <div className={cn(
               "h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-tr flex items-center justify-center text-white font-bold shadow-sm text-xs",
               roleColor
@@ -198,10 +198,10 @@ export function AppSidebar() {
               {personaInfo.initials}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-slate-900 truncate">{personaInfo.name}</span>
+              <span className="text-xs font-bold text-white truncate">{personaInfo.name}</span>
               <span className="text-[10px] text-slate-500 truncate">{personaInfo.email}</span>
             </div>
-            <button className="ml-auto text-slate-400 hover:text-slate-600 transition-colors">
+            <button className="ml-auto text-slate-500 hover:text-white transition-colors">
               <LogOut className="h-4 w-4" />
             </button>
           </div>
@@ -210,4 +210,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-

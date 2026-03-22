@@ -45,10 +45,13 @@ export default function TeamsPage() {
         header: "Developer",
         accessorKey: "name",
         cell: (val: string, row: any) => (
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer group/user"
+            onClick={() => navigate(`/users/${row.id}`)}
+          >
             <UserAvatar name={val} size="sm" />
             <div>
-              <p className="font-bold text-slate-900 leading-tight">{val}</p>
+              <p className="font-bold text-slate-900 group-hover/user:text-indigo-600 transition-colors leading-tight">{val}</p>
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{row.role}</p>
             </div>
           </div>
@@ -95,6 +98,11 @@ export default function TeamsPage() {
         header: "Status",
         accessorKey: "status",
         cell: (val: string) => <StatusBadge status={val} size="sm" />
+      },
+      {
+        header: "Date",
+        accessorKey: "lastActiveDate",
+        cell: (val: string) => <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{val}</span>
       }
     ];
 
@@ -115,7 +123,7 @@ export default function TeamsPage() {
               All Teams
             </button>
             <h1 className="text-4xl font-black tracking-tighter text-slate-900">{team.name}</h1>
-            <p className="text-slate-500 font-medium">Performance metrics and engineer breakdown</p>
+            <p className="text-slate-500 font-medium tracking-tight">Team metrics as of <span className="text-slate-900 font-bold">{team.lastSyncDate}</span> — Tracking engineer breakdown</p>
           </div>
           <div className="flex gap-3">
             <Button
