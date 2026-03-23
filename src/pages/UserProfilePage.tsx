@@ -22,12 +22,13 @@ import {
   Target, Activity, ArrowRight, Trophy, BarChart3,
   Database, Bot, Sparkles
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/store/app-store";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 export default function UserProfilePage() {
   const { userId } = useParams();
@@ -139,6 +140,18 @@ export default function UserProfilePage() {
       cell: (val: string) => <span className="font-bold text-slate-400 text-xs">{val}</span>
     }
   ];
+
+  const sessionChartData = useMemo(() => {
+    return Array.from({ length: 10 }).map((_, i) => {
+      const tokens = (Math.random() * 4000) + 1000;
+      const lines = tokens * (0.03 + Math.random() * 0.05);
+      return {
+        session: `S${i + 1}`,
+        tokensUsed: parseFloat(tokens.toFixed(2)),
+        linesAccepted: parseFloat(lines.toFixed(2)),
+      };
+    });
+  }, []);
 
   return (
     <motion.div
@@ -286,6 +299,31 @@ export default function UserProfilePage() {
               <p className="text-sm text-slate-400 font-medium">Engineer exhibits steady growth in AI proficiency with zero recorded regressions.</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Session Efficiency Chart */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h3 className="text-xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-indigo-500" /> Session Efficiency (Tokens vs Lines Accepted)
+        </h3>
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={sessionChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="session" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+              <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+              <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "12px" }}
+                itemStyle={{ color: "white", fontSize: "12px", fontWeight: "bold" }}
+                labelStyle={{ color: "#94a3b8", fontSize: "10px", textTransform: "uppercase" }}
+              />
+              <Legend wrapperStyle={{ paddingTop: "20px" }} />
+              <Bar yAxisId="left" dataKey="tokensUsed" name="Tokens Used" fill="#818cf8" radius={[4, 4, 0, 0]} />
+              <Line yAxisId="right" type="monotone" dataKey="linesAccepted" name="Lines Accepted" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} activeDot={{ r: 6 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

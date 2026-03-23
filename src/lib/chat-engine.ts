@@ -240,7 +240,7 @@ export class ChatEngine {
     private baseUrl: string;
     private model: string;
 
-    constructor(baseUrl = "http://localhost:11434/api/generate", model = "qwen2.5:4b") {
+    constructor(baseUrl = "http://34.123.31.83:8080/completion", model = "qwen2.5:4b") {
         this.baseUrl = baseUrl;
         this.model = model;
     }
@@ -285,14 +285,10 @@ export class ChatEngine {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    model: this.model,
                     prompt: fullPrompt,
-                    stream: false,
-                    options: {
-                        temperature: 0.3,
-                        top_p: 0.9,
-                        num_predict: 512,
-                    },
+                    n_predict: 512,
+                    temperature: 0.3,
+                    top_p: 0.9,
                 }),
             });
 
@@ -301,7 +297,7 @@ export class ChatEngine {
             }
 
             const data = await response.json();
-            const content = (data.response || "").trim();
+            const content = (data.content || data.response || "").trim();
 
             // Classify response category
             let category: ChatMessage["category"] = "domain";

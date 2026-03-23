@@ -50,8 +50,13 @@ export default function OverviewPage() {
   const navigate = useNavigate();
   const { monthlySeatCost, manualHourlyRate } = useAppStore();
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [dateFilterStr, setDateFilterStr] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
   const [liveEvents, setLiveEvents] = useState<any[]>([]);
+
+  const latestDataDate = useMemo(() => {
+    return weekDateRanges.length > 0 ? weekDateRanges[weekDateRanges.length - 1].end : new Date();
+  }, []);
 
   const topUsers = useMemo(() => {
     let list = [...users];
@@ -145,6 +150,8 @@ export default function OverviewPage() {
       : format(dateRange.from, "MMM d")
     : "All Time";
 
+  const dateLabel2 = dateFilterStr === "all" ? "All Time" : `Last ${dateFilterStr} days`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -164,36 +171,37 @@ export default function OverviewPage() {
             Executive <span className="text-indigo-600">Overview</span>
           </h1>
           <p className="text-base text-slate-500 mt-2 font-medium">
-            TechCorp Inc. Performance Tracking — <span className="text-slate-900">{dateLabel}</span>
+            TechCorp Inc. Performance Tracking — <span className="text-slate-900">{dateLabel2}</span>
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="h-11 rounded-xl px-5 font-bold shadow-sm hover:shadow-md transition-all border-slate-200">
+          <Select value={dateFilterStr} onValueChange={(val) => {
+            setDateFilterStr(val);
+            if (val === "all") {
+              setDateRange({});
+            } else {
+              const days = parseInt(val, 10);
+              const toDate = latestDataDate;
+              const fromDate = new Date(toDate.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
+              setDateRange({ from: fromDate, to: toDate });
+            }
+          }}>
+            <SelectTrigger className="h-11 w-[160px] rounded-xl border-slate-200 bg-white font-bold text-sm shadow-sm">
+              <div className="flex items-center">
                 <CalendarIcon className="h-4 w-4 mr-2 text-slate-400" />
-                {dateLabel}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl border-slate-100 overflow-hidden" align="end">
-              <Calendar
-                mode="range"
-                selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
-                onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
-                numberOfMonths={1}
-                defaultMonth={new Date(2025, 1)}
-                className="p-4"
-              />
-              {dateRange.from && (
-                <div className="p-3 bg-slate-50 border-t border-slate-100">
-                  <Button variant="ghost" size="sm" className="w-full text-xs font-bold" onClick={() => setDateRange({})}>
-                    Clear Filters
-                  </Button>
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
+                <SelectValue placeholder="Date Range" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+              <SelectItem value="all" className="font-bold">All Time</SelectItem>
+              <SelectItem value="5" className="font-bold">Last 5 days</SelectItem>
+              <SelectItem value="7" className="font-bold">Last 7 days</SelectItem>
+              <SelectItem value="15" className="font-bold">Last 15 days</SelectItem>
+              <SelectItem value="30" className="font-bold">Last 30 days</SelectItem>
+              <SelectItem value="90" className="font-bold">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
 
           <Select value={platformFilter} onValueChange={setPlatformFilter}>
             <SelectTrigger className="h-11 w-[160px] rounded-xl border-slate-200 bg-white font-bold text-sm shadow-sm">

@@ -17,7 +17,7 @@ export class AttributionEngine {
     private baseUrl: string;
     private model: string;
 
-    constructor(baseUrl = "http://localhost:11434/api/generate", model = "deepseek-coder") {
+    constructor(baseUrl = "http://34.123.31.83:8080/completion", model = "deepseek-coder") {
         this.baseUrl = baseUrl;
         this.model = model;
     }
@@ -52,10 +52,8 @@ Result:`;
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    model: this.model,
                     prompt: this.generatePrompt(snippet),
-                    stream: false,
-                    format: "json",
+                    n_predict: 512,
                 }),
             });
 
@@ -64,7 +62,7 @@ Result:`;
             }
 
             const data = await response.json();
-            const resultText = data.response;
+            const resultText = data.content || data.response;
 
             // Parse the JSON output from LLM
             try {

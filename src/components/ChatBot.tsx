@@ -113,7 +113,7 @@ export function ChatBot() {
             setMessages(prev => [...prev, {
                 id: crypto.randomUUID(),
                 role: "assistant",
-                content: "Sorry, I encountered an error. Please make sure Ollama is running with the qwen2.5:4b model (`ollama run qwen2.5:4b`).",
+                content: "Sorry, I encountered an error. Please make sure the remote server is running.",
                 timestamp: new Date(),
                 category: "domain",
             }]);
@@ -383,7 +383,7 @@ export function ChatBot() {
                                 </motion.button>
                             </div>
                             <p className="text-[9px] text-slate-400 font-medium text-center mt-2">
-                                Powered by <strong>Ollama • qwen2.5:4b</strong> — Local AI inference
+                                Powered by <strong>Remote API</strong> — Remote AI inference
                             </p>
                         </div>
                     </motion.div>

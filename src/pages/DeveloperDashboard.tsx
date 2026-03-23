@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 import {
     users, teams, formatNumber, weeklyTrend, repositories, aiTools
 } from "@/data/dashboard-data";
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import {
     User, Zap, Code2, GitCommit, GitMerge, Coins, CheckCircle,
     TrendingUp, Cpu, MousePointer2, ShieldCheck, Sparkles,
-    Hammer, Clock, Target, Activity
+    Hammer, Clock, Target, Activity, BarChart3
 } from "lucide-react";
 
 export default function DeveloperDashboard() {
@@ -99,6 +99,18 @@ export default function DeveloperDashboard() {
             cell: (val: string) => <span className="font-bold text-slate-400 text-xs">{val}</span>,
         },
     ];
+
+    const sessionChartData = useMemo(() => {
+        return Array.from({ length: 10 }).map((_, i) => {
+            const tokens = (Math.random() * 4000) + 1000;
+            const lines = tokens * (0.03 + Math.random() * 0.05);
+            return {
+                session: `S${i + 1}`,
+                tokensUsed: parseFloat(tokens.toFixed(2)),
+                linesAccepted: parseFloat(lines.toFixed(2)),
+            };
+        });
+    }, []);
 
     return (
         <motion.div
@@ -385,14 +397,41 @@ export default function DeveloperDashboard() {
                 </div>
 
                 {/* My Recent PRs */}
-                <div className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-                            <GitMerge className="h-5 w-5 text-emerald-500" /> My Recent Pull Requests
-                        </h3>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{user.recentPRs.length} SUBMISSIONS</span>
+                <div className="lg:col-span-8 space-y-8">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+                                <GitMerge className="h-5 w-5 text-emerald-500" /> My Recent Pull Requests
+                            </h3>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{user.recentPRs.length} SUBMISSIONS</span>
+                        </div>
+                        <DataTable data={user.recentPRs} columns={prColumns as any} className="shadow-premium" />
                     </div>
-                    <DataTable data={user.recentPRs} columns={prColumns as any} className="shadow-premium" />
+
+                    {/* Session Efficiency Chart */}
+                    <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                        <h3 className="text-xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-2">
+                            <BarChart3 className="h-5 w-5 text-indigo-500" /> Session Efficiency (Tokens vs Lines Accepted)
+                        </h3>
+                        <div className="h-[300px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <ComposedChart data={sessionChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="session" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                                    <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                    <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                    <RechartsTooltip
+                                        contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "12px" }}
+                                        itemStyle={{ color: "white", fontSize: "12px", fontWeight: "bold" }}
+                                        labelStyle={{ color: "#94a3b8", fontSize: "10px", textTransform: "uppercase" }}
+                                    />
+                                    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                                    <Bar yAxisId="left" dataKey="tokensUsed" name="Tokens Used" fill="#818cf8" radius={[4, 4, 0, 0]} />
+                                    <Line yAxisId="right" type="monotone" dataKey="linesAccepted" name="Lines Accepted" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} activeDot={{ r: 6 }} />
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </div>
             </div>
         </motion.div>

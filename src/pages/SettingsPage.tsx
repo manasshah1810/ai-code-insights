@@ -31,7 +31,7 @@ export default function SettingsPage() {
   const [aiThreshold, setAiThreshold] = useState("50");
   const [mergeThreshold, setMergeThreshold] = useState("70");
   const [exportSchedule, setExportSchedule] = useState("weekly");
-  const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434/api/generate");
+  const [ollamaUrl, setOllamaUrl] = useState("http://34.123.31.83:8080/completion");
   const [ollamaModel, setOllamaModel] = useState("deepseek-coder");
   const [testingConnection, setTestingConnection] = useState(false);
   const { strictPrivacyMode, setStrictPrivacyMode, userOptInList, toggleUserOptIn, monthlySeatCost, manualHourlyRate, setFiscalConfig } = useAppStore();
@@ -41,12 +41,12 @@ export default function SettingsPage() {
     try {
       const result = await attributionEngine.attributeSnippet("const x = 1;");
       if (result.confidence > 0) {
-        toast.success("Ollama connection successful!");
+        toast.success("API connection successful!");
       } else {
-        toast.error("Ollama connection failed or returned no result.");
+        toast.error("API connection failed or returned no result.");
       }
     } catch (e) {
-      toast.error("Ollama connection failed.");
+      toast.error("API connection failed.");
     } finally {
       setTestingConnection(false);
     }
@@ -94,11 +94,11 @@ export default function SettingsPage() {
       <section className="rounded-xl border bg-card p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Attribution Engine (Section 8.1)</h2>
-          <Badge variant="outline" className="text-[10px] bg-ai/5 text-ai border-ai/20">Local Inference Mode</Badge>
+          <Badge variant="outline" className="text-[10px] bg-ai/5 text-ai border-ai/20">Remote Inference Mode</Badge>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs">Ollama API Endpoint</Label>
+            <Label className="text-xs">API Endpoint</Label>
             <Input
               value={ollamaUrl}
               onChange={e => setOllamaUrl(e.target.value)}
@@ -129,7 +129,7 @@ export default function SettingsPage() {
           </Button>
           <Button size="sm" onClick={() => {
             attributionEngine.updateConfig(ollamaUrl, ollamaModel);
-            toast.success("Ollama settings saved.");
+            toast.success("API settings saved.");
           }}>Save Engine Config</Button>
         </div>
         <p className="text-[10px] text-muted-foreground">
