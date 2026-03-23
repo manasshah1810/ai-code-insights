@@ -21,7 +21,13 @@ import {
   Trophy,
   CheckCircle,
   Hammer,
-  Cpu
+  Cpu,
+  GitCommitHorizontal,
+  User,
+  FolderGit2,
+  Hash,
+  Layers,
+  X
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +36,7 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { socketService } from "@/lib/socket-service";
+import { socketService, type CommitEvent } from "@/lib/socket-service";
 import { exportReport } from "@/lib/export-pdf";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -39,6 +45,10 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/store/app-store";
 import { RoiCalculator } from "@/lib/roi-calculator";
+import {
+  ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from "recharts";
 
 // Map week labels to date ranges
 const weekDateRanges = weeklyTrend.map((w) => {
@@ -48,11 +58,12 @@ const weekDateRanges = weeklyTrend.map((w) => {
 
 export default function OverviewPage() {
   const navigate = useNavigate();
-  const { monthlySeatCost, manualHourlyRate } = useAppStore();
+  const { monthlySeatCost, manualHourlyRate, liveEvents, addLiveEvent } = useAppStore();
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [dateFilterStr, setDateFilterStr] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
-  const [liveEvents, setLiveEvents] = useState<any[]>([]);
+  const [selectedCommit, setSelectedCommit] = useState<CommitEvent | null>(null);
+  const [commitDialogOpen, setCommitDialogOpen] = useState(false);
 
   const latestDataDate = useMemo(() => {
     return weekDateRanges.length > 0 ? weekDateRanges[weekDateRanges.length - 1].end : new Date();
@@ -115,20 +126,25 @@ export default function OverviewPage() {
 
   useEffect(() => {
     socketService.connect();
-    const handleMetricUpdate = (data: any) => {
-      setLiveEvents(prev => [data, ...prev].slice(0, 5));
+    const handleMetricUpdate = (data: CommitEvent) => {
+      addLiveEvent(data);
       toast.info(`Real-time: ${data.source} commit detected`, {
-        description: `Commit ${data.commitId} processed`,
+        description: `${data.commitHeading} by ${data.authorName}`,
         position: "bottom-right",
-        duration: 3000
+        duration: 4000
       });
     };
     socketService.on('METRIC_UPDATE', handleMetricUpdate);
-    socketService.simulateLiveStream();
+    socketService.simulateLiveStream(); // idempotent — won't double-start
     return () => {
       socketService.off('METRIC_UPDATE', handleMetricUpdate);
     };
   }, []);
+
+  const handleCommitClick = (event: CommitEvent) => {
+    setSelectedCommit(event);
+    setCommitDialogOpen(true);
+  };
 
   const filteredTrend = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return weeklyTrend;
@@ -368,7 +384,7 @@ export default function OverviewPage() {
         <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col">
           <h3 className="text-xl font-black tracking-tight text-slate-900 mb-6">Team Proficiency</h3>
           <div className="space-y-6 flex-1">
-            {teams.map((team) => (
+            {filteredTeams.map((team) => (
               <div key={team.id} className="space-y-2">
                 <div className="flex justify-between items-end">
                   <div>
@@ -515,7 +531,7 @@ export default function OverviewPage() {
               </div>
               <div>
                 <h3 className="text-xl font-black tracking-tight text-slate-900">Real-time Telemetry</h3>
-                <p className="text-sm text-slate-500 font-medium">Streaming global AI events from VCS webhooks</p>
+                <p className="text-sm text-slate-500 font-medium">Streaming global AI events from VCS webhooks • Click a commit for details</p>
               </div>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
@@ -524,46 +540,57 @@ export default function OverviewPage() {
             </div>
           </div>
 
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-3 max-h-[480px] overflow-y-auto pr-2 custom-scrollbar">
             <AnimatePresence mode="popLayout">
               {liveEvents.map((event, i) => (
-                <motion.div
+                <motion.button
                   key={event.commitId || i}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.4 }}
-                  className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-200 transition-all group"
+                  onClick={() => handleCommitClick(event)}
+                  className="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-indigo-50/60 hover:border-indigo-200 transition-all group cursor-pointer text-left"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
                     <div className={cn(
-                      "h-12 w-12 rounded-xl flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform",
+                      "h-12 w-12 rounded-xl flex-shrink-0 flex items-center justify-center text-sm font-black shadow-sm group-hover:scale-110 transition-transform",
                       event.source === 'AI'
                         ? 'bg-indigo-600 text-white shadow-indigo-200'
-                        : 'bg-white text-slate-900 border border-slate-200 shadow-slate-100'
+                        : event.source === 'Hybrid'
+                          ? 'bg-violet-500 text-white shadow-violet-200'
+                          : 'bg-white text-slate-900 border border-slate-200 shadow-slate-100'
                     )}>
-                      {event.source === 'AI' ? <Zap className="h-5 w-5" /> : <Code2 className="h-5 w-5 text-slate-400" />}
+                      {event.source === 'AI' ? <Zap className="h-5 w-5" /> : event.source === 'Hybrid' ? <Layers className="h-5 w-5" /> : <Code2 className="h-5 w-5 text-slate-400" />}
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">Commit {event.commitId?.substring(0, 8) || "Processing"}</p>
-                      <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                        <span>{event.repository || "System"}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-900 truncate">{event.commitHeading}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+                        <span className="truncate">{event.authorName}</span>
                         <span>•</span>
-                        <span>{new Date(event.timestamp).toLocaleTimeString()}</span>
+                        <span className="truncate">{event.repository}</span>
+                        <span>•</span>
+                        <span className="flex-shrink-0">{new Date(event.timestamp).toLocaleTimeString()}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6">
-                    <div className="text-right hidden sm:block">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Confidence</p>
-                      <p className="text-sm font-black font-metric text-indigo-600">{Math.round((event.confidence || 0) * 100)}%</p>
+                  <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                    <div className="hidden sm:flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Lines</p>
+                        <p className="text-sm font-black font-metric text-slate-700">{event.linesAdded}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">AI %</p>
+                        <p className="text-sm font-black font-metric text-indigo-600">{event.aiPercent}%</p>
+                      </div>
                     </div>
-                    <div className="h-10 w-10 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm">
-                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                    <div className="h-10 w-10 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm group-hover:bg-indigo-500 group-hover:border-indigo-500 transition-colors">
+                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>
-                </motion.div>
+                </motion.button>
               ))}
             </AnimatePresence>
             {liveEvents.length === 0 && (
@@ -572,6 +599,7 @@ export default function OverviewPage() {
                   <Activity className="h-10 w-10 text-slate-200 animate-pulse" />
                 </div>
                 <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Listening for live deployment telemetry...</p>
+                <p className="text-slate-300 text-xs font-medium">First commit will appear shortly</p>
               </div>
             )}
           </div>
@@ -625,6 +653,279 @@ export default function OverviewPage() {
           </Button>
         </div>
       </div>
+
+      {/* ─── Commit Detail Modal ─── */}
+      <AnimatePresence>
+        {commitDialogOpen && selectedCommit && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+          >
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setCommitDialogOpen(false)}
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative z-10 w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 px-8 py-6 relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 h-32 w-32 bg-white/5 rounded-full blur-2xl" />
+                <div className="absolute -bottom-16 -left-16 h-40 w-40 bg-white/5 rounded-full blur-3xl" />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <GitCommitHorizontal className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-black text-white tracking-tight">Commit Detail</h2>
+                        <p className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest">Real-time Telemetry Event</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setCommitDialogOpen(false)}
+                      className="h-9 w-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                    >
+                      <X className="h-4 w-4 text-white" />
+                    </button>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-white font-bold text-base">{selectedCommit.commitHeading}</p>
+                    <p className="text-indigo-200 text-sm mt-1 leading-relaxed">{selectedCommit.commitDescription}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Body — Scrollable */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                {/* KPI Cards Row */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Hash className="h-4 w-4 text-slate-400" />
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Commit ID</span>
+                    </div>
+                    <p className="text-sm font-mono font-bold text-slate-900 truncate" title={selectedCommit.commitId}>
+                      {selectedCommit.commitId.substring(0, 12)}...
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="h-4 w-4 text-blue-400" />
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Author</span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-900">{selectedCommit.authorName}</p>
+                    <p className="text-[10px] text-slate-500 font-medium">{selectedCommit.authorRole}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="h-4 w-4 text-emerald-400" />
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Team</span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-900">{selectedCommit.teamName}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FolderGit2 className="h-4 w-4 text-violet-400" />
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Repository</span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-900 truncate">{selectedCommit.repository}</p>
+                  </div>
+                </div>
+
+                {/* Metrics KPIs */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100">
+                    <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Lines Added</p>
+                    <p className="text-3xl font-black text-indigo-600 font-metric">{selectedCommit.linesAdded}</p>
+                  </div>
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50 border border-violet-100">
+                    <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">AI Generated</p>
+                    <p className="text-3xl font-black text-violet-600 font-metric">{selectedCommit.linesAI}</p>
+                    <p className="text-[10px] text-violet-400 font-bold mt-0.5">{selectedCommit.aiPercent}% of total</p>
+                  </div>
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-200">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Manual Lines</p>
+                    <p className="text-3xl font-black text-slate-700 font-metric">{selectedCommit.linesManual}</p>
+                    <p className="text-[10px] text-slate-400 font-bold mt-0.5">{100 - selectedCommit.aiPercent}% of total</p>
+                  </div>
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100">
+                    <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">Tokens Used</p>
+                    <p className="text-3xl font-black text-amber-600 font-metric">{formatNumber(selectedCommit.tokensUsed)}</p>
+                  </div>
+                </div>
+
+                {/* Charts Row */}
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* AI Tool Split — Doughnut Chart */}
+                  <div className="rounded-2xl border border-slate-200 p-6 bg-white">
+                    <h4 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-indigo-500" />
+                      AI Tool Attribution
+                    </h4>
+                    <div className="flex items-center gap-4">
+                      <div className="w-[160px] h-[160px] flex-shrink-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={selectedCommit.aiToolSplit}
+                              dataKey="percent"
+                              nameKey="tool"
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={45}
+                              outerRadius={72}
+                              strokeWidth={2}
+                              stroke="#ffffff"
+                            >
+                              {selectedCommit.aiToolSplit.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <RechartsTooltip
+                              formatter={(value: any, name: any) => [`${value}%`, name]}
+                              contentStyle={{
+                                backgroundColor: '#1e293b',
+                                border: 'none',
+                                borderRadius: '12px',
+                                color: '#f8fafc',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                padding: '8px 14px',
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex-1 space-y-2.5">
+                        {selectedCommit.aiToolSplit.map((tool, idx) => (
+                          <div key={idx} className="flex items-center gap-3">
+                            <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: tool.color }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold text-slate-700">{tool.icon} {tool.tool}</span>
+                                <span className="text-xs font-black text-slate-900 font-metric">{tool.percent}%</span>
+                              </div>
+                              <p className="text-[10px] text-slate-400 font-medium">{tool.lines} lines</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI vs Manual — Bar Chart */}
+                  <div className="rounded-2xl border border-slate-200 p-6 bg-white">
+                    <h4 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
+                      <Code2 className="h-4 w-4 text-emerald-500" />
+                      Code Composition
+                    </h4>
+                    <ResponsiveContainer width="100%" height={160}>
+                      <BarChart
+                        data={[
+                          { name: 'AI Generated', value: selectedCommit.linesAI, fill: '#6366f1' },
+                          { name: 'Manual', value: selectedCommit.linesManual, fill: '#94a3b8' },
+                        ]}
+                        layout="vertical"
+                        margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }} />
+                        <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fontWeight: 700, fill: '#64748b' }} width={95} />
+                        <RechartsTooltip
+                          formatter={(value: any) => [`${value} lines`]}
+                          contentStyle={{
+                            backgroundColor: '#1e293b',
+                            border: 'none',
+                            borderRadius: '12px',
+                            color: '#f8fafc',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            padding: '8px 14px',
+                          }}
+                        />
+                        <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={28}>
+                          {[
+                            { name: 'AI Generated', value: selectedCommit.linesAI, fill: '#6366f1' },
+                            { name: 'Manual', value: selectedCommit.linesManual, fill: '#94a3b8' },
+                          ].map((entry, index) => (
+                            <Cell key={`bar-${index}`} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+
+                    {/* Visual Proportion Bar */}
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-black text-indigo-500 uppercase tracking-wider">AI: {selectedCommit.aiPercent}%</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Manual: {100 - selectedCommit.aiPercent}%</span>
+                      </div>
+                      <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${selectedCommit.aiPercent}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-l-full"
+                        />
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${100 - selectedCommit.aiPercent}%` }}
+                          transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                          className="h-full bg-slate-300 rounded-r-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Info Bar */}
+                <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-900 text-white">
+                  <div className="flex items-center gap-6">
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Source Type</p>
+                      <Badge className={cn(
+                        "mt-1 font-black text-[10px] rounded-lg",
+                        selectedCommit.source === 'AI' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' :
+                          selectedCommit.source === 'Hybrid' ? 'bg-violet-500/20 text-violet-300 border-violet-500/30' :
+                            'bg-slate-500/20 text-slate-300 border-slate-500/30'
+                      )}>{selectedCommit.source}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Confidence</p>
+                      <p className="text-lg font-black font-metric text-emerald-400 mt-0.5">{Math.round(selectedCommit.confidence * 100)}%</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Timestamp</p>
+                      <p className="text-sm font-bold text-slate-300 mt-0.5">{new Date(selectedCommit.timestamp).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => navigate(`/users/${selectedCommit.authorId}`)}
+                    className="bg-indigo-500 hover:bg-indigo-400 text-white font-black rounded-xl px-5 h-10 text-xs transition-all active:scale-95"
+                  >
+                    View {selectedCommit.authorName.split(' ')[0]}'s Profile
+                    <ArrowRight className="h-3.5 w-3.5 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div >
   );
 }

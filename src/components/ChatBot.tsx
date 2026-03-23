@@ -77,6 +77,7 @@ export function ChatBot() {
     useEffect(() => {
         setMessages([]);
         setShowSuggestions(true);
+        chatEngine.clearSummary();
     }, [currentRole]);
 
     const sendMessage = async (text?: string) => {
@@ -132,6 +133,7 @@ export function ChatBot() {
     const clearChat = () => {
         setMessages([]);
         setShowSuggestions(true);
+        chatEngine.clearSummary();
     };
 
     const roleConfig = {

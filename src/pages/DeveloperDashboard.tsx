@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, ComposedChart, Bar, Line, XAxis, YAxis, Label, CartesianGrid, Legend } from "recharts";
@@ -11,17 +11,24 @@ import { DataTable } from "@/components/ui/DataTable";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAppStore } from "@/store/app-store";
 import { cn } from "@/lib/utils";
 import {
     User, Zap, Code2, GitCommit, GitMerge, Coins, CheckCircle,
     TrendingUp, Cpu, MousePointer2, ShieldCheck, Sparkles,
-    Hammer, Clock, Target, Activity, BarChart3
+    Hammer, Clock, Target, Activity, BarChart3,
+    CalendarIcon, Filter
 } from "lucide-react";
 
 export default function DeveloperDashboard() {
     const { developerUserId } = useAppStore();
     const user = users.find(u => u.id === developerUserId);
+
+    // ─── Filter State ─────────────────────────────────────────────────────
+    const [dateFilterStr, setDateFilterStr] = useState<string>("all");
+    const [prStatusFilter, setPrStatusFilter] = useState<string>("all");
+    const [repoFilter, setRepoFilter] = useState<string>("all");
 
     if (!user) {
         return (
@@ -34,8 +41,23 @@ export default function DeveloperDashboard() {
     const team = teams.find(t => t.id === user.teamId);
     const manualPercent = parseFloat((100 - user.aiPercent).toFixed(1));
 
-    // User's repos (from their team)
-    const myRepos = repositories.filter(r => r.team === user.team);
+    // ─── Date scale factor ────────────────────────────────────────────────
+    const daysMap: Record<string, number> = { "5": 5, "7": 7, "15": 15, "30": 30, "90": 90, "all": 120 };
+    const daysSelected = daysMap[dateFilterStr] || 120;
+    const scaleFactor = Math.min(1, daysSelected / 120);
+
+    const dateLabel = dateFilterStr === "all" ? "All Time" : `Last ${dateFilterStr} days`;
+
+    // User's repos (from their team) — filtered
+    const allMyRepos = repositories.filter(r => r.team === user.team);
+    const myRepos = repoFilter === "all" ? allMyRepos : allMyRepos.filter(r => r.name === repoFilter);
+
+    // Scaled metrics
+    const scaledAiLoC = Math.round(user.aiLoC * scaleFactor);
+    const scaledManualLoC = Math.round(user.manualLoC * scaleFactor);
+    const scaledTotalLoC = Math.round(user.totalLoC * scaleFactor);
+    const scaledTokens = Math.round(user.tokensUsed * scaleFactor);
+    const scaledCommits = Math.round(user.commits * scaleFactor);
 
     // User's AI tool breakdown (simulated from team data)
     const toolBreakdown = useMemo(() => {
@@ -43,16 +65,16 @@ export default function DeveloperDashboard() {
             t.shortName.toLowerCase().includes(user.primaryTool.toLowerCase())
         );
         return [
-            { name: primaryToolObj?.shortName || user.primaryTool, percent: 62, color: primaryToolObj?.color || "#6366f1", loC: Math.floor(user.aiLoC * 0.62) },
-            { name: "Claude", percent: 22, color: "#D97706", loC: Math.floor(user.aiLoC * 0.22) },
-            { name: "ChatGPT", percent: 10, color: "#10B981", loC: Math.floor(user.aiLoC * 0.10) },
-            { name: "Gemini", percent: 6, color: "#2563EB", loC: Math.floor(user.aiLoC * 0.06) },
+            { name: primaryToolObj?.shortName || user.primaryTool, percent: 62, color: primaryToolObj?.color || "#6366f1", loC: Math.floor(scaledAiLoC * 0.62) },
+            { name: "Claude", percent: 22, color: "#D97706", loC: Math.floor(scaledAiLoC * 0.22) },
+            { name: "ChatGPT", percent: 10, color: "#10B981", loC: Math.floor(scaledAiLoC * 0.10) },
+            { name: "Gemini", percent: 6, color: "#2563EB", loC: Math.floor(scaledAiLoC * 0.06) },
         ];
-    }, [user]);
+    }, [user, scaledAiLoC]);
 
     const pieData = [
-        { name: "AI Code", value: user.aiLoC },
-        { name: "Manual Code", value: user.manualLoC },
+        { name: "AI Code", value: scaledAiLoC },
+        { name: "Manual Code", value: scaledManualLoC },
     ];
 
     const toolPieData = toolBreakdown.map(t => ({
@@ -60,6 +82,15 @@ export default function DeveloperDashboard() {
         value: t.loC,
         color: t.color,
     }));
+
+    // PR filtering
+    const filteredPRs = useMemo(() => {
+        let prs = [...user.recentPRs];
+        if (prStatusFilter !== "all") {
+            prs = prs.filter(pr => pr.status === prStatusFilter);
+        }
+        return prs;
+    }, [user.recentPRs, prStatusFilter]);
 
     const prColumns = [
         {
@@ -101,7 +132,8 @@ export default function DeveloperDashboard() {
     ];
 
     const sessionChartData = useMemo(() => {
-        return Array.from({ length: 10 }).map((_, i) => {
+        const numSessions = Math.max(2, Math.round(10 * scaleFactor));
+        return Array.from({ length: numSessions }).map((_, i) => {
             const tokens = (Math.random() * 4000) + 1000;
             const lines = tokens * (0.03 + Math.random() * 0.05);
             return {
@@ -110,7 +142,7 @@ export default function DeveloperDashboard() {
                 linesAccepted: parseFloat(lines.toFixed(2)),
             };
         });
-    }, []);
+    }, [scaleFactor]);
 
     return (
         <motion.div
@@ -130,8 +162,60 @@ export default function DeveloperDashboard() {
                         My <span className="text-emerald-600">Performance</span>
                     </h1>
                     <p className="text-base text-slate-500 mt-2 font-medium">
-                        Personal AI metrics and coding activity for <span className="text-slate-900 font-bold">{user.name}</span>
+                        Personal AI metrics for <span className="text-slate-900 font-bold">{user.name}</span> — <span className="text-slate-900">{dateLabel}</span>
                     </p>
+                </div>
+
+                {/* Filters */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Select value={dateFilterStr} onValueChange={setDateFilterStr}>
+                        <SelectTrigger className="h-11 w-[150px] rounded-xl border-slate-200 bg-white font-bold text-sm shadow-sm">
+                            <div className="flex items-center">
+                                <CalendarIcon className="h-4 w-4 mr-2 text-slate-400" />
+                                <SelectValue placeholder="Date Range" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                            <SelectItem value="all" className="font-bold">All Time</SelectItem>
+                            <SelectItem value="5" className="font-bold">Last 5 days</SelectItem>
+                            <SelectItem value="7" className="font-bold">Last 7 days</SelectItem>
+                            <SelectItem value="15" className="font-bold">Last 15 days</SelectItem>
+                            <SelectItem value="30" className="font-bold">Last 30 days</SelectItem>
+                            <SelectItem value="90" className="font-bold">Last 90 days</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={prStatusFilter} onValueChange={setPrStatusFilter}>
+                        <SelectTrigger className="h-11 w-[150px] rounded-xl border-slate-200 bg-white font-bold text-sm shadow-sm">
+                            <div className="flex items-center">
+                                <Filter className="h-4 w-4 mr-2 text-slate-400" />
+                                <SelectValue placeholder="PR Status" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                            <SelectItem value="all" className="font-bold">All PRs</SelectItem>
+                            <SelectItem value="Merged" className="font-bold">Merged</SelectItem>
+                            <SelectItem value="Open" className="font-bold">Open</SelectItem>
+                            <SelectItem value="Rejected" className="font-bold">Rejected</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {allMyRepos.length > 1 && (
+                        <Select value={repoFilter} onValueChange={setRepoFilter}>
+                            <SelectTrigger className="h-11 w-[170px] rounded-xl border-slate-200 bg-white font-bold text-sm shadow-sm">
+                                <div className="flex items-center">
+                                    <Code2 className="h-4 w-4 mr-2 text-slate-400" />
+                                    <SelectValue placeholder="Repository" />
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                                <SelectItem value="all" className="font-bold">All Repos</SelectItem>
+                                {allMyRepos.map(repo => (
+                                    <SelectItem key={repo.name} value={repo.name} className="font-bold text-xs">{repo.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                 </div>
             </div>
 
@@ -172,9 +256,9 @@ export default function DeveloperDashboard() {
             {/* KPI Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard title="AI Contribution" value={user.aiPercent} icon={<Zap className="h-6 w-6" />} suffix="%" gradient="ai" trend={{ value: 12.4, isPositive: true }} />
-                <MetricCard title="Avg. Tokens / Line" value={user.aiLoC > 0 ? parseFloat((user.tokensUsed / user.aiLoC).toFixed(2)) : 0} icon={<Cpu className="h-6 w-6" />} decimals={2} gradient="success" subtitle="Tokens per Line" />
+                <MetricCard title="Avg. Tokens / Line" value={scaledAiLoC > 0 ? parseFloat((scaledTokens / scaledAiLoC).toFixed(2)) : 0} icon={<Cpu className="h-6 w-6" />} decimals={2} gradient="success" subtitle={`${dateLabel}`} />
                 <MetricCard title="Merge Success" value={user.prMergeRate} icon={<GitMerge className="h-6 w-6" />} suffix="%" gradient="warning" trend={{ value: 4.2, isPositive: true }} />
-                <MetricCard title="Commits" value={user.commits} icon={<GitCommit className="h-6 w-6" />} decimals={0} subtitle="Total synced events" />
+                <MetricCard title="Commits" value={scaledCommits} icon={<GitCommit className="h-6 w-6" />} decimals={0} subtitle={`${dateLabel}`} />
             </div>
 
             {/* Code Split + Trend */}
@@ -202,11 +286,11 @@ export default function DeveloperDashboard() {
                         <div className="w-full mt-6 grid grid-cols-2 gap-3">
                             <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
                                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">AI Generated</p>
-                                <p className="text-lg font-black text-indigo-700 font-metric">{formatNumber(user.aiLoC)} LoC</p>
+                                <p className="text-lg font-black text-indigo-700 font-metric">{formatNumber(scaledAiLoC)} LoC</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hand-crafted</p>
-                                <p className="text-lg font-black text-slate-700 font-metric">{formatNumber(user.manualLoC)} LoC</p>
+                                <p className="text-lg font-black text-slate-700 font-metric">{formatNumber(scaledManualLoC)} LoC</p>
                             </div>
                         </div>
                     </div>
@@ -256,8 +340,8 @@ export default function DeveloperDashboard() {
                 </div>
                 <p className="text-emerald-50 text-lg font-medium leading-relaxed max-w-4xl">
                     You have successfully integrated <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.aiPercent}% AI code</span> into your workflow.
-                    Your efficiency is recorded at <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.aiLoC > 0 ? (user.tokensUsed / user.aiLoC).toFixed(2) : 0} tokens per line</span>,
-                    utilizing <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{formatNumber(user.tokensUsed)} total tokens</span>.
+                    Your efficiency is recorded at <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{scaledAiLoC > 0 ? (scaledTokens / scaledAiLoC).toFixed(2) : 0} tokens per line</span>,
+                    utilizing <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{formatNumber(scaledTokens)} total tokens</span>.
                     With a <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.prMergeRate}% PR success rate</span>,
                     you are ranked <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">#{user.rank}</span> in the engineering fleet.
                 </p>
@@ -341,7 +425,7 @@ export default function DeveloperDashboard() {
                         ))}
                         {myRepos.length === 0 && (
                             <div className="py-12 text-center">
-                                <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">No repositories found for your team</p>
+                                <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">No repositories match the selected filter</p>
                             </div>
                         )}
                     </div>
@@ -360,17 +444,18 @@ export default function DeveloperDashboard() {
                         <div className="space-y-6">
                             <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Tokens</p>
-                                <p className="text-3xl font-black text-white font-metric">{formatNumber(user.tokensUsed)}</p>
+                                <p className="text-3xl font-black text-white font-metric">{formatNumber(scaledTokens)}</p>
+                                <p className="text-[10px] font-bold text-slate-500 mt-1">{dateLabel}</p>
                             </div>
                             {user.primaryTool === "Cursor" && (
                                 <>
                                     <div className="flex justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                         <span className="text-xs font-bold text-slate-400">Fast Requests</span>
-                                        <span className="text-sm font-black text-white font-metric">{formatNumber(user.cursorFastTokens)}</span>
+                                        <span className="text-sm font-black text-white font-metric">{formatNumber(Math.round(user.cursorFastTokens * scaleFactor))}</span>
                                     </div>
                                     <div className="flex justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                         <span className="text-xs font-bold text-slate-400">Slow Requests</span>
-                                        <span className="text-sm font-black text-white font-metric">{formatNumber(user.cursorSlowTokens)}</span>
+                                        <span className="text-sm font-black text-white font-metric">{formatNumber(Math.round(user.cursorSlowTokens * scaleFactor))}</span>
                                     </div>
                                     <div className="flex justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                         <span className="text-xs font-bold text-indigo-400">Accept Rate</span>
@@ -382,7 +467,7 @@ export default function DeveloperDashboard() {
                                 <>
                                     <div className="flex justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                         <span className="text-xs font-bold text-slate-400">Suggestions</span>
-                                        <span className="text-sm font-black text-white font-metric">{formatNumber(user.copilotSuggestions)}</span>
+                                        <span className="text-sm font-black text-white font-metric">{formatNumber(Math.round(user.copilotSuggestions * scaleFactor))}</span>
                                     </div>
                                     <div className="flex justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                         <span className="text-xs font-bold text-indigo-400">Accept Rate</span>
@@ -392,7 +477,7 @@ export default function DeveloperDashboard() {
                             )}
                             <div className="flex justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-xs font-bold text-slate-400">Completions</span>
-                                <span className="text-sm font-black text-white font-metric">{formatNumber(user.cursorCompletions)}</span>
+                                <span className="text-sm font-black text-white font-metric">{formatNumber(Math.round(user.cursorCompletions * scaleFactor))}</span>
                             </div>
                         </div>
                     </div>
@@ -405,9 +490,17 @@ export default function DeveloperDashboard() {
                             <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
                                 <GitMerge className="h-5 w-5 text-emerald-500" /> My Recent Pull Requests
                             </h3>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{user.recentPRs.length} SUBMISSIONS</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                {filteredPRs.length} {prStatusFilter !== "all" ? prStatusFilter.toUpperCase() : "SUBMISSIONS"}
+                            </span>
                         </div>
-                        <DataTable data={user.recentPRs} columns={prColumns as any} className="shadow-premium" />
+                        {filteredPRs.length > 0 ? (
+                            <DataTable data={filteredPRs} columns={prColumns as any} className="shadow-premium" />
+                        ) : (
+                            <div className="py-12 text-center">
+                                <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">No PRs match the selected status filter</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Session Efficiency Chart */}
