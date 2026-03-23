@@ -261,6 +261,8 @@ export default function ManagerDashboard() {
                             categories={['aiPercent']}
                             colors={['#3b82f6']}
                             valueFormatter={(v) => `${v}%`}
+                            xAxisLabel="Timeline (Weeks)"
+                            yAxisLabel="Cumulative AI %"
                         />
                     </div>
                 </div>

@@ -326,6 +326,8 @@ export default function OverviewPage() {
             colors={['#6366f1', '#94a3b8']}
             valueFormatter={(v) => formatNumber(v as number)}
             height={350}
+            xAxisLabel="Timeline (Weekly)"
+            yAxisLabel="Lines of Code (LoC)"
           />
         </div>
 
@@ -438,6 +440,8 @@ export default function OverviewPage() {
               categories={['interventions', 'flaws']}
               colors={['#10b981', '#cbd5e1']}
               height={220}
+              xAxisLabel="Timeline (Weekly)"
+              yAxisLabel="Sec. Event Count"
             />
 
             <div className="space-y-4">

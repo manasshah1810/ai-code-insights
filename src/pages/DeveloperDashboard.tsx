@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, ComposedChart, Bar, Line, XAxis, YAxis, Label, CartesianGrid, Legend } from "recharts";
 import {
     users, teams, formatNumber, weeklyTrend, repositories, aiTools
 } from "@/data/dashboard-data";
@@ -229,6 +229,8 @@ export default function DeveloperDashboard() {
                             colors={["#34d399"]}
                             valueFormatter={(v) => `${v}%`}
                             height={280}
+                            xAxisLabel="Timeline (Weeks)"
+                            yAxisLabel="Personal AI %"
                         />
                     </div>
                     <div className="mt-6 flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm relative z-10">
@@ -415,11 +417,17 @@ export default function DeveloperDashboard() {
                         </h3>
                         <div className="h-[300px]">
                             <ResponsiveContainer width="100%" height="100%">
-                                <ComposedChart data={sessionChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                                <ComposedChart data={sessionChartData} margin={{ top: 10, right: 30, left: 30, bottom: 20 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="session" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                                    <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                                    <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                    <XAxis dataKey="session" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10}>
+                                        <Label value="Session ID" offset={-10} position="insideBottom" style={{ fill: '#94a3b8', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700 }} />
+                                    </XAxis>
+                                    <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }}>
+                                        <Label value="Tokens Used" angle={-90} position="insideLeft" offset={10} style={{ fill: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle' }} />
+                                    </YAxis>
+                                    <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }}>
+                                        <Label value="Lines Accepted" angle={90} position="insideRight" offset={10} style={{ fill: '#10b981', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle' }} />
+                                    </YAxis>
                                     <RechartsTooltip
                                         contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "12px" }}
                                         itemStyle={{ color: "white", fontSize: "12px", fontWeight: "bold" }}

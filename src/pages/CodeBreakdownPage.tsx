@@ -156,6 +156,8 @@ export default function CodeBreakdownPage() {
             colors={['#6366f1', '#cbd5e1']}
             valueFormatter={(v) => formatNumber(v as number)}
             height={320}
+            xAxisLabel="Engineering Squads"
+            yAxisLabel="Lines of Code (LoC)"
           />
         </div>
 

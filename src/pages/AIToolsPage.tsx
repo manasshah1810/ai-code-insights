@@ -378,6 +378,8 @@ export default function AIToolsPage() {
                         colors={aiTools.map(t => t.color)}
                         valueFormatter={(v) => formatNumber(v as number)}
                         height={380}
+                        xAxisLabel="Timeline (Monthly)"
+                        yAxisLabel="AI LoC Output"
                     />
                 </div>
             </div>

@@ -119,6 +119,8 @@ export default function MergeAnalyticsPage() {
               colors={['#6366f1', '#475569']}
               valueFormatter={(v) => `${v}%`}
               height={250}
+              xAxisLabel="Contribution Origin"
+              yAxisLabel="Merge Success Rate (%)"
             />
           </div>
           <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm relative z-10">
