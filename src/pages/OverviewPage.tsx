@@ -104,7 +104,7 @@ export default function OverviewPage() {
       aiAdoptionRate: currentUsers.length > 0 ? parseFloat(((currentUsers.filter(u => u.aiPercent > 0).length / currentUsers.length) * 100).toFixed(1)) : 0,
       totalTokens: tokens,
       totalAiCost: cost,
-      linesPerMillionTokens: tokens > 0 ? Math.floor((aiLoC / tokens) * 1000000) : 0
+      avgTokensPerLine: aiLoC > 0 ? parseFloat((tokens / aiLoC).toFixed(2)) : 0
     };
   }, [platformFilter, dateRange, users, aiTools]);
 
@@ -241,7 +241,7 @@ export default function OverviewPage() {
             Currently tracking <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.activeAIUsers} engineers</span> across <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredTeams.length} teams</span>.
             The organization has generated <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{formatNumber(filteredMetrics.aiLoC)} lines of AI code</span> with a
             sustained <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.aiCodePercent}% output share</span>.
-            Efficiency stands at <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.linesPerMillionTokens} lines per 1M tokens</span>,
+            Efficiency stands at <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.avgTokensPerLine} tokens per line</span>,
             driving a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">${formatNumber(filteredMetrics.totalAiCost)} monthly investment</span> in AI {platformFilter !== 'all' ? platformFilter : 'tooling'}.
             Velocity has seen a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">72.1% net improvement</span> over manual baseline.
           </p>
@@ -269,8 +269,8 @@ export default function OverviewPage() {
           subtitle={`${formatNumber(filteredMetrics.aiLoC)} AI LoC generated`}
         />
         <MetricCard
-          title="Lines / 1M Tokens"
-          value={filteredMetrics.linesPerMillionTokens}
+          title="Avg. Tokens / Line"
+          value={filteredMetrics.avgTokensPerLine}
           gradient="manual"
           icon={<Cpu className="h-6 w-6" />}
           subtitle="AI Output Efficiency"
@@ -296,45 +296,78 @@ export default function OverviewPage() {
       {/* Main Analysis Section */}
       <div className="grid lg:grid-cols-12 gap-8">
         {/* Trend Analysis */}
-        <div className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <TrendingUp className="h-32 w-32 text-indigo-600" />
+        <div className="lg:col-span-8 flex flex-col gap-8">
+          {/* Adoption & Output Trend */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden group flex-1">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <TrendingUp className="h-32 w-32 text-indigo-600" />
+            </div>
+
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-xl font-black tracking-tight text-slate-900">Adoption & Output Trend</h3>
+                <p className="text-sm text-slate-500 mt-1">Comparing AI assistance vs manual craftsmanship</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-indigo-500" />
+                  <span className="text-xs font-bold text-slate-600 uppercase">AI Output</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-slate-300" />
+                  <span className="text-xs font-bold text-slate-600 uppercase">Manual</span>
+                </div>
+              </div>
+            </div>
+
+            <EnhancedChart
+              type="area"
+              data={filteredTrend}
+              index="week"
+              categories={['aiLoC', 'manualLoC']}
+              colors={['#6366f1', '#94a3b8']}
+              valueFormatter={(v) => formatNumber(v as number)}
+              height={260}
+              xAxisLabel="Timeline (Weekly)"
+              yAxisLabel="Lines of Code (LoC)"
+            />
           </div>
 
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-xl font-black tracking-tight text-slate-900">Adoption & Output Trend</h3>
-              <p className="text-sm text-slate-500 mt-1">Comparing AI assistance vs manual craftsmanship</p>
+          {/* AI Code Quality Trend */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden group flex-1">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <CheckCircle className="h-32 w-32 text-emerald-500" />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-indigo-500" />
-                <span className="text-xs font-bold text-slate-600 uppercase">AI Output</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-slate-300" />
-                <span className="text-xs font-bold text-slate-600 uppercase">Manual</span>
-              </div>
-            </div>
-          </div>
 
-          <EnhancedChart
-            type="area"
-            data={filteredTrend}
-            index="week"
-            categories={['aiLoC', 'manualLoC']}
-            colors={['#6366f1', '#94a3b8']}
-            valueFormatter={(v) => formatNumber(v as number)}
-            height={350}
-            xAxisLabel="Timeline (Weekly)"
-            yAxisLabel="Lines of Code (LoC)"
-          />
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-xl font-black tracking-tight text-slate-900">AI Code Quality Trend</h3>
+                <p className="text-sm text-slate-500 mt-1">Average successful pull request merge rate over time</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-emerald-500" />
+                <span className="text-xs font-bold text-slate-600 uppercase">Merge Rate %</span>
+              </div>
+            </div>
+
+            <EnhancedChart
+              type="line"
+              data={filteredTrend}
+              index="week"
+              categories={['aiMergeRate']}
+              colors={['#10b981']}
+              valueFormatter={(v) => `${v}%`}
+              height={260}
+              xAxisLabel="Timeline (Weekly)"
+              yAxisLabel="Merge Success Rate (%)"
+            />
+          </div>
         </div>
 
         {/* Team Leadership */}
-        <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="lg:col-span-4 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col">
           <h3 className="text-xl font-black tracking-tight text-slate-900 mb-6">Team Proficiency</h3>
-          <div className="space-y-6">
+          <div className="space-y-6 flex-1">
             {teams.map((team) => (
               <div key={team.id} className="space-y-2">
                 <div className="flex justify-between items-end">
@@ -358,7 +391,7 @@ export default function OverviewPage() {
 
           <Button
             variant="ghost"
-            className="w-full mt-8 h-12 rounded-xl text-slate-600 font-bold hover:bg-slate-50 group transition-all"
+            className="w-full mt-8 h-12 rounded-xl text-slate-600 font-bold hover:bg-slate-50 group transition-all shrink-0"
             onClick={() => navigate('/teams')}
           >
             Full Team Analytics <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />

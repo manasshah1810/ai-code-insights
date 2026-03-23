@@ -265,7 +265,7 @@ function generateAdminReport(doc: jsPDF) {
   // Calculations for cost and efficiency
   const tokens = users.reduce((acc, u) => acc + u.tokensUsed, 0);
   const totalCost = aiTools.reduce((acc, t) => acc + (t.totalTokens * t.costPer1kTokens / 1000), 0);
-  const efficiency = tokens > 0 ? Math.floor((orgData.aiLoC / tokens) * 1000000) : 0;
+  const efficiency = orgData.aiLoC > 0 ? (tokens / orgData.aiLoC).toFixed(2) : "0";
 
   const kpiW = (CONTENT_WIDTH - 12) / 3;
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "Total Developers", `${orgData.totalDevelopers}`, COLORS.primary);
@@ -274,7 +274,7 @@ function generateAdminReport(doc: jsPDF) {
   y += 60;
 
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "Total Lines of Code", formatNumber(orgData.totalLoC), COLORS.dark);
-  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Efficiency (L/1MT)", `${efficiency}`, COLORS.accent);
+  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Avg. Tokens / Line", `${efficiency}`, COLORS.accent);
   drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Monthly AI Investment", `$${formatNumber(totalCost)}`, COLORS.warning);
   y += 60;
 
@@ -444,11 +444,11 @@ function generateManagerReport(doc: jsPDF, teamId: string, managerId: number) {
   doc.text(`Manager: ${manager.name} (${manager.role})  •  ${teamMembers.length} engineers`, PAGE.marginLeft + 12, y);
   y += 18;
 
-  const efficiency = teamTokens > 0 ? Math.floor((teamAiLoC / teamTokens) * 1000000) : 0;
+  const efficiency = teamAiLoC > 0 ? (teamTokens / teamAiLoC).toFixed(2) : "0";
 
   const kpiW = (CONTENT_WIDTH - 12) / 3;
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "Team AI Code %", `${teamAiPercent}%`, COLORS.blue);
-  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Efficiency (L/1MT)", `${efficiency}`, COLORS.accent);
+  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Avg. Tokens / Line", `${efficiency}`, COLORS.accent);
   drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Avg Merge Rate", `${avgMergeRate}%`, COLORS.accent);
   y += 60;
 
@@ -509,10 +509,10 @@ function generateDeveloperReport(doc: jsPDF, userId: number) {
 
   // ─── Personal KPIs ───
   const kpiW = (CONTENT_WIDTH - 12) / 3;
-  const efficiency = user.tokensUsed > 0 ? Math.floor((user.aiLoC / user.tokensUsed) * 1000000) : 0;
+  const efficiency = user.aiLoC > 0 ? (user.tokensUsed / user.aiLoC).toFixed(2) : "0";
 
   drawKpiCard(doc, PAGE.marginLeft, y, kpiW, 50, "AI Code %", `${user.aiPercent}%`, COLORS.primary);
-  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Efficiency (L/1MT)", `${efficiency}`, COLORS.accent);
+  drawKpiCard(doc, PAGE.marginLeft + kpiW + 6, y, kpiW, 50, "Avg. Tokens / Line", `${efficiency}`, COLORS.accent);
   drawKpiCard(doc, PAGE.marginLeft + (kpiW + 6) * 2, y, kpiW, 50, "Total Commits", `${user.commits}`, COLORS.dark);
   y += 60;
 

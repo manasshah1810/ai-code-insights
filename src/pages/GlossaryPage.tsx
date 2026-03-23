@@ -50,6 +50,11 @@ export default function GlossaryPage() {
                     term: "AI Adoption Rate",
                     definition: "The percentage of engineers within a specific squad or organization who have actively used AI coding tools at least once in the current reporting period.",
                     formula: "(Active AI Users / Total Engineering Headcount) × 100"
+                },
+                {
+                    term: "Avg. Tokens / Line",
+                    definition: "The average volume of tokens consumed by the AI engine to generate a single accepted line of code. Lower values indicate higher prompt efficiency and better tool utilization.",
+                    formula: "Total Tokens Used / AI Generated LoC"
                 }
             ]
         },

@@ -21,6 +21,15 @@ export default function MergeAnalyticsPage() {
     { name: "Human Manual", rate: mergeAnalytics.manualMergeRate },
   ];
 
+  const reasonCounts = mergeAnalytics.rejectedPRs.reduce((acc, pr) => {
+    acc[pr.reason] = (acc[pr.reason] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const rejectionReasonData = Object.entries(reasonCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
   const rejectedColumns = [
     {
       header: "Pull Request",
@@ -102,32 +111,65 @@ export default function MergeAnalyticsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Quality Benchmarking */}
-        <div className="rounded-3xl border border-slate-200 bg-slate-900 p-8 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <TrendingUp className="h-32 w-32 text-white" />
+        <div className="flex flex-col gap-8 h-full">
+          {/* Quality Benchmarking */}
+          <div className="rounded-3xl border border-slate-200 bg-slate-900 p-8 shadow-xl relative overflow-hidden flex flex-col flex-1 min-h-[420px]">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <TrendingUp className="h-32 w-32 text-white" />
+            </div>
+
+            <h3 className="text-xl font-black tracking-tight text-white uppercase mb-8 relative z-10 flex items-center gap-2 shrink-0">
+              <ShieldAlert className="h-5 w-5 text-indigo-400" /> Quality Benchmark
+            </h3>
+
+            <div className="relative z-10 flex-1 flex flex-col justify-center">
+              <EnhancedChart
+                type="bar"
+                data={comparisonData}
+                index="name"
+                categories={['rate']}
+                colors={['#6366f1', '#475569']}
+                valueFormatter={(v) => `${v}%`}
+                height={220}
+                xAxisLabel="Contribution Origin"
+                yAxisLabel="Merge Success Rate (%)"
+              />
+            </div>
+
+            <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm relative z-10 shrink-0">
+              <p className="text-xs font-bold text-indigo-300 uppercase tracking-[0.2em] mb-2 text-center">Engine Performance Impact</p>
+              <p className="text-sm text-slate-400 text-center leading-relaxed">
+                AI-generated code exhibits a <span className="text-white font-bold">{Math.abs(orgData.aiMergeRate - mergeAnalytics.manualMergeRate).toFixed(1)}%</span> performance variance compared to manual crafts.
+              </p>
+            </div>
           </div>
-          <h3 className="text-xl font-black tracking-tight text-white uppercase mb-8 relative z-10 flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-indigo-400" /> Quality Benchmark
-          </h3>
-          <div className="relative z-10">
-            <EnhancedChart
-              type="bar"
-              data={comparisonData}
-              index="name"
-              categories={['rate']}
-              colors={['#6366f1', '#475569']}
-              valueFormatter={(v) => `${v}%`}
-              height={250}
-              xAxisLabel="Contribution Origin"
-              yAxisLabel="Merge Success Rate (%)"
-            />
-          </div>
-          <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm relative z-10">
-            <p className="text-xs font-bold text-indigo-300 uppercase tracking-[0.2em] mb-2 text-center">Engine Performance Impact</p>
-            <p className="text-sm text-slate-400 text-center leading-relaxed">
-              AI-generated code exhibits a <span className="text-white font-bold">{Math.abs(orgData.aiMergeRate - mergeAnalytics.manualMergeRate).toFixed(1)}%</span> performance variance compared to manual crafts.
-            </p>
+
+          {/* Rejection Diagnostics */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden flex flex-col flex-1 min-h-[420px]">
+            <h3 className="text-xl font-black tracking-tight text-slate-900 uppercase mb-8 flex items-center gap-2 shrink-0">
+              <Filter className="h-5 w-5 text-rose-500" /> Rejection Diagnostics
+            </h3>
+
+            <div className="flex-1 flex flex-col justify-center">
+              <EnhancedChart
+                type="bar"
+                data={rejectionReasonData}
+                index="name"
+                categories={['count']}
+                colors={['#f43f5e']}
+                valueFormatter={(v) => `${v} incidents`}
+                height={260}
+                xAxisLabel="Rejection Reason"
+                yAxisLabel="Occurrence Count"
+              />
+            </div>
+
+            <div className="mt-8 p-6 rounded-2xl bg-rose-50 border border-rose-100 backdrop-blur-sm relative z-10 shrink-0">
+              <p className="text-xs font-bold text-rose-400 uppercase tracking-[0.2em] mb-2 text-center">Pattern Analysis</p>
+              <p className="text-sm text-slate-500 text-center leading-relaxed">
+                Identifying recurring motifs in rejected code accelerates feedback loops and refines our engine's prompt architecture.
+              </p>
+            </div>
           </div>
         </div>
 

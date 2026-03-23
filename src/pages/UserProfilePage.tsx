@@ -202,7 +202,7 @@ export default function UserProfilePage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <MetricCard title="Commits" value={user.commits} icon={<GitCommit className="h-4 w-4" />} decimals={0} />
         <MetricCard title="AI Contribution" value={user.aiPercent} icon={<Zap className="h-4 w-4" />} suffix="%" gradient="ai" />
-        <MetricCard title="Token Efficiency" value={Math.floor((user.aiLoC / user.tokensUsed) * 1000000)} icon={<Cpu className="h-4 w-4" />} decimals={0} suffix=" L/1M-T" gradient="success" />
+        <MetricCard title="Avg. Tokens / Line" value={user.aiLoC > 0 ? parseFloat((user.tokensUsed / user.aiLoC).toFixed(2)) : 0} icon={<Cpu className="h-4 w-4" />} decimals={2} gradient="success" />
         <MetricCard title="AI Merge Rate" value={user.aiMergeRate} icon={<GitMerge className="h-4 w-4" />} suffix="%" gradient="success" />
         <MetricCard title="Total Tokens" value={user.tokensUsed} icon={<Coins className="h-4 w-4" />} decimals={0} />
         <MetricCard title="PR Success" value={user.prMergeRate} icon={<CheckCircle className="h-4 w-4" />} suffix="%" gradient="warning" />
@@ -221,7 +221,7 @@ export default function UserProfilePage() {
         </div>
         <p className="text-indigo-100 text-lg font-medium leading-relaxed max-w-4xl">
           <span className="text-white font-black">{user.name}'s</span> engineering output is currently <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.aiPercent}% AI-powered</span>.
-          Performance tracking reveals an efficiency of <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{Math.floor((user.aiLoC / user.tokensUsed) * 1000000)} lines per 1M tokens</span>.
+          Performance tracking reveals an efficiency of <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.aiLoC > 0 ? (user.tokensUsed / user.aiLoC).toFixed(2) : 0} tokens per line</span>.
           With a sustained <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.prMergeRate}% PR success rate</span>, this engineer is setting
           benchmarks for AI-assisted craftsmanship in the <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.team}</span> squadron.
           The last recorded activity was on <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.lastActiveDate}</span>.

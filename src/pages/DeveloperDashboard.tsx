@@ -172,7 +172,7 @@ export default function DeveloperDashboard() {
             {/* KPI Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard title="AI Contribution" value={user.aiPercent} icon={<Zap className="h-6 w-6" />} suffix="%" gradient="ai" trend={{ value: 12.4, isPositive: true }} />
-                <MetricCard title="Token Efficiency" value={Math.floor((user.aiLoC / user.tokensUsed) * 1000000)} icon={<Cpu className="h-6 w-6" />} decimals={0} suffix=" L/1M-T" gradient="success" subtitle="Lines per 1M Tokens" />
+                <MetricCard title="Avg. Tokens / Line" value={user.aiLoC > 0 ? parseFloat((user.tokensUsed / user.aiLoC).toFixed(2)) : 0} icon={<Cpu className="h-6 w-6" />} decimals={2} gradient="success" subtitle="Tokens per Line" />
                 <MetricCard title="Merge Success" value={user.prMergeRate} icon={<GitMerge className="h-6 w-6" />} suffix="%" gradient="warning" trend={{ value: 4.2, isPositive: true }} />
                 <MetricCard title="Commits" value={user.commits} icon={<GitCommit className="h-6 w-6" />} decimals={0} subtitle="Total synced events" />
             </div>
@@ -256,7 +256,7 @@ export default function DeveloperDashboard() {
                 </div>
                 <p className="text-emerald-50 text-lg font-medium leading-relaxed max-w-4xl">
                     You have successfully integrated <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.aiPercent}% AI code</span> into your workflow.
-                    Your efficiency is recorded at <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{Math.floor((user.aiLoC / user.tokensUsed) * 1000000)} lines per 1M tokens</span>,
+                    Your efficiency is recorded at <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.aiLoC > 0 ? (user.tokensUsed / user.aiLoC).toFixed(2) : 0} tokens per line</span>,
                     utilizing <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{formatNumber(user.tokensUsed)} total tokens</span>.
                     With a <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.prMergeRate}% PR success rate</span>,
                     you are ranked <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">#{user.rank}</span> in the engineering fleet.

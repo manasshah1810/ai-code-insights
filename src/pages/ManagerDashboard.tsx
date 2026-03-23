@@ -191,7 +191,7 @@ export default function ManagerDashboard() {
                         Your squad is outputting <span className="text-white font-black">{teamAiPercent}% AI code</span> with a
                         successful <span className="text-white font-black">{avgMergeRate}% merge rate</span>.
                         The team has consumed <span className="text-white font-black">{formatNumber(teamTokens)} tokens</span> to produce <span className="text-white font-black">{formatNumber(teamAiLoC)} lines of code</span>,
-                        achieving an efficiency of <span className="text-white font-black">{Math.floor((teamAiLoC / teamTokens) * 1000000)} lines per 1M tokens</span>.
+                        achieving an efficiency of <span className="text-white font-black">{teamAiLoC > 0 ? (teamTokens / teamAiLoC).toFixed(2) : 0} tokens per line</span>.
                         Active AI adoption within the squad is sitting at <span className="text-white font-black">{Math.floor((activeUsers / teamMembers.length) * 100)}%</span>.
                     </p>
                 </div>
@@ -208,11 +208,10 @@ export default function ManagerDashboard() {
                     subtitle={`${formatNumber(teamAiLoC)} AI LoC`}
                 />
                 <MetricCard
-                    title="Token Efficiency"
-                    value={Math.floor((teamAiLoC / teamTokens) * 1000000)}
+                    title="Avg. Tokens / Line"
+                    value={teamAiLoC > 0 ? parseFloat((teamTokens / teamAiLoC).toFixed(2)) : 0}
                     icon={<Cpu className="h-5 w-5" />}
-                    decimals={0}
-                    suffix=" L/1M-T"
+                    decimals={2}
                     gradient="success"
                     subtitle="Output vs Consumption"
                 />
