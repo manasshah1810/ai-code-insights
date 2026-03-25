@@ -5,6 +5,7 @@ import {
   generateDeveloperRecommendations, 
   type Recommendation 
 } from "@/lib/ai-completion-service";
+import { getCachedRecommendations, cacheRecommendations } from "@/lib/recommendation-cache-service";
 import { orgData, users, teams, aiTools } from "@/data/dashboard-data";
 import { useAppStore } from "@/store/app-store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -68,40 +69,81 @@ export default function AISummaryPage() {
         let recs: Recommendation[] = [];
 
         if (currentRole === "Admin") {
-          recs = await generateAdminRecommendations({
-            totalTeams: teams.length,
-            avgAdoption: orgData.aiAdoptionRate,
-            totalTokens: orgData.totalTokens,
-            totalLoC: orgData.totalLoC,
-            aiLoC: orgData.aiLoC,
-          });
-        } else if (currentRole === "Manager") {
-          const team = teams.find(t => t.id === managerTeamId);
-          const lowEngagementUsers = users.filter(u => u.teamId === managerTeamId && u.aiPercent < 20);
+          // Check cache first
+          recs = getCachedRecommendations("Admin") || [];
           
-          if (team) {
-            recs = await generateManagerRecommendations({
-              teamName: team.name,
-              headCount: team.headCount,
-              activeUsers: team.aiUsers,
-              aiCodePercent: team.aiCodePercent,
-              mergeRate: team.aiMergeRate,
-              lowEngagementCount: lowEngagementUsers.length,
+          // If not cached, fetch and cache
+          if (recs.length === 0) {
+            recs = await generateAdminRecommendations({
+              totalTeams: teams.length,
+              avgAdoption: orgData.aiAdoptionRate,
+              totalTokens: orgData.totalTokens,
+              totalLoC: orgData.totalLoC,
+              aiLoC: orgData.aiLoC,
+            });
+            cacheRecommendations("Admin", recs, {
+              totalTeams: teams.length,
+              avgAdoption: orgData.aiAdoptionRate,
+              totalTokens: orgData.totalTokens,
+              totalLoC: orgData.totalLoC,
+              aiLoC: orgData.aiLoC,
             });
           }
+        } else if (currentRole === "Manager") {
+          // Check cache first
+          recs = getCachedRecommendations("Manager") || [];
+          
+          if (recs.length === 0) {
+            const team = teams.find(t => t.id === managerTeamId);
+            const lowEngagementUsers = users.filter(u => u.teamId === managerTeamId && u.aiPercent < 20);
+            
+            if (team) {
+              recs = await generateManagerRecommendations({
+                teamName: team.name,
+                headCount: team.headCount,
+                activeUsers: team.aiUsers,
+                aiCodePercent: team.aiCodePercent,
+                mergeRate: team.aiMergeRate,
+                lowEngagementCount: lowEngagementUsers.length,
+              });
+              cacheRecommendations("Manager", recs, {
+                teamName: team.name,
+                headCount: team.headCount,
+                activeUsers: team.aiUsers,
+                aiCodePercent: team.aiCodePercent,
+                mergeRate: team.aiMergeRate,
+                lowEngagementCount: lowEngagementUsers.length,
+              });
+            }
+          }
         } else {
-          const developer = users.find(u => u.id === developerUserId);
-          if (developer) {
-            recs = await generateDeveloperRecommendations({
-              name: developer.name,
-              aiPercent: developer.aiPercent,
-              tokensUsed: developer.tokensUsed,
-              aiLoC: developer.aiLoC,
-              commitCount: developer.commits,
-              mergeRate: developer.prMergeRate,
-              acceptanceRate: developer.cursorAcceptRate,
-              primaryTool: developer.primaryTool,
-            });
+          // Check cache first
+          recs = getCachedRecommendations("Developer") || [];
+          
+          if (recs.length === 0) {
+            const developer = users.find(u => u.id === developerUserId);
+            if (developer) {
+              recs = await generateDeveloperRecommendations({
+                name: developer.name,
+                aiPercent: developer.aiPercent,
+                tokensUsed: developer.tokensUsed,
+                aiLoC: developer.aiLoC,
+                commitCount: developer.commits,
+                mergeRate: developer.prMergeRate,
+                acceptanceRate: developer.cursorAcceptRate,
+                primaryTool: developer.primaryTool,
+              });
+              cacheRecommendations("Developer", recs, {
+                name: developer.name,
+                aiPercent: developer.aiPercent,
+                tokensUsed: developer.tokensUsed,
+                aiLoC: developer.aiLoC,
+                commitCount: developer.commits,
+                mergeRate: developer.prMergeRate,
+                acceptanceRate: developer.cursorAcceptRate,
+                primaryTool: developer.primaryTool,
+              });
+            }
           }
         }
 
@@ -141,7 +183,7 @@ export default function AISummaryPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="h-5 w-5 text-amber-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">AI Summary & Insights</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">AI Recommendation & Insights</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tighter text-slate-900 md:text-5xl">
             {currentRole === "Admin" ? "Executive AI Strategy" : currentRole === "Manager" ? "Team AI Roadmap" : "Your AI Assistant Skills"}
@@ -372,13 +414,13 @@ export default function AISummaryPage() {
                                       <div>
                                         <div className="text-2xl font-black text-slate-900 mb-1">
                                           {typeof viz.value === "number"
-                                            ? viz.value.toLocaleString()
+                                            ? parseFloat(viz.value.toFixed(2)).toLocaleString()
                                             : viz.value}
                                         </div>
                                         {viz.target && (
                                           <div className="text-xs text-slate-600">
                                             Target: {typeof viz.target === "number"
-                                              ? viz.target.toLocaleString()
+                                              ? parseFloat(viz.target.toFixed(2)).toLocaleString()
                                               : viz.target}
                                             {viz.unit}
                                           </div>
@@ -510,26 +552,6 @@ export default function AISummaryPage() {
             </p>
           </motion.div>
         </div>
-      )}
-
-      {/* Footer CTA */}
-      {!loading && !error && recommendations.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-600 to-purple-600 p-8 text-center"
-        >
-          <Sparkles className="h-8 w-8 text-white mx-auto mb-4 animate-bounce" />
-          <h3 className="text-2xl font-black text-white mb-2">Ready to Transform Your AI Workflows?</h3>
-          <p className="text-indigo-100 mb-6 max-w-xl mx-auto">
-            These recommendations are based on your current usage patterns and organizational benchmarks. Start with Priority 1 items for maximum impact.
-          </p>
-          <Button className="h-12 px-8 rounded-xl bg-white text-indigo-600 font-bold hover:bg-slate-100 transition-all shadow-lg">
-            View Detailed Analytics
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </motion.div>
       )}
     </motion.div>
   );

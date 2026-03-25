@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { EnhancedChart } from "@/components/ui/EnhancedChart";
 import { orgData, teams, users, weeklyTrend, formatNumber, productivityData, securityData, aiTools, dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, teamUserActivity, userAdoptionMetrics } from "@/data/dashboard-data";
+import { generateAdminRecommendations, generateManagerRecommendations, generateDeveloperRecommendations, type Recommendation } from "@/lib/ai-completion-service";
+import { getCachedRecommendations, cacheRecommendations } from "@/lib/recommendation-cache-service";
 import {
   Users,
   Zap,
@@ -27,7 +29,9 @@ import {
   FolderGit2,
   Hash,
   Layers,
-  X
+  X,
+  Lightbulb,
+  Loader2
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
@@ -58,12 +62,14 @@ const weekDateRanges = weeklyTrend.map((w) => {
 
 export default function OverviewPage() {
   const navigate = useNavigate();
-  const { monthlySeatCost, manualHourlyRate, liveEvents, addLiveEvent, currentRole, managerTeamId } = useAppStore();
+  const { monthlySeatCost, manualHourlyRate, liveEvents, addLiveEvent, currentRole, managerTeamId, developerUserId } = useAppStore();
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [dateFilterStr, setDateFilterStr] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
   const [selectedCommit, setSelectedCommit] = useState<CommitEvent | null>(null);
   const [commitDialogOpen, setCommitDialogOpen] = useState(false);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   const latestDataDate = useMemo(() => {
     return weekDateRanges.length > 0 ? weekDateRanges[weekDateRanges.length - 1].end : new Date();
@@ -140,6 +146,131 @@ export default function OverviewPage() {
       socketService.off('METRIC_UPDATE', handleMetricUpdate);
     };
   }, []);
+
+  useEffect(() => {
+    if (currentRole === "Admin") {
+      setLoadingRecommendations(true);
+      
+      // Check cache first
+      const cached = getCachedRecommendations("Admin");
+      if (cached) {
+        // Use cached recommendations
+        setRecommendations(cached);
+        setLoadingRecommendations(false);
+      } else {
+        // Fetch and cache new recommendations
+        generateAdminRecommendations({
+          totalTeams: teams.length,
+          avgAdoption: orgData.aiAdoptionRate,
+          totalTokens: orgData.totalTokens,
+          totalLoC: orgData.totalLoC,
+          aiLoC: orgData.aiLoC,
+        })
+          .then((recs) => {
+            setRecommendations(recs);
+            // Cache the recommendations
+            cacheRecommendations("Admin", recs, {
+              totalTeams: teams.length,
+              avgAdoption: orgData.aiAdoptionRate,
+              totalTokens: orgData.totalTokens,
+              totalLoC: orgData.totalLoC,
+              aiLoC: orgData.aiLoC,
+            });
+          })
+          .catch((err) => {
+            console.error("Failed to fetch recommendations:", err);
+            setRecommendations([]);
+          })
+          .finally(() => setLoadingRecommendations(false));
+      }
+    } else if (currentRole === "Manager") {
+      setLoadingRecommendations(true);
+      
+      // Check cache first
+      const cached = getCachedRecommendations("Manager");
+      if (cached) {
+        // Use cached recommendations
+        setRecommendations(cached);
+        setLoadingRecommendations(false);
+      } else {
+        // Fetch and cache new recommendations
+        const team = teams.find(t => t.id === managerTeamId);
+        const lowEngagementUsers = users.filter(u => u.teamId === managerTeamId && u.aiPercent < 20);
+        
+        if (team) {
+          generateManagerRecommendations({
+            teamName: team.name,
+            headCount: team.headCount,
+            activeUsers: team.aiUsers,
+            aiCodePercent: team.aiCodePercent,
+            mergeRate: team.aiMergeRate,
+            lowEngagementCount: lowEngagementUsers.length,
+          })
+            .then((recs) => {
+              setRecommendations(recs);
+              // Cache the recommendations
+              cacheRecommendations("Manager", recs, {
+                teamName: team.name,
+                headCount: team.headCount,
+                activeUsers: team.aiUsers,
+                aiCodePercent: team.aiCodePercent,
+                mergeRate: team.aiMergeRate,
+                lowEngagementCount: lowEngagementUsers.length,
+              });
+            })
+            .catch((err) => {
+              console.error("Failed to fetch manager recommendations:", err);
+              setRecommendations([]);
+            })
+            .finally(() => setLoadingRecommendations(false));
+        }
+      }
+    } else if (currentRole === "Developer") {
+      setLoadingRecommendations(true);
+      
+      // Check cache first
+      const cached = getCachedRecommendations("Developer");
+      if (cached) {
+        // Use cached recommendations
+        setRecommendations(cached);
+        setLoadingRecommendations(false);
+      } else {
+        // Fetch and cache new recommendations
+        const developer = users.find(u => u.id === developerUserId);
+        if (developer) {
+          generateDeveloperRecommendations({
+            name: developer.name,
+            aiPercent: developer.aiPercent,
+            tokensUsed: developer.tokensUsed,
+            aiLoC: developer.aiLoC,
+            commitCount: developer.commits,
+            mergeRate: developer.prMergeRate,
+            acceptanceRate: developer.cursorAcceptRate,
+            primaryTool: developer.primaryTool,
+          })
+            .then((recs) => {
+              setRecommendations(recs);
+              // Cache the recommendations
+              cacheRecommendations("Developer", recs, {
+                name: developer.name,
+                aiPercent: developer.aiPercent,
+                tokensUsed: developer.tokensUsed,
+                aiLoC: developer.aiLoC,
+                commitCount: developer.commits,
+                mergeRate: developer.prMergeRate,
+                acceptanceRate: developer.cursorAcceptRate,
+                primaryTool: developer.primaryTool,
+              });
+            })
+            .catch((err) => {
+              console.error("Failed to fetch developer recommendations:", err);
+              setRecommendations([]);
+            })
+            .finally(() => setLoadingRecommendations(false));
+        }
+      }
+    }
+  }, [currentRole, managerTeamId, developerUserId]);
 
   const handleCommitClick = (event: CommitEvent) => {
     setSelectedCommit(event);
@@ -251,7 +382,7 @@ export default function OverviewPage() {
             <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/20">
               <Zap className="h-5 w-5 text-white" />
             </div>
-            <h2 className="text-xl font-black text-white tracking-tight">AI Ecosystem Intelligence Summary</h2>
+            <h2 className="text-xl font-black text-white tracking-tight">Engineering Productivity Overview</h2>
           </div>
           <p className="text-indigo-100 text-lg font-medium leading-relaxed max-w-4xl">
             Currently tracking <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.activeAIUsers} engineers</span> across <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredTeams.length} teams</span>.
@@ -308,6 +439,83 @@ export default function OverviewPage() {
           decimals={0}
         />
       </div>
+
+      {/* AI Recommendations Section */}
+      {(currentRole === "Admin" || currentRole === "Manager" || currentRole === "Developer") && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
+            </div>
+            <h2 className="text-2xl font-black tracking-tight text-slate-900">AI Recommendations</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {loadingRecommendations ? (
+              <>
+                <motion.div
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm h-64 flex items-center justify-center"
+                >
+                  <div className="text-center space-y-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
+                    <p className="text-slate-500 font-bold text-sm">Generating recommendations...</p>
+                  </div>
+                </motion.div>
+                <motion.div
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+                  className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm h-64 flex items-center justify-center"
+                >
+                  <div className="text-center space-y-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
+                    <p className="text-slate-500 font-bold text-sm">Analyzing your data...</p>
+                  </div>
+                </motion.div>
+              </>
+            ) : recommendations.length > 0 ? (
+              recommendations.slice(0, 2).map((rec) => (
+                <motion.button
+                  key={rec.id}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/ai-summary')}
+                  className="text-left rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-lg hover:border-indigo-300 transition-all group"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={cn(
+                      "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                      rec.priority === 1 ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
+                    )}>
+                      <Hammer className="h-5 w-5" />
+                    </div>
+                    <span className={cn(
+                      "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg",
+                      rec.priority === 1 ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
+                    )}>
+                      Priority {rec.priority}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                    {rec.title}
+                  </h3>
+                  <p className="text-sm text-slate-600 line-clamp-1 mb-4">
+                    {rec.description.split('.')[0]}.
+                  </p>
+                  <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm group-hover:gap-3 transition-all">
+                    View Details
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </motion.button>
+              ))
+            ) : (
+              <div className="md:col-span-2 rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center">
+                <p className="text-slate-500 font-bold">No recommendations available at this time.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* User Adoption & Usage Pattern Section - Admin & Manager Only */}
       {(currentRole === "Admin" || currentRole === "Manager") && (

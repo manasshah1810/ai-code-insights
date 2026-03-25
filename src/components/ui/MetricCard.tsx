@@ -88,7 +88,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                                 : (gradient === 'none' ? 'bg-rose-50 text-rose-600' : 'bg-white/30 text-slate-900')
                         )}>
                             {trend.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                            {trend.isPositive ? '+' : ''}{trend.value}%
+                            {trend.isPositive ? '+' : ''}{parseFloat(trend.value.toFixed(2))}%
                         </div>
                     )}
                 </div>

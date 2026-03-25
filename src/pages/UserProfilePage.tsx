@@ -208,7 +208,7 @@ export default function UserProfilePage() {
         <MetricCard title="PR Success" value={user.prMergeRate} icon={<CheckCircle className="h-4 w-4" />} suffix="%" gradient="warning" />
       </div>
 
-      {/* AI Summary Card */}
+      {/* AI Recommendation Card */}
       <div className="bg-indigo-600 rounded-3xl p-8 shadow-xl shadow-indigo-100 relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Activity className="h-32 w-32 text-white" />

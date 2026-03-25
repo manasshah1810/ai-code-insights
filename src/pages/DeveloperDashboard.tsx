@@ -327,7 +327,7 @@ export default function DeveloperDashboard() {
                 </div>
             </div>
 
-            {/* AI Summary Card */}
+            {/* AI Recommendation Card */}
             <div className="bg-emerald-600 rounded-3xl p-8 shadow-xl shadow-emerald-100 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
                     <Activity className="h-32 w-32 text-white" />

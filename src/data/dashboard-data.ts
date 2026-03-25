@@ -68,9 +68,11 @@ export interface AITool {
 
 // Helper for formatting
 export const formatNumber = (n: number): string => {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
-  if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + "K";
-  return n.toString();
+  // Limit to 2 decimal places
+  const limited = parseFloat(n.toFixed(2));
+  if (limited >= 1000000) return (limited / 1000000).toFixed(1) + "M";
+  if (limited >= 1000) return (limited / 1000).toFixed(limited >= 10000 ? 0 : 1) + "K";
+  return limited.toString();
 };
 
 // --- DATA GENERATION ---
@@ -519,6 +521,59 @@ export const userAdoptionMetrics = {
   dailyPrevious: Math.floor(3865 * 0.92),
   totalUniqueUsersAllTime: 8420,
 };
+
+// Function to get team-specific active user metrics
+export function getTeamUserAdoptionMetrics(teamId: string) {
+  const teamUsers = users.filter(u => u.teamId === teamId);
+  const teamSize = teamUsers.length;
+  
+  // Scale org metrics proportionally to team size
+  const orgTeamSize = users.length;
+  const scaleFactor = teamSize / orgTeamSize;
+  
+  // Calculate team-specific metrics by scaling org metrics
+  const last30 = Math.round(userAdoptionMetrics.last30DayActiveUsers * scaleFactor);
+  const last7 = Math.round(userAdoptionMetrics.last7DayActiveUsers * scaleFactor);
+  const daily = Math.round(userAdoptionMetrics.dailyActiveUsers * scaleFactor);
+  
+  return {
+    last30DayActiveUsers: Math.max(1, last30),
+    last7DayActiveUsers: Math.max(1, last7),
+    dailyActiveUsers: Math.max(1, daily),
+    last30DayPrevious: Math.round(userAdoptionMetrics.last30DayPrevious * scaleFactor * 0.95),
+    last7DayPrevious: Math.round(userAdoptionMetrics.last7DayPrevious * scaleFactor * 0.96),
+    dailyPrevious: Math.round(userAdoptionMetrics.dailyPrevious * scaleFactor * 0.92),
+    teamSize,
+  };
+}
+
+// Function to get team-specific daily/weekly/monthly active users chart data
+export function getTeamActiveUsersData(teamId: string, type: 'daily' | 'weekly' | 'monthly' = 'daily') {
+  const teamUsers = users.filter(u => u.teamId === teamId);
+  const teamSize = teamUsers.length;
+  const orgTeamSize = users.length;
+  const scaleFactor = teamSize / orgTeamSize;
+  
+  if (type === 'daily') {
+    return dailyActiveUsers.map(d => ({
+      day: d.day,
+      date: d.date,
+      uniqueUsers: Math.max(1, Math.round(d.uniqueUsers * scaleFactor)),
+    }));
+  } else if (type === 'weekly') {
+    return weeklyActiveUsers.map(w => ({
+      week: w.week,
+      weekLabel: w.weekLabel,
+      uniqueUsers: Math.max(1, Math.round(w.uniqueUsers * scaleFactor)),
+    }));
+  } else {
+    return monthlyActiveUsers.map(m => ({
+      month: m.month,
+      shortMonth: m.shortMonth,
+      uniqueUsers: Math.max(1, Math.round(m.uniqueUsers * scaleFactor)),
+    }));
+  }
+}
 
 // --- INTELLIGENT RECOMMENDATIONS ---
 export interface Recommendation {

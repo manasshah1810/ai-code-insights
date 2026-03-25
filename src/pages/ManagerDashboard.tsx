@@ -4,7 +4,7 @@ import CountUp from "react-countup";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 import {
     users, teams, formatNumber, weeklyTrend, repositories, aiTools,
-    teamToolUsage, orgData
+    teamToolUsage, orgData, getTeamUserAdoptionMetrics, getTeamActiveUsersData
 } from "@/data/dashboard-data";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { EnhancedChart } from "@/components/ui/EnhancedChart";
@@ -97,6 +97,9 @@ export default function ManagerDashboard() {
         : 0;
     const powerUsers = teamMembers.filter(u => u.status === "Power User").length;
     const activeUsers = teamMembers.filter(u => u.aiPercent > 0).length;
+
+    // Team-specific user adoption metrics
+    const teamAdoptionMetrics = useMemo(() => getTeamUserAdoptionMetrics(managerTeamId), [managerTeamId]);
 
     const teamPie = [
         { name: "AI Code", value: teamAiLoC },
@@ -314,7 +317,7 @@ export default function ManagerDashboard() {
                 </div>
             </div>
 
-            {/* AI Summary Card */}
+            {/* AI Recommendation Card */}
             <div className="grid grid-cols-1 gap-6">
                 <div className="bg-indigo-600 rounded-3xl p-8 shadow-xl shadow-indigo-100 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
@@ -334,6 +337,46 @@ export default function ManagerDashboard() {
                         Active AI adoption within the squad is sitting at <span className="text-white font-black">{teamMembers.length > 0 ? Math.floor((activeUsers / teamMembers.length) * 100) : 0}%</span>.
                     </p>
                 </div>
+            </div>
+
+            {/* Team User Adoption Metrics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <MetricCard
+                    title="Last 30 Day Active Users"
+                    value={teamAdoptionMetrics.last30DayActiveUsers}
+                    gradient="primary"
+                    icon={<UsersIcon className="h-6 w-6" />}
+                    trend={{
+                        value: ((teamAdoptionMetrics.last30DayActiveUsers - teamAdoptionMetrics.last30DayPrevious) / teamAdoptionMetrics.last30DayPrevious * 100),
+                        isPositive: teamAdoptionMetrics.last30DayActiveUsers > teamAdoptionMetrics.last30DayPrevious
+                    }}
+                    subtitle="Unique users in last 30 days"
+                    decimals={0}
+                />
+                <MetricCard
+                    title="Last 7 Days Active Users"
+                    value={teamAdoptionMetrics.last7DayActiveUsers}
+                    gradient="primary"
+                    icon={<UsersIcon className="h-6 w-6" />}
+                    trend={{
+                        value: ((teamAdoptionMetrics.last7DayActiveUsers - teamAdoptionMetrics.last7DayPrevious) / teamAdoptionMetrics.last7DayPrevious * 100),
+                        isPositive: teamAdoptionMetrics.last7DayActiveUsers > teamAdoptionMetrics.last7DayPrevious
+                    }}
+                    subtitle="Unique users in last 7 days"
+                    decimals={0}
+                />
+                <MetricCard
+                    title="Daily Active Users"
+                    value={teamAdoptionMetrics.dailyActiveUsers}
+                    gradient="primary"
+                    icon={<UsersIcon className="h-6 w-6" />}
+                    trend={{
+                        value: ((teamAdoptionMetrics.dailyActiveUsers - teamAdoptionMetrics.dailyPrevious) / teamAdoptionMetrics.dailyPrevious * 100),
+                        isPositive: teamAdoptionMetrics.dailyActiveUsers > teamAdoptionMetrics.dailyPrevious
+                    }}
+                    subtitle="Unique users today"
+                    decimals={0}
+                />
             </div>
 
             {/* Team KPI Row */}
