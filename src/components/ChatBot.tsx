@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/store/app-store";
-import { chatEngine, type ChatMessage } from "@/lib/chat-engine";
+import { chatEngine, generateId, type ChatMessage } from "@/lib/chat-engine";
 import { cn } from "@/lib/utils";
 import {
     MessageCircle, X, Send, Bot, User, Sparkles,
@@ -85,7 +85,7 @@ export function ChatBot() {
         if (!messageText || isLoading) return;
 
         const userMessage: ChatMessage = {
-            id: crypto.randomUUID(),
+            id: generateId(),
             role: "user",
             content: messageText,
             timestamp: new Date(),
@@ -112,7 +112,7 @@ export function ChatBot() {
         } catch (error) {
             console.error("Chat error:", error);
             setMessages(prev => [...prev, {
-                id: crypto.randomUUID(),
+                id: generateId(),
                 role: "assistant",
                 content: "Sorry, I encountered an error. Please make sure the remote server is running.",
                 timestamp: new Date(),
