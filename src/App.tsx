@@ -13,6 +13,7 @@ import LeaderboardPage from "@/pages/LeaderboardPage";
 import SettingsPage from "@/pages/SettingsPage";
 import GlossaryPage from "@/pages/GlossaryPage";
 import AIToolsPage from "@/pages/AIToolsPage";
+import AISummaryPage from "@/pages/AISummaryPage";
 import DeveloperDashboard from "@/pages/DeveloperDashboard";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import NotFound from "@/pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
             <Route path="/code-breakdown" element={<CodeBreakdownPage />} />
             <Route path="/ai-tools" element={<AIToolsPage />} />
+            <Route path="/ai-summary" element={<AISummaryPage />} />
             <Route path="/merge-analytics" element={<MergeAnalyticsPage />} />
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/teams/:teamId" element={<TeamsPage />} />

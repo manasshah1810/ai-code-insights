@@ -422,4 +422,362 @@ export const aiToolQualityMetrics = [
   { toolId: "chatgpt", bugRate: 5.4, securityFlaws: 38, codeSmells: 18.7, testCoverage: 62.1, docQuality: 58 },
 ];
 
+// --- USER ADOPTION & USAGE PATTERNS ---
+// Daily active users for last 30 days
+export const dailyActiveUsers = Array.from({ length: 30 }).map((_, i) => {
+  const baseUsers = 4500;
+  const growthFactor = 1 + (i * 0.008); // Gradual growth
+  const variance = Math.sin(i * 0.3) * 200; // Wave pattern
+  const noise = Math.random() * 300 - 150;
+  const count = Math.floor(baseUsers * growthFactor + variance + noise);
+  
+  const today = new Date();
+  const date = new Date(today.getTime() - (29 - i) * 24 * 60 * 60 * 1000);
+  const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
+  
+  return {
+    day: `${dayName} ${date.getDate()}`,
+    date: date.toISOString().split('T')[0],
+    uniqueUsers: Math.max(2000, count),
+  };
+});
+
+// Weekly active users for 16 weeks (4 months)
+export const weeklyActiveUsers = Array.from({ length: 16 }).map((_, i) => {
+  const monthNames = ["Dec", "Jan", "Feb", "Mar"];
+  const monthName = monthNames[Math.floor(i / 4)];
+  const year = i < 4 ? 2025 : 2026;
+  const weekInMonth = (i % 4) + 1;
+  const weekLabel = `${monthName} W${weekInMonth}`;
+
+  const baseUsers = 5800;
+  const growthFactor = 1 + (i * 0.015);
+  const variance = Math.sin(i * 0.4) * 300;
+  const noise = Math.random() * 400 - 200;
+  const count = Math.floor(baseUsers * growthFactor + variance + noise);
+
+  return {
+    week: `W${i + 1}`,
+    weekLabel,
+    uniqueUsers: Math.max(4000, count),
+  };
+});
+
+// Monthly active users for 4 months
+export const monthlyActiveUsers = Array.from({ length: 4 }).map((_, i) => {
+  const monthNames = ["December 2025", "January 2026", "February 2026", "March 2026"];
+  const baseUsers = 6200;
+  const growthFactor = 1 + (i * 0.18);
+  const noise = Math.random() * 500 - 250;
+  const count = Math.floor(baseUsers * growthFactor + noise);
+
+  return {
+    month: monthNames[i],
+    shortMonth: ["Dec", "Jan", "Feb", "Mar"][i],
+    uniqueUsers: Math.max(5000, count),
+  };
+});
+
+// Team-specific user activity (for role-based filtering)
+export const teamUserActivity = teams.map((team) => {
+  const baseTeamUsers = Math.floor(team.headCount * 0.85); // 85% adoption rate
+  const weeklyData = Array.from({ length: 16 }).map((_, i) => {
+    const variance = Math.sin(i * 0.3) * 20;
+    const noise = Math.random() * (baseTeamUsers * 0.1) - (baseTeamUsers * 0.05);
+    return {
+      week: `W${i + 1}`,
+      uniqueUsers: Math.max(1, Math.floor(baseTeamUsers * (1 + i * 0.01) + variance + noise)),
+    };
+  });
+
+  const monthlyData = Array.from({ length: 4 }).map((_, i) => {
+    const variance = Math.sin(i * 0.5) * 30;
+    const noise = Math.random() * (baseTeamUsers * 0.15) - (baseTeamUsers * 0.075);
+    return {
+      month: ["Dec", "Jan", "Feb", "Mar"][i],
+      uniqueUsers: Math.max(1, Math.floor(baseTeamUsers * (1 + i * 0.05) + variance + noise)),
+    };
+  });
+
+  return {
+    teamId: team.id,
+    teamName: team.name,
+    totalMembers: team.headCount,
+    activeMembers: baseTeamUsers,
+    weeklyTrend: weeklyData,
+    monthlyTrend: monthlyData,
+  };
+});
+
+// Overall user adoption metrics
+export const userAdoptionMetrics = {
+  last30DayActiveUsers: dailyActiveUsers.slice(-30).reduce((acc, d) => Math.max(acc, d.uniqueUsers), 0),
+  last7DayActiveUsers: dailyActiveUsers.slice(-7).reduce((acc, d) => Math.max(acc, d.uniqueUsers), 0),
+  dailyActiveUsers: dailyActiveUsers[dailyActiveUsers.length - 1].uniqueUsers,
+  last30DayPrevious: Math.floor(6656 * 0.95),
+  last7DayPrevious: Math.floor(6075 * 0.96),
+  dailyPrevious: Math.floor(3865 * 0.92),
+  totalUniqueUsersAllTime: 8420,
+};
+
+// --- INTELLIGENT RECOMMENDATIONS ---
+export interface Recommendation {
+  id: string;
+  title: string;
+  description: string;
+  impact: "high" | "medium" | "low";
+  priority: 1 | 2;
+  actionItems: string[];
+  expectedOutcome: string;
+  timeframe: string;
+}
+
+export function getAdminRecommendations(): Recommendation[] {
+  const lowAdoptionTeams = teams.filter(t => t.aiCodePercent < 50);
+  const highPerformingTeams = teams.filter(t => t.aiMergeRate > 85);
+  const toolUsageImbalance = aiTools.find(t => t.activeUsers < 10);
+
+  return [
+    {
+      id: "admin-adoption-gap",
+      title: "Address AI Adoption Gap in Backend Teams",
+      description: `${lowAdoptionTeams.length} teams have adoption rates below 50%. Teams like ${lowAdoptionTeams.slice(0, 2).map(t => t.name).join(", ")} are underutilizing AI tools. Consider promoting successful team practices across the organization.`,
+      impact: "high",
+      priority: 1,
+      actionItems: [
+        "Schedule knowledge-sharing sessions with Platform Engineering (68% adoption) for teams below 50%",
+        "Provide advanced prompt engineering training to unlock better AI outputs",
+        "Review tool licensing - ensure teams have access to best-fit tools (Claude for complex logic, Cursor for rapid development)",
+        "Create AI adoption roadmap with clear milestones: 60% adoption in 6 weeks, 75% in 12 weeks"
+      ],
+      expectedOutcome: "5-10% increase in organization-wide AI adoption within 2-3 months",
+      timeframe: "2-3 weeks to implement"
+    },
+    {
+      id: "admin-tool-focus",
+      title: "Optimize Tool Portfolio - Focus on High-ROI Tools",
+      description: `While using 5 AI tools, ${aiTools.filter(t => t.activeUsers < 15).length} tools have limited adoption. Claude (34% of output, 28 users) and Cursor (24% of output, 22 users) are driving bulk of value. Consider consolidating spend on top performers.`,
+      impact: "medium",
+      priority: 2,
+      actionItems: [
+        "Increase Claude licenses for backend teams - highest quality code (91.2% merge rate)",
+        "Expand Cursor adoption in frontend teams (72.1% merge rate)",
+        "Negotiate enterprise licenses with top 2 tools for better pricing",
+        "Evaluate ChatGPT & Gemini ROI - consider reducing seats if not delivering value"
+      ],
+      expectedOutcome: "20-25% reduction in AI tooling costs while maintaining output quality",
+      timeframe: "4-6 weeks"
+    },
+    {
+      id: "admin-quality-gates",
+      title: "Establish AI Code Quality Standards & Review Processes",
+      description: `With higher AI adoption comes responsibility for code quality guardrails. Currently 14.8 security flaws detected per 1,000 AI lines - need systematic review processes to maintain enterprise standards.`,
+      impact: "high",
+      priority: 1,
+      actionItems: [
+        "Define AI-generated code acceptance criteria: min 80% merge rate, zero security flaws",
+        "Implement mandatory security scanning for all AI-assisted PRs",
+        "Create code review checklist specifically for AI outputs (prompt quality, context completeness)",
+        "Establish feedback loop: rejected AI code informs team training priorities"
+      ],
+      expectedOutcome: "Reduce security issues in AI code by 40%, improve overall merge rate to 85%+",
+      timeframe: "1-2 weeks to implement"
+    },
+    {
+      id: "admin-roi-tracking",
+      title: "Measure & Communicate AI Investment ROI",
+      description: `Org is $2.1M annual AI investment with 72% velocity gain. Need better measurement framework to justify spend and optimize allocation across teams.`,
+      impact: "medium",
+      priority: 2,
+      actionItems: [
+        "Create executive dashboard: cost per feature, ROI by tool, velocity impact per team",
+        "Monthly business reviews with finance to track: cost/line of code, cost per delivered feature",
+        "Share success stories with board/stakeholders - 8,420 hours saved YTD, 72.1% velocity boost",
+        "Establish AI CoE (Center of Excellence) to coordinate strategy across 10 teams"
+      ],
+      expectedOutcome: "Gain stakeholder confidence, unlock budget for innovation initiatives",
+      timeframe: "2-3 weeks"
+    }
+  ];
+}
+
+export function getManagerRecommendations(teamId: string): Recommendation[] {
+  const managerTeam = teams.find(t => t.id === teamId);
+  const teamData = teamUserActivity.find(t => t.teamId === teamId);
+  
+  if (!managerTeam || !teamData) return [];
+
+  const adoptionRate = managerTeam.aiUsers / managerTeam.headCount;
+  const mergeRateGap = 85 - managerTeam.aiMergeRate; // Target 85%
+  const lowEngagementUsers = users.filter(u => u.teamId === teamId && u.aiPercent < 20);
+  const topPerformers = users.filter(u => u.teamId === teamId && u.aiPercent > 70);
+
+  return [
+    {
+      id: "manager-engagement",
+      title: `Increase Team Engagement - ${managerTeam.aiUsers}/${managerTeam.headCount} Using AI`,
+      description: `Your team has ${(adoptionRate * 100).toFixed(0)}% AI adoption. ${lowEngagementUsers.length} team members are underutilizing AI tools. This represents untapped productivity potential and skill growth opportunities.`,
+      impact: "high",
+      priority: 1,
+      actionItems: [
+        `One-on-one check-ins with ${lowEngagementUsers.slice(0, 2).map(u => u.name).join(", ")} to understand adoption barriers`,
+        "Host weekly 30-min AI best practices sessions showcasing real examples from your codebase",
+        "Create team-specific prompt templates for common tasks in your domain",
+        "Celebrate wins: highlight team members who improved their AI usage month-over-month"
+      ],
+      expectedOutcome: "Increase team adoption from ${(adoptionRate * 100).toFixed(0)}% to 90%+ within 6 weeks",
+      timeframe: "1-2 weeks to start"
+    },
+    {
+      id: "manager-quality",
+      title: `Improve Code Quality - Merge Rate ${managerTeam.aiMergeRate}% (Target: 85%+)`,
+      description: `Your team's AI-assisted code has a ${managerTeam.aiMergeRate}% merge rate. There's a ${mergeRateGap}% gap to best-in-class teams. Higher merge rates mean better code quality and fewer iterations.`,
+      impact: "medium",
+      priority: 2,
+      actionItems: [
+        "Review recent rejected PRs with team - identify quality patterns to avoid",
+        "Encourage use of Claude for complex architectures (91.2% merge rate vs team average)",
+        "Host code review training: what makes AI-assisted code more mergeable",
+        "Implement PR quality checklist specific to AI-assisted code (security, tests, documentation)"
+      ],
+      expectedOutcome: `Improve merge rate to 82%+ and reduce PR cycles by 1-2 iterations`,
+      timeframe: "2-3 weeks"
+    },
+    {
+      id: "manager-peer-learning",
+      title: `Leverage High Performers - Deploy ${topPerformers.length} Power Users as Mentors`,
+      description: `${topPerformers.length} team members are already using AI at 70%+. These power users have cracked the code - use them as internal experts to accelerate team adoption and knowledge sharing.`,
+      impact: "high",
+      priority: 1,
+      actionItems: [
+        `Ask ${topPerformers[0]?.name || "top performers"} to lead weekly 20-min "AI Office Hours" Q&A sessions`,
+        "Create peer mentorship pairs: pair each power user with 1-2 underperformers",
+        "Record 5-min screen recordings of your power users in action - build internal knowledge base",
+        "Nominate power users for company-wide AI best practices competition/recognition"
+      ],
+      expectedOutcome: `Accelerate team adoption by 3x through peer influence, improve code quality by 10%`,
+      timeframe: "1 week to kick off"
+    },
+    {
+      id: "manager-tool-optimization",
+      title: `Optimize Tool Stack - Your Team Uses ${managerTeam.primaryTool} Effectively`,
+      description: `Your team is strongest with ${managerTeam.primaryTool} (${managerTeam.aiMergeRate}% merge rate). Some team members might benefit from complementary tools for different task types.`,
+      impact: "medium",
+      priority: 2,
+      actionItems: [
+        `Ensure all ${managerTeam.aiUsers} active users have primary tool (${managerTeam.primaryTool}) licenses`,
+        "For complex logic, recommend Claude to ${Math.ceil(managerTeam.headCount * 0.3)} team members - higher quality",
+        "Track which tools work best for different tasks in your domain (e.g., frontend vs backend)",
+        "Quarterly tool effectiveness review: which tool drives best results for your team?"
+      ],
+      expectedOutcome: `Better tool-task matching, 15% fewer iterations on AI-assisted code`,
+      timeframe: "Ongoing/quarterly review"
+    }
+  ];
+}
+
+export function getDeveloperRecommendations(userId: number): Recommendation[] {
+  const developer = users.find(u => u.id === userId);
+  
+  if (!developer) return [];
+
+  const tokensPerLine = developer.tokensUsed / Math.max(1, developer.aiLoC);
+  const acceptanceRate = (developer.tokensUsed > 0 
+    ? ((developer.cursorAcceptRate * developer.cursorCompletions + developer.copilotAcceptRate * developer.copilotSuggestions) 
+       / (developer.cursorCompletions + developer.copilotSuggestions)) 
+    : 0);
+  const underperforming = developer.aiPercent < 30;
+
+  const recommendations: Recommendation[] = [];
+
+  if (tokensPerLine > 70) {
+    recommendations.push({
+      id: "dev-prompt-efficiency",
+      title: "Improve Prompt Efficiency - Reduce Token Waste",
+      description: `Your prompt efficiency is ${tokensPerLine.toFixed(0)} tokens/line (benchmark: 60). You're using ${((tokensPerLine / 60 - 1) * 100).toFixed(0)}% more tokens than ideal. Better prompts = lower costs and faster iterations.`,
+      impact: "medium",
+      priority: 1,
+      actionItems: [
+        "Be more specific with context: include file structure, existing patterns, constraints upfront",
+        "Break large requests into smaller, focused prompts - one feature per request",
+        "Use examples in your prompts: 'Similar to the existing fetchUser pattern, create fetchTeam'",
+        "Test prompt variations: compare token usage for detailed vs brief prompts to find your sweet spot"
+      ],
+      expectedOutcome: `Reduce token usage by 15-20%, faster completions, lower AI costs`,
+      timeframe: "1-2 weeks to master"
+    });
+  }
+
+  if (acceptanceRate < 60) {
+    recommendations.push({
+      id: "dev-completion-rate",
+      title: "Improve Code Acceptance Rate - Quality Over Quantity",
+      description: `Your completion acceptance rate is ${acceptanceRate.toFixed(0)}% (high-performers: 75%+). Lower acceptance means more time spent refining AI output than using it productively.`,
+      impact: "high",
+      priority: 1,
+      actionItems: [
+        "Provide more context in prompts: error messages, test expectations, coding standards",
+        "Review rejected completions - identify patterns (e.g., missing error handling, style issues)",
+        "Try Claude for complex logic - tends to have better acceptance on architectural decisions",
+        "Create a personal prompt template library: save your best formulas for recurring task types"
+      ],
+      expectedOutcome: `Increase acceptance rate to 70%+, save 3-5 hours/week on code review`,
+      timeframe: "2-3 weeks"
+    });
+  }
+
+  if (underperforming) {
+    recommendations.push({
+      id: "dev-adoption",
+      title: `Increase AI Usage - You're at ${developer.aiPercent}%, Opportunity at 50%+`,
+      description: `You have ${developer.aiPercent}% AI-assisted code. Peers with 50%+ adoption are delivering faster while growing their skills. Start with routine tasks to build confidence.`,
+      impact: "high",
+      priority: 1,
+      actionItems: [
+        "Begin with repetitive tasks: test generation, boilerplate, documentation, refactoring",
+        "Use AI as a pair programmer for complex features - get an external perspective",
+        "Set a weekly goal: use AI on 5 commits minimum to build muscle memory",
+        "Schedule 1-hour 'AI exploration session' weekly: try it on different problem types"
+      ],
+      expectedOutcome: `Reach 40%+ AI adoption within 4 weeks, 20% faster feature delivery`,
+      timeframe: "Immediate"
+    });
+  } else {
+    recommendations.push({
+      id: "dev-skills",
+      title: "Level Up AI Mastery - From User to Power User",
+      description: `You're already at ${developer.aiPercent}% adoption! Now's the time to deepen your skills. Power users combine AI with architectural thinking for ${developer.aiPercent > 75 ? "even Higher" : "higher"} quality output.`,
+      impact: "medium",
+      priority: 2,
+      actionItems: [
+        "Learn system prompts: structure prompts like a senior engineer would communicate",
+        "Master context management: share relevant code patterns before asking for new code",
+        "Explore multi-turn conversations: iterate with Claude/Cursor to refine outputs",
+        "Study your team's best-reviewed AI code: reverse-engineer what makes it great"
+      ],
+      expectedOutcome: `Unlock 30% faster shipping by knowing which tasks to delegate to AI`,
+      timeframe: "1-3 weeks"
+    });
+  }
+
+  // Add a general productivity recommendation for all developers
+  recommendations.push({
+    id: "dev-daily-workflow",
+    title: "Optimize Daily Workflow with AI",
+    description: `Integrating AI into your daily routine compounds over time. Small changes to how you approach coding with AI can yield 20-30% productivity gains.`,
+    impact: "medium",
+    priority: 2,
+    actionItems: [
+      `Start your day with AI: generate today's task list using ${developer.primaryTool}`,
+      "Use AI for code reviews: have it spot potential bugs before human review",
+      "Delegate tedious work: docs, logging, error handling, type definitions - AI excels here",
+      "Weekly reflection: which tasks did AI accelerate most? Double down on those patterns"
+    ],
+    expectedOutcome: `5-10 hours/week saved through better workflow integration`,
+    timeframe: "1 week to establish habit"
+  });
+
+  return recommendations;
+}
+
 export type UserRole = "Admin" | "Manager" | "Developer";

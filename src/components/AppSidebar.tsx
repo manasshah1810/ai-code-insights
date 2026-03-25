@@ -38,6 +38,7 @@ const adminNavItems = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
   { title: "Code Breakdown", url: "/code-breakdown", icon: Code2 },
   { title: "AI Tools", url: "/ai-tools", icon: Bot },
+  { title: "AI Summary", url: "/ai-summary", icon: Sparkles },
   { title: "Merge Analytics", url: "/merge-analytics", icon: GitMerge },
   { title: "Teams", url: "/teams", icon: Users },
   { title: "Leaderboard", url: "/leaderboard", icon: Trophy, requiresOptIn: true },
@@ -49,12 +50,14 @@ const adminNavItems = [
 const managerNavItems = [
   { title: "Team Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "AI Tools", url: "/ai-tools", icon: Bot },
+  { title: "AI Summary", url: "/ai-summary", icon: Sparkles },
   { title: "Glossary", url: "/glossary", icon: BookOpen },
 ];
 
 // Developer: personal dashboard only
 const developerNavItems = [
   { title: "My Dashboard", url: "/dashboard", icon: UserCircle },
+  { title: "AI Summary", url: "/ai-summary", icon: Sparkles },
   { title: "Glossary", url: "/glossary", icon: BookOpen },
 ];
 

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { EnhancedChart } from "@/components/ui/EnhancedChart";
-import { orgData, teams, users, weeklyTrend, formatNumber, productivityData, securityData, aiTools } from "@/data/dashboard-data";
+import { orgData, teams, users, weeklyTrend, formatNumber, productivityData, securityData, aiTools, dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, teamUserActivity, userAdoptionMetrics } from "@/data/dashboard-data";
 import {
   Users,
   Zap,
@@ -58,7 +58,7 @@ const weekDateRanges = weeklyTrend.map((w) => {
 
 export default function OverviewPage() {
   const navigate = useNavigate();
-  const { monthlySeatCost, manualHourlyRate, liveEvents, addLiveEvent } = useAppStore();
+  const { monthlySeatCost, manualHourlyRate, liveEvents, addLiveEvent, currentRole, managerTeamId } = useAppStore();
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [dateFilterStr, setDateFilterStr] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
@@ -308,6 +308,111 @@ export default function OverviewPage() {
           decimals={0}
         />
       </div>
+
+      {/* User Adoption & Usage Pattern Section - Admin & Manager Only */}
+      {(currentRole === "Admin" || currentRole === "Manager") && (
+        <div className="space-y-8">
+          {/* User Adoption Metrics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <MetricCard
+              title="Last 30 Day Active Users"
+              value={userAdoptionMetrics.last30DayActiveUsers}
+              gradient="primary"
+              icon={<Users className="h-6 w-6" />}
+              trend={{
+                value: ((userAdoptionMetrics.last30DayActiveUsers - userAdoptionMetrics.last30DayPrevious) / userAdoptionMetrics.last30DayPrevious * 100),
+                isPositive: userAdoptionMetrics.last30DayActiveUsers > userAdoptionMetrics.last30DayPrevious
+              }}
+              subtitle="Unique users in last 30 days"
+              decimals={0}
+            />
+            <MetricCard
+              title="Last 7 Days Active Users"
+              value={userAdoptionMetrics.last7DayActiveUsers}
+              gradient="primary"
+              icon={<Users className="h-6 w-6" />}
+              trend={{
+                value: ((userAdoptionMetrics.last7DayActiveUsers - userAdoptionMetrics.last7DayPrevious) / userAdoptionMetrics.last7DayPrevious * 100),
+                isPositive: userAdoptionMetrics.last7DayActiveUsers > userAdoptionMetrics.last7DayPrevious
+              }}
+              subtitle="Unique users in last 7 days"
+              decimals={0}
+            />
+            <MetricCard
+              title="Daily Active Users"
+              value={userAdoptionMetrics.dailyActiveUsers}
+              gradient="primary"
+              icon={<Users className="h-6 w-6" />}
+              trend={{
+                value: ((userAdoptionMetrics.dailyActiveUsers - userAdoptionMetrics.dailyPrevious) / userAdoptionMetrics.dailyPrevious * 100),
+                isPositive: userAdoptionMetrics.dailyActiveUsers > userAdoptionMetrics.dailyPrevious
+              }}
+              subtitle="Unique users today"
+              decimals={0}
+            />
+          </div>
+
+          {/* User Activity Charts */}
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Monthly Active Users */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="mb-8">
+                <h3 className="text-xl font-black tracking-tight text-slate-900">Monthly Active Users</h3>
+                <p className="text-sm text-slate-500 mt-1">Unique users per month</p>
+              </div>
+              <EnhancedChart
+                type="line"
+                data={monthlyActiveUsers.map(m => ({ month: m.shortMonth, uniqueUsers: m.uniqueUsers }))}
+                index="month"
+                categories={['uniqueUsers']}
+                colors={['#6366f1']}
+                valueFormatter={(v) => formatNumber(v as number)}
+                height={260}
+                xAxisLabel="Month"
+                yAxisLabel="Active Users"
+              />
+            </div>
+
+            {/* Weekly Active Users */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="mb-8">
+                <h3 className="text-xl font-black tracking-tight text-slate-900">Weekly Active Users</h3>
+                <p className="text-sm text-slate-500 mt-1">Unique users per week (16 weeks)</p>
+              </div>
+              <EnhancedChart
+                type="line"
+                data={weeklyActiveUsers}
+                index="week"
+                categories={['uniqueUsers']}
+                colors={['#06b6d4']}
+                valueFormatter={(v) => formatNumber(v as number)}
+                height={260}
+                xAxisLabel="Week"
+                yAxisLabel="Active Users"
+              />
+            </div>
+
+            {/* Daily Active Users */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="mb-8">
+                <h3 className="text-xl font-black tracking-tight text-slate-900">Daily Active Users</h3>
+                <p className="text-sm text-slate-500 mt-1">Unique users per day (30 days)</p>
+              </div>
+              <EnhancedChart
+                type="line"
+                data={dailyActiveUsers}
+                index="day"
+                categories={['uniqueUsers']}
+                colors={['#f59e0b']}
+                valueFormatter={(v) => formatNumber(v as number)}
+                height={260}
+                xAxisLabel="Day"
+                yAxisLabel="Active Users"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Analysis Section */}
       <div className="grid lg:grid-cols-12 gap-8">

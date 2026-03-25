@@ -271,7 +271,7 @@ export class ChatEngine {
     private baseUrl: string;
     private model: string;
 
-    constructor(baseUrl = "https://34.123.31.83:8080/completion", model = "qwen2.5:4b") {
+    constructor(baseUrl = "http://34.123.31.83:8080/completion", model = "qwen2.5:4b") {
         this.baseUrl = baseUrl;
         this.model = model;
     }
@@ -309,10 +309,8 @@ export class ChatEngine {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 prompt,
-                n_predict: maxTokens,
+                maxTokens,
                 temperature: 0.3,
-                top_p: 0.9,
-                stop: ["\nUser:", "\nuser:", "\n\nUser", "User:"],
             }),
         });
 
@@ -321,7 +319,7 @@ export class ChatEngine {
         }
 
         const data = await response.json();
-        return (data.content || data.response || "").trim();
+        return (data.completion || data.content || data.response || "").trim();
     }
 
     async sendMessage(
