@@ -112,9 +112,9 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ rotate: 15, scale: 1.1 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-indigo-500/20 overflow-hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/40"
           >
-            <img src="/logo.png" alt="Cogniify Code AI" className="h-8 w-8 object-contain" />
+            <span className="font-black text-white text-sm tracking-tight">SF</span>
           </motion.div>
           {!isCollapsed && (
             <motion.div
@@ -122,8 +122,8 @@ export function AppSidebar() {
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col"
             >
-              <span className="text-base font-black tracking-tight text-white leading-tight">Cogniify Code <span className="text-indigo-400">AI</span></span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Analytics Pro</span>
+              <span className="text-base font-black tracking-tight text-white leading-tight">Snap Finance <span className="text-indigo-400">AI</span></span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Code Platform</span>
             </motion.div>
           )}
         </div>

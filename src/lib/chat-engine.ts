@@ -221,7 +221,7 @@ ${teamRepos.map(r => `  - ${r.name}: AI ${r.aiPercent}%, ${formatNumber(r.totalL
 function buildSystemPrompt(role: UserRole, dataContext: string): string {
     const roleLabel = role === "Admin" ? "organization-wide admin" : role === "Manager" ? "team manager" : "individual developer";
 
-    return `You are Cogniify Code AI Assistant, an AI analytics assistant for the Cogniify Code AI Analytics Pro dashboard — an AI Code Intelligence platform that tracks AI-generated vs manually-written code across engineering teams.
+    return `You are Snap Finance AI Assistant, an AI analytics assistant for the Snap Finance - AI Code Platform dashboard — an AI Code Intelligence platform that tracks AI-generated vs manually-written code across engineering teams.
 
 You are speaking to a ${roleLabel} user.
 
@@ -238,7 +238,7 @@ RESPONSE RULES (STRICT — follow these in order):
 
 3. **DOMAIN KNOWLEDGE** — If the user asks about concepts like "what is AI code percentage", "what does merge rate mean", "how is attribution done", or general AI coding concepts not specific to the dashboard data, provide a helpful explanation. Start your answer with "💡 **Insight:**".
 
-4. **OUT OF SCOPE** — If the question is completely unrelated to AI code analytics, software engineering, or this dashboard (e.g., cooking recipes, weather, politics, general trivia, personal advice, health, entertainment), respond ONLY with: "🚫 **Out of Scope:** I'm Cogniify Code AI Assistant, focused exclusively on AI code intelligence analytics. Please ask about code metrics, AI tools, team performance, or dashboard navigation!"
+4. **OUT OF SCOPE** — If the question is completely unrelated to AI code analytics, software engineering, or this dashboard (e.g., cooking recipes, weather, politics, general trivia, personal advice, health, entertainment), respond ONLY with: "🚫 **Out of Scope:** I'm Snap Finance AI Assistant, focused exclusively on AI code intelligence analytics. Please ask about code metrics, AI tools, team performance, or dashboard navigation!"
 
 GUARDRAILS (STRICT):
 - NEVER answer questions about topics outside AI code analytics, software engineering metrics, or this dashboard.
@@ -411,7 +411,7 @@ export class ChatEngine {
             return {
                 id: generateId(),
                 role: "assistant",
-                content: "🚫 **Out of Scope:** I'm Cogniify Code AI Assistant, focused exclusively on AI code intelligence analytics. This question falls outside my domain. Please ask me about your code metrics, AI tools, team performance, or dashboard navigation!",
+                content: "🚫 **Out of Scope:** I'm Snap Finance AI Assistant, focused exclusively on AI code intelligence analytics. This question falls outside my domain. Please ask me about your code metrics, AI tools, team performance, or dashboard navigation!",
                 timestamp: new Date(),
                 category: "out-of-scope",
             };
@@ -547,10 +547,10 @@ export class ChatEngine {
                 return { id: generateId(), role: "assistant", content: "💡 **Insight:** **AI Code %** measures what fraction of total code output was generated using AI tools (like Copilot, Claude, Cursor, etc.) vs written manually by engineers. It's calculated as AI LoC ÷ Total LoC × 100.", timestamp: new Date(), category: "domain" };
             }
             if (q.includes("attribution")) {
-                return { id: generateId(), role: "assistant", content: "💡 **Insight:** **Code Attribution** is the process of determining whether a piece of code was AI-generated or human-written. Cogniify Code AI uses a combination of VCS webhook metadata analysis, heuristic patterns, and a local Ollama LLM inference engine for attribution.", timestamp: new Date(), category: "domain" };
+                return { id: generateId(), role: "assistant", content: "💡 **Insight:** **Code Attribution** is the process of determining whether a piece of code was AI-generated or human-written. Snap Finance - AI Code Platform uses a combination of VCS webhook metadata analysis, heuristic patterns, and a local Ollama LLM inference engine for attribution.", timestamp: new Date(), category: "domain" };
             }
             if (q.includes("loc") || q.includes("lines of code")) {
-                return { id: generateId(), role: "assistant", content: "💡 **Insight:** **LoC (Lines of Code)** is the total number of lines of source code written. In Cogniify Code AI, this is broken down into AI-generated LoC and manually-written LoC to track developer productivity and AI adoption.", timestamp: new Date(), category: "domain" };
+                return { id: generateId(), role: "assistant", content: "💡 **Insight:** **LoC (Lines of Code)** is the total number of lines of source code written. In Snap Finance - AI Code Platform, this is broken down into AI-generated LoC and manually-written LoC to track developer productivity and AI adoption.", timestamp: new Date(), category: "domain" };
             }
         }
 
@@ -558,7 +558,7 @@ export class ChatEngine {
         return {
             id: generateId(),
             role: "assistant",
-            content: `💡 **Insight:** I'm **Cogniify Code AI Assistant** and I can help you with:\n• **Navigation** — "Where do I find merge analytics?"\n• **Your Data** — "What's my AI code percentage?"\n• **Concepts** — "What does merge rate mean?"\n\nTry asking me one of these!`,
+            content: `💡 **Insight:** I'm **Snap Finance AI Assistant** and I can help you with:\n• **Navigation** — "Where do I find merge analytics?"\n• **Your Data** — "What's my AI code percentage?"\n• **Concepts** — "What does merge rate mean?"\n\nTry asking me one of these!`,
             timestamp: new Date(),
             category: "domain",
         };

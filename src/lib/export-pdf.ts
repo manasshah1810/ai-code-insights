@@ -1,8 +1,8 @@
 /**
- * Professional PDF Report Generator — Cogniify Code AI
+ * Professional PDF Report Generator — Snap Finance - AI Code Platform
  * 
  * Generates branded, structured PDF reports with:
- * - Cover page with logo + branding
+ * - Cover page with SF badge + branding
  * - Executive KPIs in formatted cards
  * - Data tables with zebra striping
  * - Inline bar charts rendered via jsPDF primitives
@@ -180,7 +180,7 @@ function drawInlineBar(doc: jsPDF, x: number, y: number, width: number, height: 
 
 // ─── Cover Page ──────────────────────────────────────────────
 
-function drawCoverPage(doc: jsPDF, role: UserRole, subtitle: string, logoBase64?: string) {
+function drawCoverPage(doc: jsPDF, role: UserRole, subtitle: string) {
   // Full page dark background
   doc.setFillColor(...COLORS.dark);
   doc.rect(0, 0, PAGE.width, PAGE.height, "F");
@@ -194,31 +194,25 @@ function drawCoverPage(doc: jsPDF, role: UserRole, subtitle: string, logoBase64?
 
   // Logo Rendering
   const logoY = 240;
-  if (logoBase64) {
-    // Add real image logo
-    const imgSize = 80;
-    doc.addImage(logoBase64, "PNG", (PAGE.width / 2) - (imgSize / 2), logoY - imgSize / 2, imgSize, imgSize);
-  } else {
-    // Fallback logo
-    doc.setFillColor(...COLORS.primary);
-    doc.circle(PAGE.width / 2, logoY, 40, "F");
-    doc.setFontSize(32);
-    doc.setTextColor(...COLORS.white);
-    doc.setFont("helvetica", "bold");
-    doc.text("C", PAGE.width / 2, logoY + 11, { align: "center" } as any);
-  }
+  // Use SF badge instead of image logo
+  doc.setFillColor(...COLORS.primary);
+  doc.circle(PAGE.width / 2, logoY, 40, "F");
+  doc.setFontSize(32);
+  doc.setTextColor(...COLORS.white);
+  doc.setFont("helvetica", "bold");
+  doc.text("SF", PAGE.width / 2, logoY + 11, { align: "center" } as any);
 
   // Brand Name
   doc.setFontSize(36);
   doc.setTextColor(...COLORS.white);
   doc.setFont("helvetica", "bold");
-  doc.text("Cogniify Code AI", PAGE.width / 2, logoY + 80, { align: "center" } as any);
+  doc.text("Snap Finance", PAGE.width / 2, logoY + 80, { align: "center" } as any);
 
   // Subtitle
   doc.setFontSize(12);
   doc.setTextColor(...COLORS.secondary);
   doc.setFont("helvetica", "normal");
-  doc.text("ANALYTICS PRO", PAGE.width / 2, logoY + 100, { align: "center" } as any);
+  doc.text("AI CODE PLATFORM", PAGE.width / 2, logoY + 100, { align: "center" } as any);
 
   // Divider line
   doc.setDrawColor(...COLORS.secondary);
@@ -598,31 +592,12 @@ function generateDeveloperReport(doc: jsPDF, userId: number) {
 
 // ─── Main Export Orchestrator ────────────────────────────────
 
-async function getBase64Logo(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.error("Failed to load logo for PDF", e);
-    return null;
-  }
-}
-
 export async function exportReport(
   role: UserRole,
   userId?: number,
   teamId?: string
 ): Promise<void> {
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-
-  // Try to load logo
-  const logoBase64 = await getBase64Logo("/logo.png");
 
   // Determine scope label
   let subtitle = "Organization-Wide Analytics";
@@ -635,7 +610,7 @@ export async function exportReport(
   }
 
   // ─── Cover Page ───
-  drawCoverPage(doc, role, subtitle, logoBase64 || undefined);
+  drawCoverPage(doc, role, subtitle);
 
   // ─── Content Pages ───
   doc.addPage();

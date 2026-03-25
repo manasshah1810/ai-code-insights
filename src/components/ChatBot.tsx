@@ -188,7 +188,7 @@ export function ChatBot() {
                                         <Bot className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black tracking-tight">Cogniify AI Assistant</h3>
+                                        <h3 className="text-sm font-black tracking-tight">Snap Finance AI Assistant</h3>
                                         <div className="flex items-center gap-2">
                                             <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">{config.badge} Mode</span>
                                             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -228,7 +228,7 @@ export function ChatBot() {
                                         </div>
                                         <div className="flex-1 p-4 rounded-2xl rounded-tl-md bg-slate-50 border border-slate-100">
                                             <p className="text-sm text-slate-700 font-medium leading-relaxed">
-                                                Hi! I'm <strong>Cogniify AI Assistant</strong>. I can help you with:
+                                                Hi! I'm <strong>Snap Finance AI Assistant</strong>. I can help you with:
                                             </p>
                                             <div className="mt-3 space-y-2">
                                                 <div className="flex items-center gap-2 text-xs text-slate-600">
