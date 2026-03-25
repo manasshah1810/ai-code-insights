@@ -259,7 +259,7 @@ export class ChatEngine {
     private baseUrl: string;
     private model: string;
 
-    constructor(baseUrl = "http://34.123.31.83:8080/completion", model = "qwen2.5:4b") {
+    constructor(baseUrl = "https://34.123.31.83:8080/completion", model = "qwen2.5:4b") {
         this.baseUrl = baseUrl;
         this.model = model;
     }
