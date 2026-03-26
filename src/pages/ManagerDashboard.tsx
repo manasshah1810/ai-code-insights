@@ -247,7 +247,7 @@ export default function ManagerDashboard() {
                             </div>
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold">All Statuses</SelectItem>
+                            <SelectItem value="all" className="font-bold">All status</SelectItem>
                             <SelectItem value="Power User" className="font-bold">Power User</SelectItem>
                             <SelectItem value="Active" className="font-bold">Active</SelectItem>
                             <SelectItem value="License Idle" className="font-bold">License Idle</SelectItem>
