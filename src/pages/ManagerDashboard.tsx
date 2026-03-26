@@ -73,10 +73,10 @@ export default function ManagerDashboard() {
 
     const teamMembers = useMemo(() => {
         let members = [...allTeamMembers];
-        if (statusFilter !== "all") {
+        if (statusFilter !== "all" && statusFilter) {
             members = members.filter(u => u.status === statusFilter);
         }
-        if (toolFilter !== "all") {
+        if (toolFilter !== "all" && toolFilter) {
             members = members.filter(u => u.primaryTool === toolFilter);
         }
         return members;

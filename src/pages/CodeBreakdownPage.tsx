@@ -15,8 +15,10 @@ export default function CodeBreakdownPage() {
 
   const filteredRepos = repositories.filter(r => {
     if (teamFilter !== "all" && r.team !== teamFilter) return false;
-    if (toolFilter === "Cursor" && r.primaryTool !== "Cursor") return false;
-    if (toolFilter === "Copilot" && !r.primaryTool.includes("Copilot")) return false;
+    if (toolFilter !== "all") {
+      if (toolFilter === "Cursor" && r.primaryTool !== "Cursor") return false;
+      if (toolFilter === "Copilot" && r.primaryTool !== "Copilot") return false;
+    }
     return true;
   });
 

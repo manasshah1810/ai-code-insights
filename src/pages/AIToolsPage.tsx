@@ -82,8 +82,11 @@ export default function AIToolsPage() {
         if (teamFilter !== "all") {
             repos = repos.filter(r => r.team === teamFilter);
         }
+        if (selectedTool !== "all") {
+            repos = repos.filter(r => r.tools.some(t => t.toolId === selectedTool));
+        }
         return repos;
-    }, [teamFilter]);
+    }, [teamFilter, selectedTool]);
 
     // Stacked bar data for team-level tool usage
     const teamToolData = teamToolUsage.map(t => ({

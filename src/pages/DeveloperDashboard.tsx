@@ -49,8 +49,11 @@ export default function DeveloperDashboard() {
     const dateLabel = dateFilterStr === "all" ? "All Time" : `Last ${dateFilterStr} days`;
 
     // User's repos (from their team) — filtered
-    const allMyRepos = repositories.filter(r => r.team === user.team);
-    const myRepos = repoFilter === "all" ? allMyRepos : allMyRepos.filter(r => r.name === repoFilter);
+    const allMyRepos = useMemo(() => repositories.filter(r => r.team === user.team), [user.team]);
+    const myRepos = useMemo(() => {
+        if (repoFilter === "all") return allMyRepos;
+        return allMyRepos.filter(r => r.name === repoFilter);
+    }, [repoFilter, allMyRepos]);
 
     // Scaled metrics
     const scaledAiLoC = Math.round(user.aiLoC * scaleFactor);
