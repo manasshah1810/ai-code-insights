@@ -4,7 +4,7 @@
  */
 
 const AI_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 const AI_MODEL = "qwen/qwen3-next-80b-a3b-instruct:free";
 
 export interface SWOTItem {
