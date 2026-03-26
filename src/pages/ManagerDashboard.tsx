@@ -317,7 +317,7 @@ export default function ManagerDashboard() {
                 </div>
             </div>
 
-            {/* AI Recommendation Card */}
+            {/* SWOS Analysis Card */}
             <div className="grid grid-cols-1 gap-6">
                 <div className="bg-indigo-600 rounded-3xl p-8 shadow-xl shadow-indigo-100 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
@@ -327,7 +327,7 @@ export default function ManagerDashboard() {
                         <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/20">
                             <Bot className="h-5 w-5 text-white" />
                         </div>
-                        <h2 className="text-xl font-black text-white tracking-tight">Squad AI Performance Intel</h2>
+                        <h2 className="text-xl font-black text-white tracking-tight uppercase tracking-tighter cursor-default">Squad SWOS Intel</h2>
                     </div>
                     <p className="text-indigo-100 text-lg font-medium leading-relaxed max-w-4xl">
                         Your squad is outputting <span className="text-white font-black">{teamAiPercent}% AI code</span> with a
@@ -344,7 +344,7 @@ export default function ManagerDashboard() {
                 <MetricCard
                     title="Last 30 Day Active Users"
                     value={teamAdoptionMetrics.last30DayActiveUsers}
-                    gradient="primary"
+                    gradient="ai"
                     icon={<UsersIcon className="h-6 w-6" />}
                     trend={{
                         value: ((teamAdoptionMetrics.last30DayActiveUsers - teamAdoptionMetrics.last30DayPrevious) / teamAdoptionMetrics.last30DayPrevious * 100),
@@ -356,7 +356,7 @@ export default function ManagerDashboard() {
                 <MetricCard
                     title="Last 7 Days Active Users"
                     value={teamAdoptionMetrics.last7DayActiveUsers}
-                    gradient="primary"
+                    gradient="ai"
                     icon={<UsersIcon className="h-6 w-6" />}
                     trend={{
                         value: ((teamAdoptionMetrics.last7DayActiveUsers - teamAdoptionMetrics.last7DayPrevious) / teamAdoptionMetrics.last7DayPrevious * 100),
@@ -368,7 +368,7 @@ export default function ManagerDashboard() {
                 <MetricCard
                     title="Daily Active Users"
                     value={teamAdoptionMetrics.dailyActiveUsers}
-                    gradient="primary"
+                    gradient="ai"
                     icon={<UsersIcon className="h-6 w-6" />}
                     trend={{
                         value: ((teamAdoptionMetrics.dailyActiveUsers - teamAdoptionMetrics.dailyPrevious) / teamAdoptionMetrics.dailyPrevious * 100),

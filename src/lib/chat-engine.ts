@@ -271,7 +271,10 @@ export class ChatEngine {
     private baseUrl: string;
     private model: string;
 
-    constructor(baseUrl = "http://34.123.31.83:8080/completion", model = "qwen2.5:4b") {
+    constructor(
+        baseUrl = "https://openrouter.ai/api/v1/chat/completions",
+        model = "qwen/qwen3-next-80b-a3b-instruct:free"
+    ) {
         this.baseUrl = baseUrl;
         this.model = model;
     }
@@ -304,12 +307,24 @@ export class ChatEngine {
      * Returns the raw response text.
      */
     private async callCompletionEndpoint(prompt: string, maxTokens: number): Promise<string> {
+        const OPENROUTER_API_KEY = "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";
+
         const response = await fetch(this.baseUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json",
+                "X-OpenRouter-Title": "AI Code Insights Chat",
+            },
             body: JSON.stringify({
-                prompt,
-                maxTokens,
+                model: this.model,
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt,
+                    },
+                ],
+                max_tokens: maxTokens,
                 temperature: 0.3,
             }),
         });
@@ -319,8 +334,9 @@ export class ChatEngine {
         }
 
         const data = await response.json();
-        return (data.completion || data.content || data.response || "").trim();
+        return (data.choices?.[0]?.message?.content || "").trim();
     }
+
 
     async sendMessage(
         userMessage: string,

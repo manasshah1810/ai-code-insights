@@ -17,7 +17,10 @@ export class AttributionEngine {
     private baseUrl: string;
     private model: string;
 
-    constructor(baseUrl = "http://34.123.31.83:8080/completion", model = "deepseek-coder") {
+    constructor(
+        baseUrl = "https://openrouter.ai/api/v1/chat/completions",
+        model = "qwen/qwen3-next-80b-a3b-instruct:free"
+    ) {
         this.baseUrl = baseUrl;
         this.model = model;
     }
@@ -45,24 +48,35 @@ Result:`;
     }
 
     async attributeSnippet(snippet: string): Promise<AttributionResult> {
+        const OPENROUTER_API_KEY = "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";
+
         try {
             const response = await fetch(this.baseUrl, {
                 method: "POST",
                 headers: {
+                    "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
+                    "X-OpenRouter-Title": "AI Code Insights Attribution",
                 },
                 body: JSON.stringify({
-                    prompt: this.generatePrompt(snippet),
-                    n_predict: 512,
+                    model: this.model,
+                    messages: [
+                        {
+                            role: "user",
+                            content: this.generatePrompt(snippet),
+                        },
+                    ],
+                    max_tokens: 512,
                 }),
             });
 
             if (!response.ok) {
-                throw new Error(`Ollama API error: ${response.statusText}`);
+                throw new Error(`OpenRouter API error: ${response.statusText}`);
             }
 
             const data = await response.json();
-            const resultText = data.content || data.response;
+            const resultText = data.choices?.[0]?.message?.content || "";
+
 
             // Parse the JSON output from LLM
             try {

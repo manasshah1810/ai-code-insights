@@ -31,8 +31,8 @@ export default function SettingsPage() {
   const [aiThreshold, setAiThreshold] = useState("50");
   const [mergeThreshold, setMergeThreshold] = useState("70");
   const [exportSchedule, setExportSchedule] = useState("weekly");
-  const [ollamaUrl, setOllamaUrl] = useState("http://34.123.31.83:8080/completion");
-  const [ollamaModel, setOllamaModel] = useState("deepseek-coder");
+  const [ollamaUrl, setOllamaUrl] = useState("https://openrouter.ai/api/v1/chat/completions");
+  const [ollamaModel, setOllamaModel] = useState("qwen/qwen3-next-80b-a3b-instruct:free");
   const [testingConnection, setTestingConnection] = useState(false);
   const { strictPrivacyMode, setStrictPrivacyMode, userOptInList, toggleUserOptIn, monthlySeatCost, manualHourlyRate, setFiscalConfig } = useAppStore();
 
@@ -40,7 +40,7 @@ export default function SettingsPage() {
     setTestingConnection(true);
     try {
       const result = await attributionEngine.attributeSnippet("const x = 1;");
-      if (result.confidence > 0) {
+      if (result.confidence > 0 || result.source) {
         toast.success("API connection successful!");
       } else {
         toast.error("API connection failed or returned no result.");
@@ -90,10 +90,10 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Attribution Engine (Local Ollama) - Refactored as per Section 8.1 */}
+      {/* Attribution Engine (OpenRouter) */}
       <section className="rounded-xl border bg-card p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Attribution Engine (Section 8.1)</h2>
+          <h2 className="text-sm font-semibold">Attribution Engine (OpenRouter)</h2>
           <Badge variant="outline" className="text-[10px] bg-ai/5 text-ai border-ai/20">Remote Inference Mode</Badge>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
@@ -106,14 +106,14 @@ export default function SettingsPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Local Model</Label>
+            <Label className="text-xs">AI Model</Label>
             <Select value={ollamaModel} onValueChange={setOllamaModel}>
               <SelectTrigger className="h-8 text-xs font-mono"><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="qwen/qwen3-next-80b-a3b-instruct:free">qwen3-next-80b (OpenRouter)</SelectItem>
                 <SelectItem value="deepseek-coder">deepseek-coder</SelectItem>
                 <SelectItem value="llama3">llama3</SelectItem>
                 <SelectItem value="codellama">codellama</SelectItem>
-                <SelectItem value="qwen2.5-coder">qwen2.5-coder</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -125,7 +125,7 @@ export default function SettingsPage() {
             onClick={testOllama}
             disabled={testingConnection}
           >
-            {testingConnection ? "Testing..." : "Test Local Connection"}
+            {testingConnection ? "Testing..." : "Test Connection"}
           </Button>
           <Button size="sm" onClick={() => {
             attributionEngine.updateConfig(ollamaUrl, ollamaModel);
@@ -133,9 +133,10 @@ export default function SettingsPage() {
           }}>Save Engine Config</Button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          Replaces external OpenAI/Anthropic APIs with local inference to ensure data privacy and reduce latency.
+          Uses OpenRouter for high-performance remote inference for code attribution and chat analysis.
         </p>
       </section>
+
 
       {/* VCS Integration: Webhook & Heuristics - Section 8.3 Replacement */}
       <section className="rounded-xl border bg-card p-5 space-y-4">

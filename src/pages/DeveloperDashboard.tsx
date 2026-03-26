@@ -327,7 +327,7 @@ export default function DeveloperDashboard() {
                 </div>
             </div>
 
-            {/* AI Recommendation Card */}
+            {/* SWOS Analysis Card */}
             <div className="bg-emerald-600 rounded-3xl p-8 shadow-xl shadow-emerald-100 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
                     <Activity className="h-32 w-32 text-white" />
@@ -336,7 +336,7 @@ export default function DeveloperDashboard() {
                     <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/20">
                         <Sparkles className="h-5 w-5 text-white" />
                     </div>
-                    <h2 className="text-xl font-black text-white tracking-tight">Personal Performance Intel</h2>
+                    <h2 className="text-xl font-black text-white tracking-tight uppercase tracking-tighter cursor-default">Personal SWOS Intel</h2>
                 </div>
                 <p className="text-emerald-50 text-lg font-medium leading-relaxed max-w-4xl">
                     You have successfully integrated <span className="text-white font-black underline decoration-emerald-300 underline-offset-4">{user.aiPercent}% AI code</span> into your workflow.

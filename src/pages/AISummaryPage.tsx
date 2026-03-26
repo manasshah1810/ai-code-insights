@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { 
-  generateAdminRecommendations, 
-  generateManagerRecommendations, 
-  generateDeveloperRecommendations, 
-  type Recommendation 
+import {
+  generateAdminRecommendations,
+  generateManagerRecommendations,
+  generateDeveloperRecommendations,
+  type Recommendation
 } from "@/lib/ai-completion-service";
 import { getCachedRecommendations, cacheRecommendations } from "@/lib/recommendation-cache-service";
 import { orgData, users, teams, aiTools } from "@/data/dashboard-data";
@@ -54,6 +54,22 @@ function PriorityBadge({ priority }: { priority: 1 | 2 }) {
   );
 }
 
+function SWOSBadge({ id }: { id: string }) {
+  const isStrength = id.toLowerCase().includes("strength");
+  const isWeakness = id.toLowerCase().includes("weakness");
+  const isOpportunity = id.toLowerCase().includes("opportunity");
+  const isThreat = id.toLowerCase().includes("threat");
+
+  const label = isStrength ? "STRENGTH" : isWeakness ? "WEAKNESS" : isOpportunity ? "OPPORTUNITY" : isThreat ? "THREAT" : "INSIGHT";
+  const colors = isStrength ? "bg-emerald-500 text-white" : isWeakness ? "bg-slate-500 text-white" : isOpportunity ? "bg-indigo-500 text-white" : isThreat ? "bg-rose-500 text-white" : "bg-slate-200 text-slate-700";
+
+  return (
+    <Badge className={cn("font-black px-4 py-1.5 rounded-full text-[12px] shadow-sm tracking-widest border-0", colors)}>
+      {label}
+    </Badge>
+  );
+}
+
 export default function AISummaryPage() {
   const { currentRole, managerTeamId, developerUserId } = useAppStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -61,108 +77,67 @@ export default function AISummaryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let recs: Recommendation[] = [];
+  const fetchRecommendations = async (force = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      let recs: Recommendation[] = [];
 
-        if (currentRole === "Admin") {
-          // Check cache first
-          recs = getCachedRecommendations("Admin") || [];
-          
-          // If not cached, fetch and cache
-          if (recs.length === 0) {
-            recs = await generateAdminRecommendations({
-              totalTeams: teams.length,
-              avgAdoption: orgData.aiAdoptionRate,
-              totalTokens: orgData.totalTokens,
-              totalLoC: orgData.totalLoC,
-              aiLoC: orgData.aiLoC,
-            });
-            cacheRecommendations("Admin", recs, {
-              totalTeams: teams.length,
-              avgAdoption: orgData.aiAdoptionRate,
-              totalTokens: orgData.totalTokens,
-              totalLoC: orgData.totalLoC,
-              aiLoC: orgData.aiLoC,
-            });
-          }
-        } else if (currentRole === "Manager") {
-          // Check cache first
-          recs = getCachedRecommendations("Manager") || [];
-          
-          if (recs.length === 0) {
-            const team = teams.find(t => t.id === managerTeamId);
-            const lowEngagementUsers = users.filter(u => u.teamId === managerTeamId && u.aiPercent < 20);
-            
-            if (team) {
-              recs = await generateManagerRecommendations({
-                teamName: team.name,
-                headCount: team.headCount,
-                activeUsers: team.aiUsers,
-                aiCodePercent: team.aiCodePercent,
-                mergeRate: team.aiMergeRate,
-                lowEngagementCount: lowEngagementUsers.length,
-              });
-              cacheRecommendations("Manager", recs, {
-                teamName: team.name,
-                headCount: team.headCount,
-                activeUsers: team.aiUsers,
-                aiCodePercent: team.aiCodePercent,
-                mergeRate: team.aiMergeRate,
-                lowEngagementCount: lowEngagementUsers.length,
-              });
-            }
-          }
-        } else {
-          // Check cache first
-          recs = getCachedRecommendations("Developer") || [];
-          
-          if (recs.length === 0) {
-            const developer = users.find(u => u.id === developerUserId);
-            if (developer) {
-              recs = await generateDeveloperRecommendations({
-                name: developer.name,
-                aiPercent: developer.aiPercent,
-                tokensUsed: developer.tokensUsed,
-                aiLoC: developer.aiLoC,
-                commitCount: developer.commits,
-                mergeRate: developer.prMergeRate,
-                acceptanceRate: developer.cursorAcceptRate,
-                primaryTool: developer.primaryTool,
-              });
-              cacheRecommendations("Developer", recs, {
-                name: developer.name,
-                aiPercent: developer.aiPercent,
-                tokensUsed: developer.tokensUsed,
-                aiLoC: developer.aiLoC,
-                commitCount: developer.commits,
-                mergeRate: developer.prMergeRate,
-                acceptanceRate: developer.cursorAcceptRate,
-                primaryTool: developer.primaryTool,
-              });
-            }
-          }
+      if (currentRole === "Admin") {
+        recs = await generateAdminRecommendations({
+          totalTeams: teams.length,
+          avgAdoption: orgData.aiAdoptionRate,
+          totalTokens: orgData.totalTokens,
+          totalLoC: orgData.totalLoC,
+          aiLoC: orgData.aiLoC,
+        });
+      } else if (currentRole === "Manager") {
+        const team = teams.find(t => t.id === managerTeamId);
+        const lowEngagementUsers = users.filter(u => u.teamId === managerTeamId && u.aiPercent < 20);
+
+        if (team) {
+          recs = await generateManagerRecommendations({
+            teamName: team.name,
+            headCount: team.headCount,
+            activeUsers: team.aiUsers,
+            aiCodePercent: team.aiCodePercent,
+            mergeRate: team.aiMergeRate,
+            lowEngagementCount: lowEngagementUsers.length,
+          });
         }
-
-        setRecommendations(recs);
-      } catch (err) {
-        console.error("Failed to fetch recommendations:", err);
-        setError("Failed to load AI recommendations. Please try again.");
-      } finally {
-        setLoading(false);
+      } else {
+        const developer = users.find(u => u.id === developerUserId);
+        if (developer) {
+          recs = await generateDeveloperRecommendations({
+            name: developer.name,
+            aiPercent: developer.aiPercent,
+            tokensUsed: developer.tokensUsed,
+            aiLoC: developer.aiLoC,
+            commitCount: developer.commits,
+            mergeRate: developer.prMergeRate,
+            acceptanceRate: developer.cursorAcceptRate,
+            primaryTool: developer.primaryTool,
+          });
+        }
       }
-    };
 
+      setRecommendations(recs);
+    } catch (err) {
+      console.error("Failed to fetch recommendations:", err);
+      setError("Failed to load SWOS analysis. The engine might be under heavy load.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchRecommendations();
   }, [currentRole, managerTeamId, developerUserId]);
 
   const roleTitle = {
-    Admin: "Executive AI Strategy",
-    Manager: "Team AI Roadmap",
-    Developer: "Your AI Assistant Skills"
+    Admin: "Executive SWOS Analysis",
+    Manager: "Team SWOS Analysis",
+    Developer: "Personal SWOS Analysis"
   }[currentRole];
 
   const roleIcon = {
@@ -183,18 +158,28 @@ export default function AISummaryPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="h-5 w-5 text-amber-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">AI Recommendation & Insights</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">Tactical & Operational Insights</span>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tighter text-slate-900 md:text-5xl">
-            {currentRole === "Admin" ? "Executive AI Strategy" : currentRole === "Manager" ? "Team AI Roadmap" : "Your AI Assistant Skills"}
+          <h1 className="text-4xl font-extrabold tracking-tighter text-slate-900 md:text-5xl uppercase">
+            {roleTitle}
           </h1>
           <p className="text-base text-slate-500 mt-2 font-medium">
-            Personalized recommendations to maximize AI adoption and productivity
+            Tactical analysis of Strengths, Weaknesses, Opportunities, and Threats across your engineering operations.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
-          <Sparkles className="h-5 w-5 text-amber-600" />
-          <span className="text-sm font-bold text-amber-700">AI Generated Insights</span>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => fetchRecommendations(true)}
+            disabled={loading}
+            className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 px-6 h-11 transition-all"
+          >
+            <Zap className={cn("h-4 w-4", loading && "animate-pulse")} />
+            {loading ? "Analyzing..." : "Regenerate SWOS"}
+          </Button>
+          <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
+            <Sparkles className="h-5 w-5 text-amber-600" />
+            <span className="text-sm font-bold text-amber-700">Qwen 3 Engine Active</span>
+          </div>
         </div>
       </div>
 
@@ -204,8 +189,8 @@ export default function AISummaryPage() {
           <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <Loader2 className="h-10 w-10 text-indigo-600 animate-spin" />
           </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-2">Generating AI Recommendations...</h3>
-          <p className="text-slate-600">Our AI is analyzing your organization's metrics to create personalized insights.</p>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2 font-mono uppercase tracking-tighter">Running Tactical SWOS Engine...</h3>
+          <p className="text-slate-600">Our Qwen model is performing a detailed SWOS analysis (Strengths, Weakness, Opportunities, Threats) on your operational metadata.</p>
         </div>
       )}
 
@@ -215,13 +200,13 @@ export default function AISummaryPage() {
           <div className="h-20 w-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="h-10 w-10 text-rose-600" />
           </div>
-          <h3 className="text-2xl font-bold text-rose-900 mb-2">Unable to Load Recommendations</h3>
+          <h3 className="text-2xl font-bold text-rose-900 mb-2">SWOS Engine Stall</h3>
           <p className="text-rose-600 mb-4">{error}</p>
           <Button
             onClick={() => window.location.reload()}
             className="bg-rose-600 hover:bg-rose-700 text-white"
           >
-            Retry
+            Reboot Engine
           </Button>
         </div>
       )}
@@ -232,8 +217,8 @@ export default function AISummaryPage() {
           <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="h-10 w-10 text-emerald-500" />
           </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-2">All Systems Go!</h3>
-          <p className="text-slate-600">You're performing optimally. Keep up the great work!</p>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2 uppercase tracking-tighter">Analysis Complete: No Critical Threats</h3>
+          <p className="text-slate-600">Operations are stable and metrics are within safe bands. No immediate SWOS interventions required.</p>
         </div>
       )}
 
@@ -259,28 +244,12 @@ export default function AISummaryPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <div className={cn(
-                            "h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0",
-                            rec.impact === "high"
-                              ? "bg-rose-100"
-                              : rec.impact === "medium"
-                                ? "bg-amber-100"
-                                : "bg-blue-100"
-                          )}>
-                            <Target className={cn(
-                              "h-6 w-6",
-                              rec.impact === "high"
-                                ? "text-rose-600"
-                                : rec.impact === "medium"
-                                  ? "text-amber-600"
-                                  : "text-blue-600"
-                            )} />
-                          </div>
+                          <SWOSBadge id={rec.id} />
                           <div className="flex-1">
-                            <h3 className="text-xl font-black tracking-tight text-slate-900">
+                            <h3 className="text-xl font-black tracking-tight text-slate-900 uppercase">
                               {rec.title}
                             </h3>
-                            <p className="text-sm text-slate-600 mt-1 line-clamp-2">
+                            <p className="text-sm text-slate-600 mt-1 line-clamp-2 italic">
                               {rec.description}
                             </p>
                           </div>

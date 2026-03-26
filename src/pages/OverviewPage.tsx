@@ -150,124 +150,60 @@ export default function OverviewPage() {
   useEffect(() => {
     if (currentRole === "Admin") {
       setLoadingRecommendations(true);
-      
-      // Check cache first
-      const cached = getCachedRecommendations("Admin");
-      if (cached) {
-        // Use cached recommendations
-        setRecommendations(cached);
-        setLoadingRecommendations(false);
-      } else {
-        // Fetch and cache new recommendations
-        generateAdminRecommendations({
-          totalTeams: teams.length,
-          avgAdoption: orgData.aiAdoptionRate,
-          totalTokens: orgData.totalTokens,
-          totalLoC: orgData.totalLoC,
-          aiLoC: orgData.aiLoC,
+      generateAdminRecommendations({
+        totalTeams: teams.length,
+        avgAdoption: orgData.aiAdoptionRate,
+        totalTokens: orgData.totalTokens,
+        totalLoC: orgData.totalLoC,
+        aiLoC: orgData.aiLoC,
+      })
+        .then((recs) => setRecommendations(recs))
+        .catch((err) => {
+          console.error("Failed to fetch recommendations:", err);
+          setRecommendations([]);
         })
-          .then((recs) => {
-            setRecommendations(recs);
-            // Cache the recommendations
-            cacheRecommendations("Admin", recs, {
-              totalTeams: teams.length,
-              avgAdoption: orgData.aiAdoptionRate,
-              totalTokens: orgData.totalTokens,
-              totalLoC: orgData.totalLoC,
-              aiLoC: orgData.aiLoC,
-            });
-          })
+        .finally(() => setLoadingRecommendations(false));
+    } else if (currentRole === "Manager") {
+      setLoadingRecommendations(true);
+      const team = teams.find(t => t.id === managerTeamId);
+      const lowEngagementUsers = users.filter(u => u.teamId === managerTeamId && u.aiPercent < 20);
+
+      if (team) {
+        generateManagerRecommendations({
+          teamName: team.name,
+          headCount: team.headCount,
+          activeUsers: team.aiUsers,
+          aiCodePercent: team.aiCodePercent,
+          mergeRate: team.aiMergeRate,
+          lowEngagementCount: lowEngagementUsers.length,
+        })
+          .then((recs) => setRecommendations(recs))
           .catch((err) => {
-            console.error("Failed to fetch recommendations:", err);
+            console.error("Failed to fetch manager recommendations:", err);
             setRecommendations([]);
           })
           .finally(() => setLoadingRecommendations(false));
       }
-    } else if (currentRole === "Manager") {
-      setLoadingRecommendations(true);
-      
-      // Check cache first
-      const cached = getCachedRecommendations("Manager");
-      if (cached) {
-        // Use cached recommendations
-        setRecommendations(cached);
-        setLoadingRecommendations(false);
-      } else {
-        // Fetch and cache new recommendations
-        const team = teams.find(t => t.id === managerTeamId);
-        const lowEngagementUsers = users.filter(u => u.teamId === managerTeamId && u.aiPercent < 20);
-        
-        if (team) {
-          generateManagerRecommendations({
-            teamName: team.name,
-            headCount: team.headCount,
-            activeUsers: team.aiUsers,
-            aiCodePercent: team.aiCodePercent,
-            mergeRate: team.aiMergeRate,
-            lowEngagementCount: lowEngagementUsers.length,
-          })
-            .then((recs) => {
-              setRecommendations(recs);
-              // Cache the recommendations
-              cacheRecommendations("Manager", recs, {
-                teamName: team.name,
-                headCount: team.headCount,
-                activeUsers: team.aiUsers,
-                aiCodePercent: team.aiCodePercent,
-                mergeRate: team.aiMergeRate,
-                lowEngagementCount: lowEngagementUsers.length,
-              });
-            })
-            .catch((err) => {
-              console.error("Failed to fetch manager recommendations:", err);
-              setRecommendations([]);
-            })
-            .finally(() => setLoadingRecommendations(false));
-        }
-      }
     } else if (currentRole === "Developer") {
       setLoadingRecommendations(true);
-      
-      // Check cache first
-      const cached = getCachedRecommendations("Developer");
-      if (cached) {
-        // Use cached recommendations
-        setRecommendations(cached);
-        setLoadingRecommendations(false);
-      } else {
-        // Fetch and cache new recommendations
-        const developer = users.find(u => u.id === developerUserId);
-        if (developer) {
-          generateDeveloperRecommendations({
-            name: developer.name,
-            aiPercent: developer.aiPercent,
-            tokensUsed: developer.tokensUsed,
-            aiLoC: developer.aiLoC,
-            commitCount: developer.commits,
-            mergeRate: developer.prMergeRate,
-            acceptanceRate: developer.cursorAcceptRate,
-            primaryTool: developer.primaryTool,
+      const developer = users.find(u => u.id === developerUserId);
+      if (developer) {
+        generateDeveloperRecommendations({
+          name: developer.name,
+          aiPercent: developer.aiPercent,
+          tokensUsed: developer.tokensUsed,
+          aiLoC: developer.aiLoC,
+          commitCount: developer.commits,
+          mergeRate: developer.prMergeRate,
+          acceptanceRate: developer.cursorAcceptRate,
+          primaryTool: developer.primaryTool,
+        })
+          .then((recs) => setRecommendations(recs))
+          .catch((err) => {
+            console.error("Failed to fetch developer recommendations:", err);
+            setRecommendations([]);
           })
-            .then((recs) => {
-              setRecommendations(recs);
-              // Cache the recommendations
-              cacheRecommendations("Developer", recs, {
-                name: developer.name,
-                aiPercent: developer.aiPercent,
-                tokensUsed: developer.tokensUsed,
-                aiLoC: developer.aiLoC,
-                commitCount: developer.commits,
-                mergeRate: developer.prMergeRate,
-                acceptanceRate: developer.cursorAcceptRate,
-                primaryTool: developer.primaryTool,
-              });
-            })
-            .catch((err) => {
-              console.error("Failed to fetch developer recommendations:", err);
-              setRecommendations([]);
-            })
-            .finally(() => setLoadingRecommendations(false));
-        }
+          .finally(() => setLoadingRecommendations(false));
       }
     }
   }, [currentRole, managerTeamId, developerUserId]);
@@ -440,14 +376,14 @@ export default function OverviewPage() {
         />
       </div>
 
-      {/* AI Recommendations Section */}
+      {/* SWOS Analysis Section */}
       {(currentRole === "Admin" || currentRole === "Manager" || currentRole === "Developer") && (
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
               <Lightbulb className="h-5 w-5 text-amber-500" />
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-slate-900">AI Recommendations</h2>
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase tracking-tighter cursor-default">SWOS Analysis</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {loadingRecommendations ? (
@@ -459,7 +395,7 @@ export default function OverviewPage() {
                 >
                   <div className="text-center space-y-4">
                     <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
-                    <p className="text-slate-500 font-bold text-sm">Generating recommendations...</p>
+                    <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Running SWOS Engine...</p>
                   </div>
                 </motion.div>
                 <motion.div
@@ -469,7 +405,7 @@ export default function OverviewPage() {
                 >
                   <div className="text-center space-y-4">
                     <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
-                    <p className="text-slate-500 font-bold text-sm">Analyzing your data...</p>
+                    <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Identifying Operational Threats...</p>
                   </div>
                 </motion.div>
               </>
@@ -487,30 +423,30 @@ export default function OverviewPage() {
                       "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
                       rec.priority === 1 ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
                     )}>
-                      <Hammer className="h-5 w-5" />
+                      <Zap className="h-5 w-5" />
                     </div>
                     <span className={cn(
                       "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg",
                       rec.priority === 1 ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
                     )}>
-                      Priority {rec.priority}
+                      {rec.id.includes('strength') ? 'STRENGTH' : rec.id.includes('weakness') ? 'WEAKNESS' : rec.id.includes('opportunity') ? 'OPPORTUNITY' : 'THREAT'}
                     </span>
                   </div>
-                  <h3 className="text-lg font-black text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                  <h3 className="text-lg font-black text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2 uppercase tracking-tight">
                     {rec.title}
                   </h3>
                   <p className="text-sm text-slate-600 line-clamp-1 mb-4">
                     {rec.description.split('.')[0]}.
                   </p>
                   <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm group-hover:gap-3 transition-all">
-                    View Details
+                    Full Tactical Breakdown
                     <ArrowRight className="h-4 w-4" />
                   </div>
                 </motion.button>
               ))
             ) : (
-              <div className="md:col-span-2 rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center">
-                <p className="text-slate-500 font-bold">No recommendations available at this time.</p>
+              <div className="md:col-span-2 rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center border-dashed">
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No Critical SWOS Events Detected</p>
               </div>
             )}
           </div>
@@ -525,7 +461,7 @@ export default function OverviewPage() {
             <MetricCard
               title="Last 30 Day Active Users"
               value={userAdoptionMetrics.last30DayActiveUsers}
-              gradient="primary"
+              gradient="ai"
               icon={<Users className="h-6 w-6" />}
               trend={{
                 value: ((userAdoptionMetrics.last30DayActiveUsers - userAdoptionMetrics.last30DayPrevious) / userAdoptionMetrics.last30DayPrevious * 100),
@@ -537,7 +473,7 @@ export default function OverviewPage() {
             <MetricCard
               title="Last 7 Days Active Users"
               value={userAdoptionMetrics.last7DayActiveUsers}
-              gradient="primary"
+              gradient="ai"
               icon={<Users className="h-6 w-6" />}
               trend={{
                 value: ((userAdoptionMetrics.last7DayActiveUsers - userAdoptionMetrics.last7DayPrevious) / userAdoptionMetrics.last7DayPrevious * 100),
@@ -549,7 +485,7 @@ export default function OverviewPage() {
             <MetricCard
               title="Daily Active Users"
               value={userAdoptionMetrics.dailyActiveUsers}
-              gradient="primary"
+              gradient="ai"
               icon={<Users className="h-6 w-6" />}
               trend={{
                 value: ((userAdoptionMetrics.dailyActiveUsers - userAdoptionMetrics.dailyPrevious) / userAdoptionMetrics.dailyPrevious * 100),
