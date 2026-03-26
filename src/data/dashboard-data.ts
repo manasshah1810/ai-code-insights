@@ -269,9 +269,9 @@ export const orgData = {
   aiCodePercent: 0, // Calculated below
   aiMergeRate: 78.2,
   totalTokens: totalTokensEstimate,
-  copilotSuggestionsShown: 412000,
+  copilotSuggestionsShown: 4200,
   copilotAcceptRate: 64.5,
-  cursorCompletionsAccepted: 285400,
+  cursorCompletionsAccepted: 2854,
   prMergeRate: 82.4,
   aiRiskScore: 14.8,
   aiRiskInterventionRate: 19.5,
@@ -288,8 +288,8 @@ export const weeklyTrend = Array.from({ length: 16 }).map((_, i) => {
   const weekInMonth = (i % 4) + 1;
   const label = `${monthName} ${weekInMonth * 7 - 6}, ${year} - ${monthName} ${weekInMonth * 7}, ${year}`;
 
-  const aiLoC = 80000 + i * 10000 + Math.floor(Math.random() * 5000);
-  const manualLoC = 180000 - i * 2000 + Math.floor(Math.random() * 5000);
+  const aiLoC = 12000 + i * 1500 + Math.floor(Math.random() * 2000);
+  const manualLoC = 28000 - i * 500 + Math.floor(Math.random() * 2000);
   const total = aiLoC + manualLoC;
 
   return {
@@ -303,21 +303,21 @@ export const weeklyTrend = Array.from({ length: 16 }).map((_, i) => {
 });
 
 export const repositories = [
-  { name: "core-api-service", team: "Platform Engineering", totalLoC: 84000, aiPercent: 72, mergeRate: 89, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "web-client-v2", team: "Frontend Core", totalLoC: 124000, aiPercent: 65, mergeRate: 82, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "auth-central", team: "Platform Engineering", totalLoC: 45000, aiPercent: 58, mergeRate: 94, primaryTool: "Cursor", lastCommit: "Mar 20" },
-  { name: "data-lake-ingestion", team: "Data & ML", totalLoC: 92000, aiPercent: 34, mergeRate: 64, primaryTool: "Copilot", lastCommit: "Mar 19" },
-  { name: "mobile-ios-app", team: "Mobile App", totalLoC: 76000, aiPercent: 61, mergeRate: 78, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "mobile-android-app", team: "Mobile App", totalLoC: 78000, aiPercent: 59, mergeRate: 75, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "security-scanner", team: "Cyber Security", totalLoC: 34000, aiPercent: 88, mergeRate: 96, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "infra-provisioner", team: "Infrastructure/SRE", totalLoC: 56000, aiPercent: 82, mergeRate: 87, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "ml-training-hub", team: "Data & ML", totalLoC: 68000, aiPercent: 41, mergeRate: 59, primaryTool: "Copilot", lastCommit: "Mar 18" },
-  { name: "design-system-react", team: "Frontend Core", totalLoC: 28000, aiPercent: 74, mergeRate: 85, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "legacy-payment-gw", team: "Product API", totalLoC: 145000, aiPercent: 12, mergeRate: 45, primaryTool: "None", lastCommit: "Feb 28" },
-  { name: "customer-portal", team: "Product API", totalLoC: 52000, aiPercent: 48, mergeRate: 72, primaryTool: "Copilot", lastCommit: "Mar 15" },
-  { name: "analytics-edge", team: "Data & ML", totalLoC: 41000, aiPercent: 55, mergeRate: 70, primaryTool: "Cursor", lastCommit: "Mar 20" },
-  { name: "dev-portal-v3", team: "Developer Experience", totalLoC: 32000, aiPercent: 91, mergeRate: 98, primaryTool: "Cursor", lastCommit: "Mar 21" },
-  { name: "experiment-engine", team: "Growth & Experiments", totalLoC: 18000, aiPercent: 70, mergeRate: 81, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "core-api-service", team: "Platform Engineering", totalLoC: 185000, aiPercent: 72, mergeRate: 89, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "web-client-v2", team: "Frontend Core", totalLoC: 275000, aiPercent: 65, mergeRate: 82, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "auth-central", team: "Platform Engineering", totalLoC: 100000, aiPercent: 58, mergeRate: 94, primaryTool: "Cursor", lastCommit: "Mar 20" },
+  { name: "data-lake-ingestion", team: "Data & ML", totalLoC: 205000, aiPercent: 34, mergeRate: 64, primaryTool: "Copilot", lastCommit: "Mar 19" },
+  { name: "mobile-ios-app", team: "Mobile App", totalLoC: 170000, aiPercent: 61, mergeRate: 78, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "mobile-android-app", team: "Mobile App", totalLoC: 175000, aiPercent: 59, mergeRate: 75, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "security-scanner", team: "Cyber Security", totalLoC: 75000, aiPercent: 88, mergeRate: 96, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "infra-provisioner", team: "Infrastructure/SRE", totalLoC: 125000, aiPercent: 82, mergeRate: 87, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "ml-training-hub", team: "Data & ML", totalLoC: 150000, aiPercent: 41, mergeRate: 59, primaryTool: "Copilot", lastCommit: "Mar 18" },
+  { name: "design-system-react", team: "Frontend Core", totalLoC: 65000, aiPercent: 74, mergeRate: 85, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "legacy-payment-gw", team: "Product API", totalLoC: 320000, aiPercent: 12, mergeRate: 45, primaryTool: "None", lastCommit: "Feb 28" },
+  { name: "customer-portal", team: "Product API", totalLoC: 115000, aiPercent: 48, mergeRate: 72, primaryTool: "Copilot", lastCommit: "Mar 15" },
+  { name: "analytics-edge", team: "Data & ML", totalLoC: 90000, aiPercent: 55, mergeRate: 70, primaryTool: "Cursor", lastCommit: "Mar 20" },
+  { name: "dev-portal-v3", team: "Developer Experience", totalLoC: 70000, aiPercent: 91, mergeRate: 98, primaryTool: "Cursor", lastCommit: "Mar 21" },
+  { name: "experiment-engine", team: "Growth & Experiments", totalLoC: 40000, aiPercent: 70, mergeRate: 81, primaryTool: "Cursor", lastCommit: "Mar 21" },
 ];
 
 export const mergeAnalytics = {
@@ -338,8 +338,8 @@ export const productivityData = {
   aiCycleTimeAvg: 38,
   manualCycleTimeAvg: 124,
   velocityBoostPercent: 72.1,
-  timeSavedHours: 8420,
-  tasksMatched: 3450,
+  timeSavedHours: 21450,
+  tasksMatched: 775,
   roiMetrics: Array.from({ length: 16 }).map((_, i) => ({
     week: `W${i + 1}`,
     boost: 35 + (i * 2.4) + Math.random() * 5
@@ -347,19 +347,19 @@ export const productivityData = {
 };
 
 export const securityData = {
-  totalAIFlawsDetected: 12450,
-  interventionsCount: 2840,
+  totalAIFlawsDetected: 1245,
+  interventionsCount: 284,
   interventionTrend: Array.from({ length: 16 }).map((_, i) => ({
     week: `W${i + 1}`,
     interventions: 180 + i * 30,
     flaws: 600 + i * 90
   })),
   topRiskTypes: [
-    { type: "Insecure Credential Storage", count: 2840 },
-    { type: "Injection Vulnerabilities", count: 1950 },
-    { type: "Inefficient Loops", count: 4100 },
-    { type: "Memory Leaks", count: 1240 },
-    { type: "Non-standard Imports", count: 2320 },
+    { type: "Insecure Credential Storage", count: 284 },
+    { type: "Injection Vulnerabilities", count: 195 },
+    { type: "Inefficient Loops", count: 410 },
+    { type: "Memory Leaks", count: 124 },
+    { type: "Non-standard Imports", count: 232 },
   ]
 };
 
@@ -427,20 +427,20 @@ export const aiToolQualityMetrics = [
 // --- USER ADOPTION & USAGE PATTERNS ---
 // Daily active users for last 30 days
 export const dailyActiveUsers = Array.from({ length: 30 }).map((_, i) => {
-  const baseUsers = 4500;
+  const baseUsers = 55;
   const growthFactor = 1 + (i * 0.008); // Gradual growth
-  const variance = Math.sin(i * 0.3) * 200; // Wave pattern
-  const noise = Math.random() * 300 - 150;
+  const variance = Math.sin(i * 0.3) * 5; // Wave pattern
+  const noise = Math.random() * 6 - 3;
   const count = Math.floor(baseUsers * growthFactor + variance + noise);
-  
+
   const today = new Date();
   const date = new Date(today.getTime() - (29 - i) * 24 * 60 * 60 * 1000);
   const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
-  
+
   return {
     day: `${dayName} ${date.getDate()}`,
     date: date.toISOString().split('T')[0],
-    uniqueUsers: Math.max(2000, count),
+    uniqueUsers: Math.min(users.length, Math.max(20, count)),
   };
 });
 
@@ -452,31 +452,31 @@ export const weeklyActiveUsers = Array.from({ length: 16 }).map((_, i) => {
   const weekInMonth = (i % 4) + 1;
   const weekLabel = `${monthName} W${weekInMonth}`;
 
-  const baseUsers = 5800;
+  const baseUsers = 72;
   const growthFactor = 1 + (i * 0.015);
-  const variance = Math.sin(i * 0.4) * 300;
-  const noise = Math.random() * 400 - 200;
+  const variance = Math.sin(i * 0.4) * 4;
+  const noise = Math.random() * 6 - 3;
   const count = Math.floor(baseUsers * growthFactor + variance + noise);
 
   return {
     week: `W${i + 1}`,
     weekLabel,
-    uniqueUsers: Math.max(4000, count),
+    uniqueUsers: Math.min(users.length, Math.max(40, count)),
   };
 });
 
 // Monthly active users for 4 months
 export const monthlyActiveUsers = Array.from({ length: 4 }).map((_, i) => {
   const monthNames = ["December 2025", "January 2026", "February 2026", "March 2026"];
-  const baseUsers = 6200;
-  const growthFactor = 1 + (i * 0.18);
-  const noise = Math.random() * 500 - 250;
+  const baseUsers = 76;
+  const growthFactor = 1 + (i * 0.05);
+  const noise = Math.random() * 4 - 2;
   const count = Math.floor(baseUsers * growthFactor + noise);
 
   return {
     month: monthNames[i],
     shortMonth: ["Dec", "Jan", "Feb", "Mar"][i],
-    uniqueUsers: Math.max(5000, count),
+    uniqueUsers: Math.min(users.length, Math.max(50, count)),
   };
 });
 
@@ -516,26 +516,26 @@ export const userAdoptionMetrics = {
   last30DayActiveUsers: dailyActiveUsers.slice(-30).reduce((acc, d) => Math.max(acc, d.uniqueUsers), 0),
   last7DayActiveUsers: dailyActiveUsers.slice(-7).reduce((acc, d) => Math.max(acc, d.uniqueUsers), 0),
   dailyActiveUsers: dailyActiveUsers[dailyActiveUsers.length - 1].uniqueUsers,
-  last30DayPrevious: Math.floor(6656 * 0.95),
-  last7DayPrevious: Math.floor(6075 * 0.96),
-  dailyPrevious: Math.floor(3865 * 0.92),
-  totalUniqueUsersAllTime: 8420,
+  last30DayPrevious: Math.floor(75 * 0.95),
+  last7DayPrevious: Math.floor(65 * 0.96),
+  dailyPrevious: Math.floor(52 * 0.92),
+  totalUniqueUsersAllTime: users.length,
 };
 
 // Function to get team-specific active user metrics
 export function getTeamUserAdoptionMetrics(teamId: string) {
   const teamUsers = users.filter(u => u.teamId === teamId);
   const teamSize = teamUsers.length;
-  
+
   // Scale org metrics proportionally to team size
   const orgTeamSize = users.length;
   const scaleFactor = teamSize / orgTeamSize;
-  
+
   // Calculate team-specific metrics by scaling org metrics
   const last30 = Math.round(userAdoptionMetrics.last30DayActiveUsers * scaleFactor);
   const last7 = Math.round(userAdoptionMetrics.last7DayActiveUsers * scaleFactor);
   const daily = Math.round(userAdoptionMetrics.dailyActiveUsers * scaleFactor);
-  
+
   return {
     last30DayActiveUsers: Math.max(1, last30),
     last7DayActiveUsers: Math.max(1, last7),
@@ -553,7 +553,7 @@ export function getTeamActiveUsersData(teamId: string, type: 'daily' | 'weekly' 
   const teamSize = teamUsers.length;
   const orgTeamSize = users.length;
   const scaleFactor = teamSize / orgTeamSize;
-  
+
   if (type === 'daily') {
     return dailyActiveUsers.map(d => ({
       day: d.day,
@@ -641,13 +641,13 @@ export function getAdminRecommendations(): Recommendation[] {
     {
       id: "admin-roi-tracking",
       title: "Measure & Communicate AI Investment ROI",
-      description: `Org is $2.1M annual AI investment with 72% velocity gain. Need better measurement framework to justify spend and optimize allocation across teams.`,
+      description: `Org is $64,000 annual AI investment with 72% velocity gain. Need better measurement framework to justify spend and optimize allocation across teams.`,
       impact: "medium",
       priority: 2,
       actionItems: [
         "Create executive dashboard: cost per feature, ROI by tool, velocity impact per team",
         "Monthly business reviews with finance to track: cost/line of code, cost per delivered feature",
-        "Share success stories with board/stakeholders - 8,420 hours saved YTD, 72.1% velocity boost",
+        "Share success stories with board/stakeholders - 21,450 hours saved YTD, 72.1% velocity boost",
         "Establish AI CoE (Center of Excellence) to coordinate strategy across 10 teams"
       ],
       expectedOutcome: "Gain stakeholder confidence, unlock budget for innovation initiatives",
@@ -659,7 +659,7 @@ export function getAdminRecommendations(): Recommendation[] {
 export function getManagerRecommendations(teamId: string): Recommendation[] {
   const managerTeam = teams.find(t => t.id === teamId);
   const teamData = teamUserActivity.find(t => t.teamId === teamId);
-  
+
   if (!managerTeam || !teamData) return [];
 
   const adoptionRate = managerTeam.aiUsers / managerTeam.headCount;
@@ -733,13 +733,13 @@ export function getManagerRecommendations(teamId: string): Recommendation[] {
 
 export function getDeveloperRecommendations(userId: number): Recommendation[] {
   const developer = users.find(u => u.id === userId);
-  
+
   if (!developer) return [];
 
   const tokensPerLine = developer.tokensUsed / Math.max(1, developer.aiLoC);
-  const acceptanceRate = (developer.tokensUsed > 0 
-    ? ((developer.cursorAcceptRate * developer.cursorCompletions + developer.copilotAcceptRate * developer.copilotSuggestions) 
-       / (developer.cursorCompletions + developer.copilotSuggestions)) 
+  const acceptanceRate = (developer.tokensUsed > 0
+    ? ((developer.cursorAcceptRate * developer.cursorCompletions + developer.copilotAcceptRate * developer.copilotSuggestions)
+      / (developer.cursorCompletions + developer.copilotSuggestions))
     : 0);
   const underperforming = developer.aiPercent < 30;
 
