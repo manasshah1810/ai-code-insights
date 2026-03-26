@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { teams, repositories, orgData, formatNumber } from "@/data/dashboard-data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EnhancedChart } from "@/components/ui/EnhancedChart";
@@ -22,16 +22,53 @@ export default function CodeBreakdownPage() {
     return true;
   });
 
-  const teamChartData = teams.map(t => ({
-    name: t.name.replace(" Engineering", " Eng.").replace(" Product", " Prod."),
-    aiLoC: t.aiLoC,
-    manualLoC: t.manualLoC,
-  }));
+  const teamChartData = useMemo(() => {
+    let filteredTeams = teams;
+    if (teamFilter !== "all") {
+      filteredTeams = teams.filter(t => t.name === teamFilter);
+    }
+    return filteredTeams.map(t => ({
+      name: t.name.replace(" Engineering", " Eng.").replace(" Product", " Prod."),
+      aiLoC: t.aiLoC,
+      manualLoC: t.manualLoC,
+    }));
+  }, [teamFilter]);
 
-  const pieData = [
-    { name: "AI Code", value: orgData.aiLoC },
-    { name: "Manual Code", value: orgData.manualLoC },
-  ];
+  const filteredMetrics = useMemo(() => {
+    let totalAiLoC = 0;
+    let totalManualLoC = 0;
+
+    if (teamFilter !== "all") {
+      // Show selected team's metrics
+      const selectedTeam = teams.find(t => t.name === teamFilter);
+      if (selectedTeam) {
+        totalAiLoC = selectedTeam.aiLoC;
+        totalManualLoC = selectedTeam.manualLoC;
+      }
+    } else if (toolFilter !== "all") {
+      // Show filtered repos metrics by tool
+      totalAiLoC = filteredRepos.reduce((sum, r) => sum + (r.aiLoC || 0), 0);
+      totalManualLoC = filteredRepos.reduce((sum, r) => sum + (r.manualLoC || 0), 0);
+    } else {
+      // Show organization metrics
+      totalAiLoC = orgData.aiLoC;
+      totalManualLoC = orgData.manualLoC;
+    }
+
+    const totalLoC = totalAiLoC + totalManualLoC;
+    const aiCodePercent = totalLoC > 0 ? parseFloat(((totalAiLoC / totalLoC) * 100).toFixed(1)) : 0;
+
+    return {
+      aiLoC: totalAiLoC,
+      manualLoC: totalManualLoC,
+      aiCodePercent,
+    };
+  }, [teamFilter, toolFilter, filteredRepos]);
+
+  const pieData = useMemo(() => [
+    { name: "AI Code", value: filteredMetrics.aiLoC },
+    { name: "Manual Code", value: filteredMetrics.manualLoC },
+  ], [filteredMetrics]);
 
   const repoColumns = [
     {
@@ -193,7 +230,7 @@ export default function CodeBreakdownPage() {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <p className="text-2xl font-black text-white font-metric">{orgData.aiCodePercent}%</p>
+              <p className="text-2xl font-black text-white font-metric">{filteredMetrics.aiCodePercent}%</p>
               <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">AI Powered</p>
             </div>
           </div>
@@ -204,14 +241,14 @@ export default function CodeBreakdownPage() {
                 <div className="h-2 w-2 rounded-full bg-indigo-500" />
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI LoC</span>
               </div>
-              <span className="text-sm font-black text-white font-metric">{formatNumber(orgData.aiLoC)}</span>
+              <span className="text-sm font-black text-white font-metric">{formatNumber(filteredMetrics.aiLoC)}</span>
             </div>
             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-slate-500" />
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manual LoC</span>
               </div>
-              <span className="text-sm font-black text-white font-metric">{formatNumber(orgData.manualLoC)}</span>
+              <span className="text-sm font-black text-white font-metric">{formatNumber(filteredMetrics.manualLoC)}</span>
             </div>
           </div>
         </div>
