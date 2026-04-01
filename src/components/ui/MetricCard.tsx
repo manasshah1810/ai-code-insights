@@ -16,7 +16,7 @@ interface MetricCardProps {
         isPositive: boolean;
     };
     icon?: React.ReactNode;
-    gradient?: 'ai' | 'manual' | 'success' | 'warning' | 'none';
+    gradient?: 'ai' | 'manual' | 'success' | 'warning' | 'danger' | 'default';
     className?: string;
 }
 
@@ -26,106 +26,107 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     suffix = '',
     prefix = '',
     decimals = 1,
-    subtitle,
-    trend,
     icon,
-    gradient = 'none',
+    trend,
+    subtitle,
+    gradient = 'default',
     className,
 }) => {
-    const getGradientClass = () => {
-        switch (gradient) {
-            case 'ai': return 'bg-[var(--ai-primary)] text-slate-900 border-transparent';
-            case 'manual': return 'bg-[var(--manual-primary)] text-slate-900 border-transparent';
-            case 'success': return 'bg-[var(--success-gradient)] text-slate-900 border-transparent';
-            case 'warning': return 'bg-[var(--warning-gradient)] text-slate-900 border-transparent';
-            default: return 'bg-white text-slate-900 border-slate-200';
-        }
+    // Resilient component selection for the default export issue
+    const CountUpComponent: any = (CountUp as any).default || CountUp;
+
+    const gradients = {
+        default: 'from-slate-50 to-white dark:from-slate-800/60 dark:to-slate-800/40 border-slate-200 dark:border-slate-700',
+        ai: 'from-indigo-50/50 to-white dark:from-indigo-950/50 dark:to-slate-800/40 border-indigo-100 dark:border-indigo-900',
+        success: 'from-emerald-50/50 to-white dark:from-emerald-950/50 dark:to-slate-800/40 border-emerald-100 dark:border-emerald-900',
+        warning: 'from-amber-50/50 to-white dark:from-amber-950/50 dark:to-slate-800/40 border-amber-100 dark:border-amber-900',
+        danger: 'from-rose-50/50 to-white dark:from-rose-950/50 dark:to-slate-800/40 border-rose-100 dark:border-rose-900',
+        manual: 'from-slate-50 to-white dark:from-slate-800/60 dark:to-slate-800/40 border-slate-200 dark:border-slate-700',
     };
 
-    const getGlowClass = () => {
-        switch (gradient) {
-            case 'ai': return 'bg-indigo-500/20';
-            case 'manual': return 'bg-slate-500/20';
-            case 'success': return 'bg-emerald-500/20';
-            case 'warning': return 'bg-amber-500/20';
-            default: return 'bg-slate-100';
-        }
+    const iconColors = {
+        ai: 'text-indigo-600 dark:text-indigo-400',
+        success: 'text-emerald-600 dark:text-emerald-400',
+        warning: 'text-amber-600 dark:text-amber-400',
+        danger: 'text-rose-600 dark:text-rose-400',
+        manual: 'text-slate-600 dark:text-slate-400',
+        default: 'text-slate-600 dark:text-slate-400',
     };
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -4, boxShadow: 'var(--shadow-xl)' }}
-            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
             className={cn(
-                "relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 group",
-                getGradientClass(),
-                gradient === 'none' ? 'hover:shadow-xl' : 'shadow-lg',
+                "relative overflow-hidden rounded-3xl p-6 border bg-gradient-to-br shadow-sm transition-all",
+                gradients[gradient as keyof typeof gradients] || gradients.default,
                 className
             )}
         >
-            {/* Background Glow */}
-            <div className={cn(
-                "absolute -right-4 -top-4 h-24 w-24 rounded-full blur-3xl transition-opacity group-hover:opacity-100 opacity-50",
-                getGlowClass()
-            )} />
+            {/* Ambient Background Glow */}
+            <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-current opacity-[0.03] blur-2xl pointer-events-none" />
 
-            <div className="relative z-10">
-                <div className="flex items-start justify-between">
-                    <div className={cn(
-                        "flex h-12 w-12 items-center justify-center rounded-xl shadow-sm transition-transform group-hover:scale-110",
-                        gradient === 'none' ? 'bg-slate-50 text-slate-700' : 'bg-white/80 text-slate-700'
-                    )}>
-                        {icon}
+            <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-start justify-between mb-4">
+                    <div className="space-y-1">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                            {title}
+                        </h3>
+                        {subtitle && (
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                                {subtitle}
+                            </p>
+                        )}
                     </div>
-
-                    {trend && (
+                    {icon && (
                         <div className={cn(
-                            "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold",
-                            trend.isPositive
-                                ? (gradient === 'none' ? 'bg-emerald-50 text-emerald-600' : 'bg-white/30 text-slate-900')
-                                : (gradient === 'none' ? 'bg-rose-50 text-rose-600' : 'bg-white/30 text-slate-900')
+                            "p-2.5 rounded-2xl bg-white dark:bg-slate-700/60 shadow-sm border border-slate-100 dark:border-slate-600 transition-transform hover:scale-110",
+                            iconColors[gradient as keyof typeof iconColors] || iconColors.default
                         )}>
-                            {trend.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                            {trend.isPositive ? '+' : ''}{parseFloat(trend.value.toFixed(2))}%
+                            {icon}
                         </div>
                     )}
                 </div>
 
-                <div className="mt-5">
-                    <h3 className={cn(
-                        "text-sm font-semibold uppercase tracking-wider",
-                        gradient === 'none' ? 'text-slate-500' : 'text-slate-800'
-                    )}>
-                        {title}
-                    </h3>
+                <div className="flex-1 flex flex-col justify-end">
+                    <div className="flex items-end justify-between">
+                        <div className="mt-1 flex items-baseline gap-1">
+                            <span className="text-4xl font-bold tracking-tight font-metric text-slate-900 dark:text-white">
+                                {prefix}
+                                <CountUpComponent end={value} decimals={decimals} duration={2} separator="," />
+                                {suffix}
+                            </span>
+                        </div>
 
-                    <div className="mt-1 flex items-baseline gap-1">
-                        <span className="text-4xl font-bold tracking-tight font-metric">
-                            {prefix}
-                            <CountUp end={value} decimals={decimals} duration={2} separator="," />
-                            {suffix}
-                        </span>
+                        {trend && (
+                            <div className={cn(
+                                "flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black tracking-tight",
+                                trend.isPositive
+                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900"
+                                    : "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900"
+                            )}>
+                                {trend.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                {trend.isPositive ? '+' : ''}{trend.value.toFixed(1)}%
+                            </div>
+                        )}
                     </div>
 
-                    {subtitle && (
-                        <p className={cn(
-                            "mt-2 text-sm",
-                            gradient === 'none' ? 'text-slate-500 italic' : 'text-white/60 italic'
-                        )}>
-                            {subtitle}
-                        </p>
+                    {/* Progress Bar Placeholder for AI metrics */}
+                    {gradient === 'ai' && (
+                        <div className="mt-4 h-1 w-full bg-indigo-100/50 dark:bg-indigo-900/40 rounded-full overflow-hidden">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+                                transition={{ duration: 1.5, ease: "easeOut" }}
+                                className="h-full bg-indigo-500 rounded-full"
+                            />
+                        </div>
                     )}
                 </div>
+            </div>
 
-                {/* Hover Arrow */}
-                <div className={cn(
-                    "absolute bottom-4 right-4 translate-x-4 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100",
-                    gradient === 'none' ? 'text-slate-300' : 'text-white/40'
-                )}>
-                    <ArrowUpRight className="h-5 w-5" />
-                </div>
+            {/* Hover Arrow Decoration */}
+            <div className="absolute bottom-4 right-4 translate-x-4 opacity-0 transition-all duration-300 pointer-events-none group-hover:translate-x-0 group-hover:opacity-100">
+                <ArrowUpRight className="h-5 w-5 text-slate-300" />
             </div>
         </motion.div>
     );

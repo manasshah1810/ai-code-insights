@@ -176,9 +176,9 @@ export default function AISummaryPage() {
             <Zap className={cn("h-4 w-4", loading && "animate-pulse")} />
             {loading ? "Analyzing..." : "Regenerate SWOS"}
           </Button>
-          <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
-            <Sparkles className="h-5 w-5 text-amber-600" />
-            <span className="text-sm font-bold text-amber-700">Qwen 3 Engine Active</span>
+          <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-200 shadow-sm">
+            <Sparkles className="h-5 w-5 text-indigo-600" />
+            <span className="text-sm font-bold text-indigo-700">Claude Sonnet 4.6 Active</span>
           </div>
         </div>
       </div>
@@ -189,8 +189,8 @@ export default function AISummaryPage() {
           <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <Loader2 className="h-10 w-10 text-indigo-600 animate-spin" />
           </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-2 font-mono uppercase tracking-tighter">Running Tactical SWOS Engine...</h3>
-          <p className="text-slate-600">Our Qwen model is performing a detailed SWOS analysis (Strengths, Weakness, Opportunities, Threats) on your operational metadata.</p>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2 font-mono uppercase tracking-tighter">Running Anthropic Claude Engine...</h3>
+          <p className="text-slate-600">Our Claude Sonnet 4.6 model is performing a detailed SWOS analysis (Strengths, Weakness, Opportunities, Threats) on your operational metadata.</p>
         </div>
       )}
 

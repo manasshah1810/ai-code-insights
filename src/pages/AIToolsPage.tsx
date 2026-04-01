@@ -23,6 +23,8 @@ import {
     Activity, Database, ChevronRight
 } from "lucide-react";
 
+import { useAppStore } from "@/store/app-store";
+
 const toolColorMap: Record<string, string> = {
     claude: "#D97706",
     copilot: "#6366F1",
@@ -144,6 +146,15 @@ export default function AIToolsPage() {
         },
     ];
 
+    const { theme } = useAppStore();
+    const isDark = theme === 'dark';
+    const chartGridColor = isDark ? "#334155" : "#e2e8f0";
+    const chartTickColor = isDark ? "#94a3b8" : "#64748b";
+    const chartLabelColor = isDark ? "#cbd5e1" : "#475569";
+    const tooltipBg = isDark ? "#1e293b" : "#ffffff";
+    const tooltipBorder = isDark ? "#334155" : "#e2e8f0";
+    const tooltipText = isDark ? "#f1f5f9" : "#1e293b";
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -165,6 +176,8 @@ export default function AIToolsPage() {
                         Decomposing which AI models and tools generated every line of code across your organization
                     </p>
                 </div>
+                {/* ... remaining code omitted for brevity but I will include the relevant parts below ... */}
+
 
                 <div className="flex items-center gap-3">
                     <div className="relative">
@@ -261,7 +274,11 @@ export default function AIToolsPage() {
 
                             <div className="flex items-baseline gap-1.5 mb-3">
                                 <span className="text-3xl font-black font-metric" style={{ color: tool.color }}>
-                                    <CountUp end={tool.percentOfAI} decimals={1} duration={1.5} />%
+                                    {(() => {
+                                        const CountUpComponent: any = (CountUp as any).default || CountUp;
+                                        return <CountUpComponent end={tool.percentOfAI} decimals={1} duration={1.5} />;
+                                    })()}
+                                    %
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">of AI code</span>
                             </div>
@@ -322,8 +339,14 @@ export default function AIToolsPage() {
                                     ))}
                                 </Pie>
                                 <RechartsTooltip
-                                    contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "12px", fontSize: "11px", color: "white" }}
-                                    itemStyle={{ color: "white" }}
+                                    contentStyle={{
+                                        backgroundColor: tooltipBg,
+                                        border: `1px solid ${tooltipBorder}`,
+                                        borderRadius: "12px",
+                                        fontSize: "11px",
+                                        color: tooltipText
+                                    }}
+                                    itemStyle={{ color: tooltipText }}
                                     formatter={(value: number) => formatNumber(value)}
                                 />
                             </PieChart>
@@ -403,15 +426,15 @@ export default function AIToolsPage() {
                     <div className="h-[340px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                                <PolarGrid stroke="#e2e8f0" />
+                                <PolarGrid stroke={chartGridColor} />
                                 <PolarAngleAxis
                                     dataKey="metric"
-                                    tick={{ fill: "#64748b", fontSize: 11, fontWeight: 600 }}
+                                    tick={{ fill: chartLabelColor, fontSize: 11, fontWeight: 600 }}
                                 />
                                 <PolarRadiusAxis
                                     angle={90}
                                     domain={[0, 100]}
-                                    tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                    tick={{ fill: chartTickColor, fontSize: 10 }}
                                 />
                                 {aiTools.map((tool) => (
                                     <Radar
@@ -426,12 +449,14 @@ export default function AIToolsPage() {
                                 ))}
                                 <RechartsTooltip
                                     contentStyle={{
-                                        backgroundColor: "#fff",
-                                        border: "1px solid #e2e8f0",
+                                        backgroundColor: tooltipBg,
+                                        border: `1px solid ${tooltipBorder}`,
                                         borderRadius: "12px",
                                         fontSize: "11px",
-                                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                                        color: tooltipText,
+                                        boxShadow: isDark ? "0 10px 25px rgba(0,0,0,0.4)" : "0 10px 25px rgba(0,0,0,0.08)",
                                     }}
+                                    itemStyle={{ color: tooltipText }}
                                 />
                             </RadarChart>
                         </ResponsiveContainer>

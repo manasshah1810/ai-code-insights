@@ -4,16 +4,34 @@ import { TopBar } from "@/components/TopBar";
 import { ChatBot } from "@/components/ChatBot";
 import { Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAppStore } from "@/store/app-store";
+import { cn } from "@/lib/utils";
 
 export function DashboardLayout() {
+  const { theme } = useAppStore();
+  const isDark = theme === 'dark';
+
   return (
     <SidebarProvider>
-      <div className="relative min-h-screen flex w-full bg-slate-50 overflow-hidden font-sans antialiased text-slate-900">
+      <div className={cn(
+        "relative min-h-screen flex w-full overflow-hidden font-sans antialiased transition-colors duration-500",
+        isDark ? "bg-slate-950 text-slate-100" : "bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 text-slate-900"
+      )}>
         {/* Animated Background Blobs */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-100/40 rounded-full blur-[120px] animate-blob" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-100/30 rounded-full blur-[120px] animate-blob animation-delay-2000" />
-          <div className="absolute top-[20%] right-[10%] w-[25%] h-[25%] bg-emerald-100/20 rounded-full blur-[100px] animate-blob animation-delay-4000" />
+          {isDark ? (
+            <>
+              <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/30 rounded-full blur-[120px] animate-blob" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-900/20 rounded-full blur-[120px] animate-blob animation-delay-2000" />
+              <div className="absolute top-[20%] right-[10%] w-[25%] h-[25%] bg-blue-900/15 rounded-full blur-[100px] animate-blob animation-delay-4000" />
+            </>
+          ) : (
+            <>
+              <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-[120px] animate-blob" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-200/30 rounded-full blur-[120px] animate-blob animation-delay-2000" />
+              <div className="absolute top-[20%] right-[10%] w-[25%] h-[25%] bg-emerald-200/25 rounded-full blur-[100px] animate-blob animation-delay-4000" />
+            </>
+          )}
         </div>
 
         <AppSidebar />

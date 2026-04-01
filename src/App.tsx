@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +22,33 @@ import { useAppStore } from "@/store/app-store";
 
 const queryClient = new QueryClient();
 
+// Theme Manager Component
+function ThemeManager() {
+  const { theme } = useAppStore();
+
+  useEffect(() => {
+    const htmlElement = document.documentElement;
+
+    // Add transitioning class to enable animations momentarily
+    htmlElement.classList.add('theme-transitioning');
+
+    if (theme === 'dark') {
+      htmlElement.classList.add('dark');
+    } else {
+      htmlElement.classList.remove('dark');
+    }
+
+    // Remove transitioning class after animation finishes (400ms)
+    const timeout = setTimeout(() => {
+      htmlElement.classList.remove('theme-transitioning');
+    }, 450);
+
+    return () => clearTimeout(timeout);
+  }, [theme]);
+
+  return null;
+}
+
 // Role-based dashboard router
 function RoleBasedDashboard() {
   const { currentRole } = useAppStore();
@@ -31,6 +59,7 @@ function RoleBasedDashboard() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeManager />
     <TooltipProvider>
       <Toaster />
       <Sonner />

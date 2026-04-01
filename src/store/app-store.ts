@@ -9,6 +9,10 @@ interface AppState {
   lastUpdated: Date;
   refreshTimestamp: () => void;
 
+  // Theme
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+
   // Role-based identity
   developerUserId: number;
   managerUserId: number;
@@ -39,6 +43,8 @@ export const useAppStore = create<AppState>()(
       setRole: (role) => set({ currentRole: role }),
       lastUpdated: new Date(),
       refreshTimestamp: () => set({ lastUpdated: new Date() }),
+      theme: 'light',
+      toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
 
       // Developer persona: user index 2 → id 3 (Robert Garcia, Junior Engineer, Data & ML)
       developerUserId: 3,
@@ -69,10 +75,11 @@ export const useAppStore = create<AppState>()(
       clearLiveEvents: () => set({ liveEvents: [] }),
     }),
     {
-      name: "cogniify-app-store", // localStorage key
+      name: "ai-code-insights-store", // localStorage key
       partialize: (state) => ({
         // Only persist these fields to localStorage
         currentRole: state.currentRole,
+        theme: state.theme,
         developerUserId: state.developerUserId,
         managerUserId: state.managerUserId,
         managerTeamId: state.managerTeamId,

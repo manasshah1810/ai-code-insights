@@ -1,5 +1,5 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, Download, RefreshCcw, Search, FileDown, Loader2 } from "lucide-react";
+import { Bell, RefreshCcw, Search, FileDown, Loader2, Moon, Sun } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
 import { exportReport } from "@/lib/export-pdf";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 export function TopBar() {
-  const { currentRole, setRole, lastUpdated, refreshTimestamp, developerUserId, managerUserId, managerTeamId } = useAppStore();
+  const { currentRole, setRole, lastUpdated, refreshTimestamp, theme, toggleTheme, developerUserId, managerUserId, managerTeamId } = useAppStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -45,16 +45,16 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex h-20 items-center justify-between border-b border-slate-100 bg-white/70 backdrop-blur-xl px-8 sticky top-0 z-50">
+    <header className="flex h-20 items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl px-8 sticky top-0 z-50">
       <div className="flex items-center gap-6">
-        <SidebarTrigger className="text-slate-400 hover:text-indigo-600 transition-colors h-10 w-10 rounded-xl hover:bg-indigo-50" />
+        <SidebarTrigger className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors h-10 w-10 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800" />
         <div className="hidden lg:flex items-center gap-4">
           <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors" />
             <input
               type="text"
               placeholder="Search metrics, teams, or engineers..."
-              className="h-11 w-80 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium"
+              className="h-11 w-80 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all text-sm font-medium"
             />
           </div>
         </div>
@@ -63,17 +63,17 @@ export function TopBar() {
       <div className="flex items-center gap-4">
         <div className="hidden md:flex flex-col items-end mr-2">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Telemetry Status</span>
-            <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 px-1.5 py-0 text-[9px] font-black">ACTIVE</Badge>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Telemetry Status</span>
+            <Badge className="bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800 px-1.5 py-0 text-[9px] font-black">ACTIVE</Badge>
           </div>
-          <span className="text-xs font-bold text-slate-500">Auto-sync: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Auto-sync: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
 
         {/* Export PDF Button */}
         <Button
           variant="outline"
           size="sm"
-          className="hidden md:flex items-center gap-2 rounded-xl border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs h-10 px-4 transition-all"
+          className="hidden md:flex items-center gap-2 rounded-xl border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-400 font-bold text-xs h-10 px-4 transition-all"
           onClick={handleExportPdf}
           disabled={isExporting}
         >
@@ -85,11 +85,11 @@ export function TopBar() {
           {isExporting ? "Exporting..." : "Export PDF"}
         </Button>
 
-        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800">
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-none hover:shadow-sm"
+            className="h-10 w-10 rounded-xl text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-none hover:shadow-sm"
             onClick={handleManualRefresh}
           >
             <motion.div
@@ -100,18 +100,62 @@ export function TopBar() {
             </motion.div>
           </Button>
 
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl relative text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-none hover:shadow-sm">
+          {/* Animated Light/Dark Pill Toggle */}
+          <button
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            aria-label="Toggle theme"
+            className={`
+              relative flex items-center gap-0.5 p-1 rounded-2xl transition-all duration-500 ease-in-out
+              border shadow-inner cursor-pointer
+              ${theme === 'dark'
+                ? 'bg-slate-800 border-slate-700 shadow-slate-900'
+                : 'bg-gradient-to-r from-amber-50 to-sky-50 border-amber-200/60 shadow-amber-100'
+              }
+            `}
+          >
+            {/* Sliding pill indicator */}
+            <motion.div
+              layout
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+              className={`
+                absolute top-1 h-8 w-8 rounded-xl z-0
+                ${theme === 'light'
+                  ? 'left-1 bg-gradient-to-br from-amber-400 to-orange-400 shadow-lg shadow-amber-400/40'
+                  : 'left-[calc(100%-2.25rem)] bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/40'
+                }
+              `}
+            />
+
+            {/* Sun Icon */}
+            <div className={`
+              relative z-10 h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-300
+              ${theme === 'light' ? 'text-white' : 'text-slate-500'}
+            `}>
+              <Sun className="h-4 w-4" />
+            </div>
+
+            {/* Moon Icon */}
+            <div className={`
+              relative z-10 h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-300
+              ${theme === 'dark' ? 'text-white' : 'text-slate-400'}
+            `}>
+              <Moon className="h-4 w-4" />
+            </div>
+          </button>
+
+          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl relative text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-none hover:shadow-sm">
             <Bell className="h-4 w-4" />
-            <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-indigo-500 border-2 border-slate-50" />
+            <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-indigo-500 dark:bg-indigo-400 border-2 border-slate-50 dark:border-slate-900" />
           </Button>
 
-          <div className="w-[1px] h-6 bg-slate-200 mx-1" />
+          <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
 
           <Select value={currentRole} onValueChange={(v) => setRole(v as any)}>
-            <SelectTrigger className="w-[120px] h-10 rounded-xl border-none shadow-none bg-transparent hover:bg-white font-bold text-xs text-slate-700 transition-all">
+            <SelectTrigger className="w-[120px] h-10 rounded-xl border-none shadow-none bg-transparent hover:bg-white dark:hover:bg-slate-800 font-bold text-xs dark:text-slate-100 text-slate-700 transition-all">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-100">
+            <SelectContent className="rounded-xl border-slate-100 dark:border-slate-800 dark:bg-slate-900">
               <SelectItem value="Admin" className="font-bold">Admin</SelectItem>
               <SelectItem value="Manager" className="font-bold">Manager</SelectItem>
               <SelectItem value="Developer" className="font-bold">Developer</SelectItem>

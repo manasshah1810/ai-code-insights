@@ -65,7 +65,8 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
-  const { currentRole, developerUserId, managerUserId } = useAppStore();
+  const { currentRole, developerUserId, managerUserId, theme } = useAppStore();
+  const isDark = theme === 'dark';
 
   // Choose nav items based on role
   const navItems = currentRole === "Developer"
@@ -100,31 +101,63 @@ export function AppSidebar() {
       ? "from-blue-500 to-cyan-500"
       : "from-indigo-500 to-purple-500";
 
-  const roleBadgeColor = currentRole === "Developer"
-    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-    : currentRole === "Manager"
-      ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-      : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+  const roleBadgeColor = isDark
+    ? currentRole === "Developer"
+      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+      : currentRole === "Manager"
+        ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+        : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+    : currentRole === "Developer"
+      ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+      : currentRole === "Manager"
+        ? "bg-blue-100 text-blue-700 border-blue-300"
+        : "bg-indigo-100 text-indigo-700 border-indigo-300";
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-white/5 bg-slate-950">
+    <Sidebar
+      collapsible="icon"
+      className={cn(
+        "border-r transition-colors duration-300",
+        isDark
+          ? "border-white/5 bg-slate-950"
+          : "border-indigo-100 bg-gradient-to-b from-indigo-50 via-white to-purple-50"
+      )}
+    >
       <SidebarHeader className="p-6">
         <div className="flex items-center gap-3">
-          <motion.div
-            whileHover={{ rotate: 15, scale: 1.1 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/40"
-          >
-            <span className="font-black text-white text-sm tracking-tight">SF</span>
-          </motion.div>
           {!isCollapsed && (
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col"
             >
-              <span className="text-base font-black tracking-tight text-white leading-tight">Snap Finance <span className="text-indigo-400">AI</span></span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Code Platform</span>
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "h-8 w-8 rounded-lg flex items-center justify-center font-black text-white text-lg",
+                  "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/20"
+                )}>
+                  AI
+                </div>
+                <div className="flex flex-col">
+                  <span className={cn(
+                    "text-lg font-black tracking-tighter leading-none",
+                    isDark ? "text-white" : "text-indigo-900"
+                  )}>CODE</span>
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase tracking-[0.2em]",
+                    isDark ? "text-indigo-400" : "text-indigo-500"
+                  )}>INSIGHTS</span>
+                </div>
+              </div>
             </motion.div>
+          )}
+          {isCollapsed && (
+            <div className={cn(
+              "h-8 w-8 rounded-lg flex items-center justify-center font-black text-white text-xs",
+              "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/20"
+            )}>
+              AI
+            </div>
           )}
         </div>
       </SidebarHeader>
@@ -157,14 +190,20 @@ export function AppSidebar() {
                           end={item.url !== "/teams"}
                           className={cn(
                             "flex items-center gap-3 rounded-xl px-3 py-6 transition-all duration-300",
-                            isActive
-                              ? "bg-white/10 text-white shadow-sm"
-                              : "text-slate-400 hover:bg-white/5 hover:text-white"
+                            isDark
+                              ? isActive
+                                ? "bg-white/10 text-white shadow-sm"
+                                : "text-slate-400 hover:bg-white/5 hover:text-white"
+                              : isActive
+                                ? "bg-indigo-100/80 text-indigo-900 shadow-sm"
+                                : "text-slate-500 hover:bg-indigo-50 hover:text-indigo-800"
                           )}
                         >
                           <item.icon className={cn(
                             "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
-                            isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"
+                            isDark
+                              ? isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"
+                              : isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-indigo-500"
                           )} />
                           {!isCollapsed && (
                             <span className={cn(
@@ -178,7 +217,12 @@ export function AppSidebar() {
                           {isActive && !isCollapsed && (
                             <motion.div
                               layoutId="active-nav"
-                              className="absolute right-2 h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]"
+                              className={cn(
+                                "absolute right-2 h-1.5 w-1.5 rounded-full",
+                                isDark
+                                  ? "bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]"
+                                  : "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+                              )}
                             />
                           )}
                         </NavLink>
@@ -192,8 +236,14 @@ export function AppSidebar() {
       </SidebarContent>
 
       {!isCollapsed && (
-        <div className="mt-auto border-t border-white/5 p-4">
-          <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
+        <div className={cn(
+          "mt-auto border-t p-4 transition-colors duration-300",
+          isDark ? "border-white/5" : "border-indigo-100"
+        )}>
+          <div className={cn(
+            "flex items-center gap-3 rounded-2xl p-3",
+            isDark ? "bg-white/5" : "bg-indigo-50/80 border border-indigo-100"
+          )}>
             <div className={cn(
               "h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-tr flex items-center justify-center text-white font-bold shadow-sm text-xs",
               roleColor
@@ -201,10 +251,19 @@ export function AppSidebar() {
               {personaInfo.initials}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-white truncate">{personaInfo.name}</span>
-              <span className="text-[10px] text-slate-500 truncate">{personaInfo.email}</span>
+              <span className={cn(
+                "text-xs font-bold truncate",
+                isDark ? "text-white" : "text-indigo-900"
+              )}>{personaInfo.name}</span>
+              <span className={cn(
+                "text-[10px] truncate",
+                isDark ? "text-slate-500" : "text-indigo-400"
+              )}>{personaInfo.email}</span>
             </div>
-            <button className="ml-auto text-slate-500 hover:text-white transition-colors">
+            <button className={cn(
+              "ml-auto transition-colors",
+              isDark ? "text-slate-500 hover:text-white" : "text-slate-400 hover:text-indigo-600"
+            )}>
               <LogOut className="h-4 w-4" />
             </button>
           </div>

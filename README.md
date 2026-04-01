@@ -1,9 +1,7 @@
-# Cogniify Code AI: Enterprise Intelligence Dashboard
-
-![Cogniify Logo](/public/logo.png)
+# AI Code Insights: Enterprise Intelligence Dashboard
 
 ## Overview
-**Cogniify Code AI** is a state-of-the-art Enterprise Intelligence Dashboard designed to provide quantitative insights into AI-assisted software development. The platform bridges the gap between engineering output and AI investment by tracking the lifecycle of AI-generated vs. manually-written code across the entire organization.
+**AI Code Insights** is a state-of-the-art Enterprise Intelligence Dashboard designed to provide quantitative insights into AI-assisted software development. The platform bridges the gap between engineering output and AI investment by tracking the lifecycle of AI-generated vs. manually-written code across the entire organization.
 
 ## Key Performance Indicators
 - **AI Output share (%):** The ratio of AI-generated lines of code vs. manual crafts.
@@ -81,4 +79,4 @@ npm run build
 - `src/store`: Global state management for privacy and pricing configurations.
 
 ## License
-Proprietary - © 2026 Cogniify AI Enterprise Platform
+Proprietary - © 2026 AI Code Insights

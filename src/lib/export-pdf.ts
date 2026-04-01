@@ -1,8 +1,8 @@
 /**
- * Professional PDF Report Generator — Snap Finance - AI Code Platform
+ * Professional PDF Report Generator — AI Code Insights
  * 
  * Generates branded, structured PDF reports with:
- * - Cover page with SF badge + branding
+ * - Cover page with CI badge + branding
  * - Executive KPIs in formatted cards
  * - Data tables with zebra striping
  * - Inline bar charts rendered via jsPDF primitives
@@ -58,7 +58,7 @@ function addFooter(doc: jsPDF, pageNum: number, totalPages: number) {
 
   doc.setFontSize(7);
   doc.setTextColor(...COLORS.textLight);
-  doc.text("Cogniify Code AI  •  Analytics Pro", PAGE.marginLeft, y);
+  doc.text("AI Code Insights  •  Analytics Pro", PAGE.marginLeft, y);
   doc.text(`Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`, PAGE.marginLeft, y + 10);
   doc.text(`Page ${pageNum} of ${totalPages}`, PAGE.width - PAGE.marginRight, y, { align: "right" } as any);
   doc.text("CONFIDENTIAL", PAGE.width - PAGE.marginRight, y + 10, { align: "right" } as any);
@@ -194,25 +194,25 @@ function drawCoverPage(doc: jsPDF, role: UserRole, subtitle: string) {
 
   // Logo Rendering
   const logoY = 240;
-  // Use SF badge instead of image logo
+  // Use CI badge instead of image logo
   doc.setFillColor(...COLORS.primary);
   doc.circle(PAGE.width / 2, logoY, 40, "F");
   doc.setFontSize(32);
   doc.setTextColor(...COLORS.white);
   doc.setFont("helvetica", "bold");
-  doc.text("SF", PAGE.width / 2, logoY + 11, { align: "center" } as any);
+  doc.text("ACI", PAGE.width / 2, logoY + 11, { align: "center" } as any);
 
   // Brand Name
   doc.setFontSize(36);
   doc.setTextColor(...COLORS.white);
   doc.setFont("helvetica", "bold");
-  doc.text("Snap Finance", PAGE.width / 2, logoY + 80, { align: "center" } as any);
+  doc.text("AI Code Insights", PAGE.width / 2, logoY + 80, { align: "center" } as any);
 
   // Subtitle
   doc.setFontSize(12);
   doc.setTextColor(...COLORS.secondary);
   doc.setFont("helvetica", "normal");
-  doc.text("AI CODE PLATFORM", PAGE.width / 2, logoY + 100, { align: "center" } as any);
+  doc.text("ENTERPRISE INTELLIGENCE", PAGE.width / 2, logoY + 100, { align: "center" } as any);
 
   // Divider line
   doc.setDrawColor(...COLORS.secondary);
@@ -637,7 +637,7 @@ export async function exportReport(
   // ─── Save ───
   const timestamp = new Date().toISOString().slice(0, 10);
   const roleName = role.toLowerCase();
-  doc.save(`cogniify-code-ai-${roleName}-report-${timestamp}.pdf`);
+  doc.save(`ai-code-insights-${roleName}-report-${timestamp}.pdf`);
 }
 
 /**

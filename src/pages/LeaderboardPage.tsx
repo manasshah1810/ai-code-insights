@@ -25,7 +25,7 @@ export default function LeaderboardPage() {
         <motion.div
           initial={{ rotate: -15, scale: 0.8, opacity: 0 }}
           animate={{ rotate: 0, scale: 1, opacity: 1 }}
-          className="h-28 w-28 rounded-[2.5rem] bg-amber-50 flex items-center justify-center text-amber-500 mb-2 border border-amber-100 shadow-2xl shadow-amber-100/50"
+          className="h-28 w-28 rounded-[2.5rem] bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-500 mb-2 border border-amber-100 dark:border-amber-900/30 shadow-2xl shadow-amber-100/50 dark:shadow-amber-900/20"
         >
           <Trophy className="h-12 w-12" />
         </motion.div>
@@ -177,7 +177,7 @@ export default function LeaderboardPage() {
           <motion.div
             whileHover={{ y: -15, scale: 1.02 }}
             onClick={() => navigate(`/users/${sorted[0].id}`)}
-            className="order-1 md:order-2 rounded-[3.5rem] border-4 border-amber-400/20 bg-slate-900 p-10 shadow-2xl shadow-amber-200/20 text-center relative overflow-hidden group cursor-pointer scale-105"
+            className="order-1 md:order-2 rounded-[3.5rem] border-4 border-amber-400/20 bg-slate-900 dark:bg-slate-900 p-10 shadow-2xl shadow-amber-200/20 text-center relative overflow-hidden group cursor-pointer scale-105"
           >
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:rotate-12 transition-all">
               <Trophy className="h-32 w-32 text-amber-500" />

@@ -48,9 +48,48 @@ Result:`;
     }
 
     async attributeSnippet(snippet: string): Promise<AttributionResult> {
-        const OPENROUTER_API_KEY = "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";
+        const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY || "";
+        const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 
         try {
+            // Attempt direct Anthropic via proxy if key exists
+            if (ANTHROPIC_API_KEY) {
+                try {
+                    const response = await fetch("/anthropic-api/messages", {
+                        method: "POST",
+                        headers: {
+                            "x-api-key": ANTHROPIC_API_KEY,
+                            "anthropic-version": "2023-06-01",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            model: "claude-sonnet-4-6",
+                            max_tokens: 512,
+                            messages: [{ role: "user", content: this.generatePrompt(snippet) }],
+                            temperature: 0.1, // Low temperature for deterministic JSON output
+                        }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const resultText = data.content?.[0]?.text || "";
+
+                        try {
+                            // Extract JSON if it's wrapped in triple backticks or other text
+                            const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+                            const jsonStr = jsonMatch ? jsonMatch[0] : resultText;
+                            const parsed = JSON.parse(jsonStr);
+                            return AttributionResultSchema.parse(parsed);
+                        } catch (e) {
+                            console.error("Failed to parse Anthropic response as JSON:", resultText, e);
+                        }
+                    }
+                } catch (err) {
+                    console.error("Anthropic fetch failure, falling back to OpenRouter:", err);
+                }
+            }
+
+            // Fallback to OpenRouter
             const response = await fetch(this.baseUrl, {
                 method: "POST",
                 headers: {
@@ -80,7 +119,9 @@ Result:`;
 
             // Parse the JSON output from LLM
             try {
-                const parsed = JSON.parse(resultText);
+                const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+                const jsonStr = jsonMatch ? jsonMatch[0] : resultText;
+                const parsed = JSON.parse(jsonStr);
                 return AttributionResultSchema.parse(parsed);
             } catch (e) {
                 console.error("Failed to parse LLM response as JSON:", resultText, e);

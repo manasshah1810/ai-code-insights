@@ -7,12 +7,12 @@ const PlaceholderIndex = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50">
       <div className="flex items-center justify-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30">
-          <span className="font-black text-white text-3xl tracking-tight">SF</span>
+        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-black text-xl shadow-lg shadow-indigo-500/20">
+          AI
         </div>
-        <div className="text-center">
-          <p className="text-lg font-black text-slate-800">Snap Finance</p>
-          <p className="text-xs text-slate-500 font-bold tracking-wider">AI Code Platform</p>
+        <div className="text-left">
+          <p className="text-xl font-black text-slate-800 tracking-tight leading-none uppercase">AI CODE</p>
+          <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] uppercase">INSIGHTS</p>
         </div>
       </div>
     </div>

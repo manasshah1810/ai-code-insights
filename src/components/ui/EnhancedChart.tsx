@@ -15,6 +15,7 @@ import {
     Line
 } from 'recharts';
 import { motion } from 'framer-motion';
+import { useAppStore } from '@/store/app-store';
 
 interface EnhancedChartProps {
     type: 'area' | 'bar' | 'line';
@@ -32,8 +33,8 @@ interface EnhancedChartProps {
 const CustomTooltip = ({ active, payload, label, valueFormatter }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="rounded-xl border border-slate-200 bg-white/90 p-3 shadow-xl backdrop-blur-md">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 p-3 shadow-xl backdrop-blur-md">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{label}</p>
                 <div className="space-y-1.5">
                     {payload.map((item: any, index: number) => (
                         <div key={index} className="flex items-center justify-between gap-4">
@@ -42,9 +43,9 @@ const CustomTooltip = ({ active, payload, label, valueFormatter }: any) => {
                                     className="h-2 w-2 rounded-full"
                                     style={{ backgroundColor: item.color }}
                                 />
-                                <span className="text-sm font-medium text-slate-600">{item.name}</span>
+                                <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{item.name}</span>
                             </div>
-                            <span className="font-metric text-sm font-bold text-slate-900">
+                            <span className="font-metric text-sm font-bold text-slate-900 dark:text-white">
                                 {valueFormatter ? valueFormatter(item.value) : item.value}
                             </span>
                         </div>
@@ -68,6 +69,12 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
     xAxisLabel,
     yAxisLabel,
 }) => {
+    const { theme } = useAppStore();
+    const isDark = theme === 'dark';
+    const gridColor = isDark ? '#1e293b' : '#f1f5f9';
+    const tickColor = isDark ? '#64748b' : '#94a3b8';
+    const labelColor = isDark ? '#94a3b8' : '#64748b';
+
     const renderChart = () => {
         const chartMargin = { top: 10, right: 10, left: yAxisLabel ? 20 : 0, bottom: xAxisLabel ? 20 : 0 };
 
@@ -83,12 +90,12 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                 </linearGradient>
                             ))}
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
                         <XAxis
                             dataKey={index}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 12 }}
                             dy={10}
                         >
                             {xAxisLabel && (
@@ -96,14 +103,14 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                     value={xAxisLabel}
                                     offset={-10}
                                     position="insideBottom"
-                                    style={{ fill: '#94a3b8', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
+                                    style={{ fill: tickColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
                                 />
                             )}
                         </XAxis>
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 12 }}
                             tickFormatter={valueFormatter}
                         >
                             {yAxisLabel && (
@@ -112,7 +119,7 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                     angle={-90}
                                     position="insideLeft"
                                     offset={10}
-                                    style={{ fill: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
                                 />
                             )}
                         </YAxis>
@@ -135,12 +142,12 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
             case 'bar':
                 return (
                     <BarChart data={data} margin={chartMargin}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
                         <XAxis
                             dataKey={index}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 12 }}
                             dy={10}
                         >
                             {xAxisLabel && (
@@ -148,14 +155,14 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                     value={xAxisLabel}
                                     offset={-10}
                                     position="insideBottom"
-                                    style={{ fill: '#94a3b8', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
+                                    style={{ fill: tickColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
                                 />
                             )}
                         </XAxis>
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 12 }}
                             tickFormatter={valueFormatter}
                         >
                             {yAxisLabel && (
@@ -164,11 +171,11 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                     angle={-90}
                                     position="insideLeft"
                                     offset={10}
-                                    style={{ fill: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
                                 />
                             )}
                         </YAxis>
-                        <Tooltip cursor={{ fill: '#f8fafc' }} content={<CustomTooltip valueFormatter={valueFormatter} />} />
+                        <Tooltip cursor={{ fill: isDark ? '#1e293b' : '#f8fafc' }} content={<CustomTooltip valueFormatter={valueFormatter} />} />
                         {categories.map((cat, i) => (
                             <Bar
                                 key={cat}
@@ -186,12 +193,12 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
             case 'line':
                 return (
                     <LineChart data={data} margin={chartMargin}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
                         <XAxis
                             dataKey={index}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 12 }}
                             dy={10}
                         >
                             {xAxisLabel && (
@@ -199,14 +206,14 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                     value={xAxisLabel}
                                     offset={-10}
                                     position="insideBottom"
-                                    style={{ fill: '#94a3b8', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
+                                    style={{ fill: tickColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
                                 />
                             )}
                         </XAxis>
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 12 }}
                             tickFormatter={valueFormatter}
                         >
                             {yAxisLabel && (
@@ -215,7 +222,7 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                     angle={-90}
                                     position="insideLeft"
                                     offset={10}
-                                    style={{ fill: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
                                 />
                             )}
                         </YAxis>
@@ -227,7 +234,7 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                                 dataKey={cat}
                                 stroke={colors[i % colors.length]}
                                 strokeWidth={3}
-                                dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                                dot={{ r: 4, strokeWidth: 2, fill: isDark ? '#1e293b' : '#fff' }}
                                 activeDot={{ r: 6, strokeWidth: 0 }}
                                 animationDuration={1500}
                             />
@@ -250,3 +257,4 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
         </motion.div>
     );
 };
+

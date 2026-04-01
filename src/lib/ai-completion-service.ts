@@ -50,36 +50,69 @@ export interface CompletionResponse {
 
 /**
  * Call the AI endpoint with a prompt and get live completions
+ * Supports Anthropic (via proxy) and OpenRouter
  */
 export async function getAICompletion(prompt: string, maxTokens: number = 300): Promise<string> {
-  try {
-    const response = await fetch(AI_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "X-OpenRouter-Title": "AI Code Insights",
-      },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_tokens: maxTokens,
-        temperature: 0.7,
-      }),
-    });
+  const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+  const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 
-    if (!response.ok) {
-      console.error(`AI endpoint error: ${response.status} ${response.statusText}`);
-      throw new Error(`AI endpoint returned ${response.status}`);
+  try {
+    // Attempt direct Anthropic via proxy if key exists
+    if (ANTHROPIC_API_KEY) {
+      try {
+        const response = await fetch("/anthropic-api/messages", {
+          method: "POST",
+          headers: {
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+            "anthropic-dangerous-direct-browser-access": "true",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: maxTokens,
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return data.content?.[0]?.text || "";
+        }
+
+        const errorDetail = await response.text();
+        console.error(`Anthropic API error: ${response.status} ${response.statusText} - ${errorDetail}`);
+      } catch (err) {
+        console.error("Anthropic fetch attempt failed:", err);
+      }
     }
 
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || "";
+    // Fallback to OpenRouter
+    if (OPENROUTER_API_KEY) {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "X-OpenRouter-Title": "AI Code Insights",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: maxTokens,
+          temperature: 0.7,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || "";
+      }
+    }
+
+    // If both failed, throw error to be caught by UI
+    throw new Error("AI Completion Service: All endpoints failed.");
   } catch (error) {
     console.error("AI Completion Service Error:", error);
     throw error;
@@ -588,7 +621,7 @@ function getManagerFallbackSWOT(teamMetrics: any): SWOTItem[] {
     // STRENGTHS
     { id: "swot-team-strength-1", title: "Rapid Prototyping", subtitle: "40% faster", description: `${teamMetrics.teamName} uses AI effectively for scaffold generation and quick prototyping.`, category: "strength" },
     { id: "swot-team-strength-2", title: "High Merge Rate", subtitle: `${teamMetrics.mergeRate}% completion`, description: "Strong PR completion rate indicates healthy code review processes and team collaboration.", category: "strength" },
-    { id: "swot-team-strength-3", title: "Team Adoption", subtitle: `${Math.round((teamMetrics.activeUsers/teamMetrics.headCount)*100)}% active`, description: "Majority of team actively using AI tools demonstrates openness to new workflows.", category: "strength" },
+    { id: "swot-team-strength-3", title: "Team Adoption", subtitle: `${Math.round((teamMetrics.activeUsers / teamMetrics.headCount) * 100)}% active`, description: "Majority of team actively using AI tools demonstrates openness to new workflows.", category: "strength" },
     { id: "swot-team-strength-4", title: "Code Quality", subtitle: `${teamMetrics.aiCodePercent}% AI code`, description: "Balanced AI code percentage shows disciplined use without over-reliance.", category: "strength" },
     // WEAKNESSES
     { id: "swot-team-weakness-1", title: "Low Engagement", subtitle: `${teamMetrics.lowEngagementCount} inactive devs`, description: "Several team members not actively using AI tools, creating uneven productivity distribution.", category: "weakness" },
