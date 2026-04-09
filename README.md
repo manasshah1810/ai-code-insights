@@ -1,82 +1,106 @@
-# AI Code Insights: Enterprise Intelligence Dashboard
+# 🚀 AI-Code-Insights: Enterprise Intelligence Platform
 
-## Overview
-**AI Code Insights** is a state-of-the-art Enterprise Intelligence Dashboard designed to provide quantitative insights into AI-assisted software development. The platform bridges the gap between engineering output and AI investment by tracking the lifecycle of AI-generated vs. manually-written code across the entire organization.
+**AI-Code-Insights** is a high-fidelity, professional-grade analytics dashboard designed to monitor, analyze, and optimize AI-augmented software development. It provides an enterprise-wide view of how AI tools like GitHub Copilot and Cursor impact your codebase, team velocity, and security posture.
 
-## Key Performance Indicators
-- **AI Output share (%):** The ratio of AI-generated lines of code vs. manual crafts.
-- **Velocity Boost:** A metric tracking productivity gains over established manual baselines.
-- **Merge Success Rate:** Tracking how often AI-assisted code clears quality checkpoints.
-- **AI Output Efficiency:** Lines of code generated per million tokens consumed.
-- **AI Risk Score:** Real-time monitoring of guardrail interventions and potential security flaws.
+---
 
-## Core Features
+## � Key Features & Capabilities
 
-### 1. Executive Overview
-A high-level command center for leadership to monitor monthly AI investments, cumulative adoption rates, and organizational velocity. Includes live telemetry feeds from VCS webhooks.
+### 📊 Comprehensive Dashboards
+- **Executive Overview**: High-level KPIs including AI adoption rates, token consumption costs, and global line counts.
+- **Team-Specific Analytics**: Scoped views for managers to track squad performance, merge rates, and tool preferences.
+- **Personal Developer Portal**: Individual self-service analytics for developers to monitor their AI usage and productivity trends.
 
-### 2. Team & Developer Analytics
-Detailed benchmarking for Engineering Squads. Identify high-performance "AI Visionaries" and track adoption maturity across different teams (Frontend, Backend, Infrastructure, etc.).
+### 🤖 Intelligent AI Attribution
+- **Heuristic Engine**: Fast, automated signature detection for identifying the source of code commits.
+- **LLM Attribution Engine**: Advanced fallback analysis using Anthropic's Claude to verify code origin with high confidence.
+- **Merge Analytics**: In-depth tracking of PR success rates and code review overhead for AI-generated code.
 
-### 3. Real-time Telemetry
-A live streaming engine that visualizes incoming code events, commit confidence scores, and repository-level activity as it happens.
+### 🏛️ Professional Reporting & Intelligence
+- **SWOT Analysis Page**: Automated AI-driven assessment of Strengths, Weaknesses, Opportunities, and Threats for different teams and projects.
+- **Dynamic PDF Generator**: Generates pixel-perfect, branded PDF reports for stakeholders.
+- **Security Guardrails**: Monitoring for "AI Flaws" and security risks in machine-generated code.
 
-### 4. Security & Guardrails
-A dedicated module for quality control. It tracks AI-risk interventions (e.g., hardcoded secrets, unsafe patterns) and provides a "Guardrail Efficiency" score to ensure scaling AI doesn't compromise security.
+---
 
-### 5. Merge Pipeline Analysis
-Analyzes the deployment funnel from draft to production. Traces the success and rejection rates of AI-heavy Pull Requests to optimize review workflows.
+## 🎨 Multi-Brand (White-Label) Support
 
-### 6. Privacy First
-Built-in **Strict Privacy Mode** which allows organizations to anonymize individual developer data while maintaining aggregate insights, ensuring compliance with internal data policies.
+Designed for diverse enterprise deployments, the platform supports multiple brand modes through environment variables. This allows the same codebase to be deployed for different organizations or sub-brands on Vercel or other platforms.
 
-## Technology Stack
-- **Frontend Framework:** [React](https://reactjs.org/) (v18+)
-- **Build Tool:** [Vite](https://vitejs.dev/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Visualizations:** [Recharts](https://recharts.org/)
-- **Animations:** [Framer Motion](https://www.framer.com/motion/)
-- **Icons:** [Lucide React](https://lucide.dev/)
-- **State Management:** [Zustand](https://github.com/pmndrs/zustand)
-- **Networking:** Mock Socket.io service for live telemetry simulation.
+### 🏳️ Supported Brands:
+- **Company AI (Default)**: Standard "ACI" branding.
+- **Persistant AI**: Personalized logo and color theme for Persistant.
+- **Cogniify AI**: Personalized logo and name mapping for Cogniify.
 
-## Getting Started
+---
 
-### Prerequisites
-- Node.js (v18.0 or higher)
-- npm or yarn
+## ⚙️ Configuration & Orchestration
 
-### Installation
-```bash
-# Clone the repository
-git clone [repository-url]
+The application uses a sophisticated environment injection system to maintain performance and security.
 
-# Navigate to project directory
-cd ai-code-insights
+### 🔑 Environment Variable Setup (`.env`)
 
-# Install dependencies
-npm install
+Add the following to your environment configuration:
+
+| Variable | Description | Example Value |
+|----------|-------------|---------------|
+| `NEXT_PUBLIC_BRAND` | Set the active brand mode | `persistant` / `cogniify` / `company` |
+| `VITE_ANTHROPIC_API_KEY` | Your Anthropic Claude API Key | `sk-ant-api03-...` |
+
+**Verification**: To ensure you are using the correct secret, verify the last few characters of your active Anthropic key: **`...0J-1jwAA`**
+
+### 🏗️ Technical Architecture Details
+
+Vite's default environment protection is configured in `vite.config.ts` to allow the use of `NEXT_PUBLIC_` prefixes:
+```typescript
+envPrefix: ['VITE_', 'NEXT_PUBLIC_']
 ```
 
-### Development
+The branding is resolved at runtime in `src/lib/brand-config.ts` which handles:
+1. Identifying the host environment (Vite vs Node).
+2. Normalizing brand inputs (Case-insensitive matching).
+3. Providing fallback assets for the UI and PDF generator.
+
+---
+
+## 📦 Installation & Developer Setup
+
+### 1. Requirements
+- Node.js (Latest stable version)
+- NPM or Bun
+
+### 2. Quick Start
 ```bash
-# Run the development server
+# 1. Clone the repository
+git clone <repository-url>
+
+# 2. Install dependencies
+npm install
+
+# 3. Start the development server
 npm run dev
 ```
-The application will be available at `http://localhost:8080` (or the port specified by Vite).
+The app will launch at `http://localhost:8080` by default.
 
-### Build for Production
-```bash
-# Generate the production bundle
-npm run build
+---
+
+## 🗺️ Project Structure Overview
+
+```text
+├── src/
+│   ├── components/      # UI Components (TopBar, Sidebar, Role Badges)
+│   ├── lib/             # Core Logic (Attribution, Heuristic Engine, PDF Export)
+│   ├── pages/           # View Modules (Dashboard, SWOT, Glossary, Leaderboard)
+│   ├── store/           # Global State Management (Zustand)
+│   ├── styles/          # Custom CSS & Tailwind Configurations
+│   └── main.tsx         # Application Entry Point
+├── public/              # Static Assets (Logos & Placeholders)
+└── vite.config.ts       # Build and Proxy Configurations
 ```
 
-## Project Structure
-- `src/components/ui`: Custom premium UI components (EnhancedChart, MetricCard, etc.).
-- `src/pages`: Functional page views (Overview, Team Analytics, AI Tools, etc.).
-- `src/lib`: Utility functions, ROI calculators, and export tools.
-- `src/data`: Mock data generators supporting the dashboard's analytics.
-- `src/store`: Global state management for privacy and pricing configurations.
+## 📄 Automated Report Generation
 
-## License
-Proprietary - © 2026 AI Code Insights
+The reporting system orchestrates data across your entire organization:
+- **Admin Scope**: Includes cost models, adoption trends, and organization-wide investment metrics.
+- **Manager Scope**: Focuses on team velocity, primary tool attribution, and squad merge rates.
+- **Developer Scope**: Highlights rank among peers, weekly trend analysis, and PR success rates.

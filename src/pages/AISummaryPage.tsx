@@ -54,7 +54,7 @@ function PriorityBadge({ priority }: { priority: 1 | 2 }) {
   );
 }
 
-function SWOSBadge({ id }: { id: string }) {
+function SWOTBadge({ id }: { id: string }) {
   const isStrength = id.toLowerCase().includes("strength");
   const isWeakness = id.toLowerCase().includes("weakness");
   const isOpportunity = id.toLowerCase().includes("opportunity");
@@ -124,7 +124,7 @@ export default function AISummaryPage() {
       setRecommendations(recs);
     } catch (err) {
       console.error("Failed to fetch recommendations:", err);
-      setError("Failed to load SWOS analysis. The engine might be under heavy load.");
+      setError("Failed to load SWOT analysis. The engine might be under heavy load.");
     } finally {
       setLoading(false);
     }
@@ -135,9 +135,9 @@ export default function AISummaryPage() {
   }, [currentRole, managerTeamId, developerUserId]);
 
   const roleTitle = {
-    Admin: "Executive SWOS Analysis",
-    Manager: "Team SWOS Analysis",
-    Developer: "Personal SWOS Analysis"
+    Admin: "Executive SWOT Analysis",
+    Manager: "Team SWOT Analysis",
+    Developer: "Personal SWOT Analysis"
   }[currentRole];
 
   const roleIcon = {
@@ -174,7 +174,7 @@ export default function AISummaryPage() {
             className="rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 px-6 h-11 transition-all"
           >
             <Zap className={cn("h-4 w-4", loading && "animate-pulse")} />
-            {loading ? "Analyzing..." : "Regenerate SWOS"}
+            {loading ? "Analyzing..." : "Regenerate SWOT"}
           </Button>
           <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-200 shadow-sm">
             <Sparkles className="h-5 w-5 text-indigo-600" />
@@ -190,7 +190,7 @@ export default function AISummaryPage() {
             <Loader2 className="h-10 w-10 text-indigo-600 animate-spin" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-2 font-mono uppercase tracking-tighter">Running Anthropic Claude Engine...</h3>
-          <p className="text-slate-600">Our Claude Sonnet 4.6 model is performing a detailed SWOS analysis (Strengths, Weakness, Opportunities, Threats) on your operational metadata.</p>
+          <p className="text-slate-600">Our Claude Sonnet 4.6 model is performing a detailed SWOT analysis (Strengths, Weakness, Opportunities, Threats) on your operational metadata.</p>
         </div>
       )}
 
@@ -200,7 +200,7 @@ export default function AISummaryPage() {
           <div className="h-20 w-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="h-10 w-10 text-rose-600" />
           </div>
-          <h3 className="text-2xl font-bold text-rose-900 mb-2">SWOS Engine Stall</h3>
+          <h3 className="text-2xl font-bold text-rose-900 mb-2">SWOT Engine Stall</h3>
           <p className="text-rose-600 mb-4">{error}</p>
           <Button
             onClick={() => window.location.reload()}
@@ -218,7 +218,7 @@ export default function AISummaryPage() {
             <CheckCircle2 className="h-10 w-10 text-emerald-500" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-2 uppercase tracking-tighter">Analysis Complete: No Critical Threats</h3>
-          <p className="text-slate-600">Operations are stable and metrics are within safe bands. No immediate SWOS interventions required.</p>
+          <p className="text-slate-600">Operations are stable and metrics are within safe bands. No immediate SWOT interventions required.</p>
         </div>
       )}
 
@@ -244,7 +244,7 @@ export default function AISummaryPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <SWOSBadge id={rec.id} />
+                          <SWOTBadge id={rec.id} />
                           <div className="flex-1">
                             <h3 className="text-xl font-black tracking-tight text-slate-900 uppercase">
                               {rec.title}

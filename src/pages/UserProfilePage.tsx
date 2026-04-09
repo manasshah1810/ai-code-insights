@@ -208,7 +208,7 @@ export default function UserProfilePage() {
         <MetricCard title="PR Success" value={user.prMergeRate} icon={<CheckCircle className="h-4 w-4" />} suffix="%" gradient="warning" />
       </div>
 
-      {/* SWOS Analysis Card */}
+      {/* SWOT Analysis Card */}
       <div className="bg-indigo-600 rounded-3xl p-8 shadow-xl shadow-indigo-100 relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Activity className="h-32 w-32 text-white" />
@@ -217,10 +217,10 @@ export default function UserProfilePage() {
           <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/20">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
-          <h2 className="text-xl font-black text-white tracking-tight uppercase tracking-tighter cursor-default">Engineering SWOS Intel</h2>
+          <h2 className="text-xl font-black text-white tracking-tight uppercase tracking-tighter cursor-default">Engineering SWOT Intel</h2>
         </div>
         <p className="text-indigo-100 text-lg font-medium leading-relaxed max-w-4xl">
-          <span className="text-white font-black">{user.name}'s</span> tactical SWOS profile indicates a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.aiPercent}% AI-powered output</span>.
+          <span className="text-white font-black">{user.name}'s</span> tactical SWOT profile indicates a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.aiPercent}% AI-powered output</span>.
           Current operational efficiency is <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.aiLoC > 0 ? (user.tokensUsed / user.aiLoC).toFixed(2) : 0} tokens per line</span>.
           With a sustained <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.prMergeRate}% PR success rate</span>, this engineer's strengths lie in high-velocity delivery within the <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.team}</span> squadron.
           Threat mitigation is active, last verified on <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{user.lastActiveDate}</span>.

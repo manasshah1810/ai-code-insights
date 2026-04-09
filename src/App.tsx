@@ -19,8 +19,18 @@ import DeveloperDashboard from "@/pages/DeveloperDashboard";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import NotFound from "@/pages/NotFound";
 import { useAppStore } from "@/store/app-store";
+import { currentBrand } from "@/lib/brand-config";
 
 const queryClient = new QueryClient();
+
+// Brand Manager Component
+function BrandManager() {
+  useEffect(() => {
+    document.title = currentBrand.name;
+  }, []);
+
+  return null;
+}
 
 // Theme Manager Component
 function ThemeManager() {
@@ -59,6 +69,7 @@ function RoleBasedDashboard() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <BrandManager />
     <ThemeManager />
     <TooltipProvider>
       <Toaster />

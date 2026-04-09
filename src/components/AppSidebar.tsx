@@ -61,12 +61,16 @@ const developerNavItems = [
   { title: "Glossary", url: "/glossary", icon: BookOpen },
 ];
 
+import { currentBrand } from "@/lib/brand-config";
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
   const { currentRole, developerUserId, managerUserId, theme } = useAppStore();
   const isDark = theme === 'dark';
+
+  const isImageLogo = currentBrand.logo.includes('.');
 
   // Choose nav items based on role
   const navItems = currentRole === "Developer"
@@ -133,30 +137,38 @@ export function AppSidebar() {
             >
               <div className="flex items-center gap-2">
                 <div className={cn(
-                  "h-8 w-8 rounded-lg flex items-center justify-center font-black text-white text-lg",
-                  "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/20"
+                  "h-8 w-8 rounded-lg flex items-center justify-center font-black text-white text-lg overflow-hidden",
+                  !isImageLogo && "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/20"
                 )}>
-                  AI
+                  {isImageLogo ? (
+                    <img src={currentBrand.logo} alt={currentBrand.name} className="h-full w-full object-contain" />
+                  ) : (
+                    currentBrand.logo
+                  )}
                 </div>
                 <div className="flex flex-col">
                   <span className={cn(
-                    "text-lg font-black tracking-tighter leading-none",
+                    "text-lg font-black tracking-tighter leading-none shrink-0 whitespace-nowrap",
                     isDark ? "text-white" : "text-indigo-900"
-                  )}>CODE</span>
+                  )}>{currentBrand.name.split(' ')[0]}</span>
                   <span className={cn(
-                    "text-[10px] font-bold uppercase tracking-[0.2em]",
+                    "text-[10px] font-bold uppercase tracking-[0.1em] whitespace-nowrap",
                     isDark ? "text-indigo-400" : "text-indigo-500"
-                  )}>INSIGHTS</span>
+                  )}>{currentBrand.name.split(' ').slice(1).join(' ')}</span>
                 </div>
               </div>
             </motion.div>
           )}
           {isCollapsed && (
             <div className={cn(
-              "h-8 w-8 rounded-lg flex items-center justify-center font-black text-white text-xs",
-              "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/20"
+              "h-8 w-8 rounded-lg flex items-center justify-center font-black text-white text-xs overflow-hidden",
+              !isImageLogo && "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/20"
             )}>
-              AI
+              {isImageLogo ? (
+                <img src={currentBrand.logo} alt={currentBrand.name} className="h-full w-full object-contain" />
+              ) : (
+                currentBrand.logo
+              )}
             </div>
           )}
         </div>

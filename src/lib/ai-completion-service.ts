@@ -310,8 +310,8 @@ function parseSWOTItems(text: string): SWOTItem[] {
 }
 
 /**
- * Generate admin SWOS analysis via AI (Strengths, Weakness, Opportunities, Threats)
- * Provides a comprehensive company-wide SWOS analysis for executive decision-making
+ * Generate admin SWOT analysis via AI (Strengths, Weakness, Opportunities, Threats)
+ * Provides a comprehensive company-wide SWOT analysis for executive decision-making
  */
 export async function generateAdminRecommendations(
   orgMetrics: {
@@ -340,7 +340,7 @@ export async function generateAdminRecommendations(
   }>;
 }>> {
   const aiCodePercentage = ((orgMetrics.aiLoC / orgMetrics.totalLoC) * 100).toFixed(1);
-  const prompt = `You are a professional Engineering Operations & DevOps Analyst. Perform a DETAILED SWOS (Strengths, Weakness, Opportunities, Threats) analysis for a company-wide engineering organization with ${orgMetrics.totalTeams} teams.
+  const prompt = `You are a professional Engineering Operations & DevOps Analyst. Perform a DETAILED SWOT (Strengths, Weakness, Opportunities, Threats) analysis for a company-wide engineering organization with ${orgMetrics.totalTeams} teams.
 
 CRITICAL INSTRUCTIONS:
 1. Focus EXCLUSIVELY on TACTICAL and OPERATIONAL items - not strategic/high-level goals
@@ -369,7 +369,7 @@ REQUIREMENT FOR EACH ITEM:
 
 For EACH item, provide ONLY this exact JSON structure (no markdown, no explanation):
 {
-  "id": "swos-{strength|weakness|opportunity|threat}",
+  "id": "SWOT-{strength|weakness|opportunity|threat}",
   "title": "[STRENGTH|WEAKNESS|OPPORTUNITY|THREAT]: [Specific Operational Title]",
   "description": "2-3 sentences of tactical operational analysis grounded in the metrics. Must be specific and actionable. Under 80 words.",
   "impact": "high|medium|low",
@@ -392,14 +392,14 @@ CRITICAL: Output ONLY valid JSON objects. Each item on a new line prefixed with 
     const recommendations = parseRecommendations(completion);
     return recommendations.length >= 4 ? recommendations.slice(0, 4) : getFallbackAdminRecommendations(orgMetrics);
   } catch (error) {
-    console.error("Failed to generate SWOS analysis:", error);
+    console.error("Failed to generate SWOT analysis:", error);
     return getFallbackAdminRecommendations(orgMetrics);
   }
 }
 
 /**
- * Generate manager SWOS analysis via AI
- * Provides team-level SWOS analysis for tactical team management
+ * Generate manager SWOT analysis via AI
+ * Provides team-level SWOT analysis for tactical team management
  */
 export async function generateManagerRecommendations(
   teamMetrics: {
@@ -429,7 +429,7 @@ export async function generateManagerRecommendations(
   }>;
 }>> {
   const adoptionRate = ((teamMetrics.activeUsers / teamMetrics.headCount) * 100).toFixed(0);
-  const prompt = `You are a Senior Technical Lead & Team Operations Manager. Perform a detailed tactical SWOS (Strengths, Weakness, Opportunities, Threats) analysis for the "${teamMetrics.teamName}" engineering team.
+  const prompt = `You are a Senior Technical Lead & Team Operations Manager. Perform a detailed tactical SWOT (Strengths, Weakness, Opportunities, Threats) analysis for the "${teamMetrics.teamName}" engineering team.
 
 CRITICAL INSTRUCTIONS:
 1. Focus EXCLUSIVELY on TACTICAL and OPERATIONAL team health - not team strategy or career development
@@ -451,7 +451,7 @@ Generate EXACTLY 4 analysis items (one STRENGTH, one WEAKNESS, one OPPORTUNITY, 
 
 For EACH item, provide ONLY this exact JSON structure (no markdown, no explanation):
 {
-  "id": "swos-team-{strength|weakness|opportunity|threat}",
+  "id": "SWOT-team-{strength|weakness|opportunity|threat}",
   "title": "[STRENGTH|WEAKNESS|OPPORTUNITY|THREAT]: [Specific Tactical Title for Team Lead]",
   "description": "Specific operational insight about team performance grounded in metrics. 2-3 sentences max. Under 80 words.",
   "impact": "high|medium|low",
@@ -474,14 +474,14 @@ CRITICAL: Output ONLY valid JSON objects. Each item on a new line prefixed with 
     const recommendations = parseRecommendations(completion);
     return recommendations.length >= 4 ? recommendations.slice(0, 4) : getFallbackManagerRecommendations(teamMetrics);
   } catch (error) {
-    console.error("Failed to generate team SWOS analysis:", error);
+    console.error("Failed to generate team SWOT analysis:", error);
     return getFallbackManagerRecommendations(teamMetrics);
   }
 }
 
 /**
- * Generate developer SWOS analysis via AI
- * Provides developer-level SWOS analysis for personal skill development and productivity
+ * Generate developer SWOT analysis via AI
+ * Provides developer-level SWOT analysis for personal skill development and productivity
  */
 export async function generateDeveloperRecommendations(
   developerMetrics: {
@@ -513,7 +513,7 @@ export async function generateDeveloperRecommendations(
   }>;
 }>> {
   const tokensPerLine = developerMetrics.tokensUsed / Math.max(1, developerMetrics.aiLoC);
-  const prompt = `You are a Professional Developer Productivity Coach. Generate a detailed SWOS (Strengths, Weakness, Opportunities, Threats) analysis for individual developer "${developerMetrics.name}" focused on TACTICAL and OPERATIONAL coding practices.
+  const prompt = `You are a Professional Developer Productivity Coach. Generate a detailed SWOT (Strengths, Weakness, Opportunities, Threats) analysis for individual developer "${developerMetrics.name}" focused on TACTICAL and OPERATIONAL coding practices.
 
 CRITICAL INSTRUCTIONS:
 1. Focus EXCLUSIVELY on tactical aspects of coding workflow and AI tool usage - not career strategy
@@ -536,7 +536,7 @@ DEVELOPER METRICS:
 ANALYSIS FRAMEWORK:
 For EACH item, provide ONLY this exact JSON structure (no markdown, no explanation):
 {
-  "id": "swos-dev-{strength|weakness|opportunity|threat}",
+  "id": "SWOT-dev-{strength|weakness|opportunity|threat}",
   "title": "[STRENGTH|WEAKNESS|OPPORTUNITY|THREAT]: [Specific Tactical Skill/Practice Title]",
   "description": "Specific operational insight about their coding practice grounded in metrics. 2-3 sentences max. Under 80 words.",
   "impact": "high|medium|low",
@@ -670,12 +670,12 @@ function getDeveloperFallbackSWOT(developerMetrics: any): SWOTItem[] {
 }
 
 /**
- * Fallback admin SWOS analysis (shown if AI service fails)
+ * Fallback admin SWOT analysis (shown if AI service fails)
  */
 function getFallbackAdminRecommendations(orgMetrics: any): Recommendation[] {
   return [
     {
-      id: "swos-strength",
+      id: "SWOT-strength",
       title: "Tactical Strength: High AI Tool Proficiency",
       description: `Current adoption at ${orgMetrics.avgAdoption}% shows strong operational uptake. Teams are successfully integrating AI into daily PR workflows.`,
       impact: "high",
@@ -689,7 +689,7 @@ function getFallbackAdminRecommendations(orgMetrics: any): Recommendation[] {
       ]
     },
     {
-      id: "swos-weakness",
+      id: "SWOT-weakness",
       title: "Tactical Weakness: PR Merge Latency",
       description: "Data shows a backlog in PR reviews for AI-generated code, indicating a bottleneck in our operational review process.",
       impact: "high",
@@ -703,7 +703,7 @@ function getFallbackAdminRecommendations(orgMetrics: any): Recommendation[] {
       ]
     },
     {
-      id: "swos-opportunity",
+      id: "SWOT-opportunity",
       title: "Tactical Opportunity: Automated Unit Test Expansion",
       description: "Low AI LoC in test files suggests an immediate opportunity to use AI for increasing test coverage operationally.",
       impact: "medium",
@@ -717,7 +717,7 @@ function getFallbackAdminRecommendations(orgMetrics: any): Recommendation[] {
       ]
     },
     {
-      id: "swos-threat",
+      id: "SWOT-threat",
       title: "Tactical Threat: API Token Leakage Risk",
       description: "Operational scanning has detected patterns resembling secrets in AI-generated boilerplate code.",
       impact: "high",
@@ -734,14 +734,14 @@ function getFallbackAdminRecommendations(orgMetrics: any): Recommendation[] {
 }
 
 /**
- * Fallback manager SWOS analysis (shown if AI service fails)
+ * Fallback manager SWOT analysis (shown if AI service fails)
  */
 function getFallbackManagerRecommendations(teamMetrics: any): Recommendation[] {
   const adoptionRate = (teamMetrics.activeUsers / teamMetrics.headCount) * 100;
 
   return [
     {
-      id: "swos-team-strength",
+      id: "SWOT-team-strength",
       title: "Strength: Rapid Prototyping Speed",
       description: `The "${teamMetrics.teamName}" team is using AI to scaffold features 40% faster than manual baseline.`,
       impact: "high",
@@ -754,7 +754,7 @@ function getFallbackManagerRecommendations(teamMetrics: any): Recommendation[] {
       ]
     },
     {
-      id: "swos-team-weakness",
+      id: "SWOT-team-weakness",
       title: "Weakness: Low Documentation Coverage",
       description: "High AI output is currently lacking inline documentation and JSDoc blocks.",
       impact: "medium",
@@ -767,7 +767,7 @@ function getFallbackManagerRecommendations(teamMetrics: any): Recommendation[] {
       ]
     },
     {
-      id: "swos-team-opportunity",
+      id: "SWOT-team-opportunity",
       title: "Opportunity: Pair Programming with AI",
       description: "Junior devs can use specific real-time feedback loops to improve code quality.",
       impact: "high",
@@ -780,7 +780,7 @@ function getFallbackManagerRecommendations(teamMetrics: any): Recommendation[] {
       ]
     },
     {
-      id: "swos-team-threat",
+      id: "SWOT-team-threat",
       title: "Threat: Over-reliance on Default Outputs",
       description: "Observation of logic errors passing review due to 'AI blind trust'.",
       impact: "high",
@@ -801,7 +801,7 @@ function getFallbackManagerRecommendations(teamMetrics: any): Recommendation[] {
 function getFallbackDeveloperRecommendations(developerMetrics: any): Recommendation[] {
   return [
     {
-      id: "swos-dev-strength",
+      id: "SWOT-dev-strength",
       title: "Strength: High Acceptance Rate",
       description: `Your acceptance rate of ${developerMetrics.acceptanceRate}% indicates high quality prompt engineering.`,
       impact: "high",
@@ -814,7 +814,7 @@ function getFallbackDeveloperRecommendations(developerMetrics: any): Recommendat
       ]
     },
     {
-      id: "swos-dev-weakness",
+      id: "SWOT-dev-weakness",
       title: "Weakness: High Token Consumption",
       description: "Your tokens-per-line ratio is above team average.",
       impact: "medium",
@@ -827,7 +827,7 @@ function getFallbackDeveloperRecommendations(developerMetrics: any): Recommendat
       ]
     },
     {
-      id: "swos-dev-opportunity",
+      id: "SWOT-dev-opportunity",
       title: "Opportunity: Refactoring Coverage",
       description: "You are mostly using AI for generation; try it for complex refactoring.",
       impact: "high",
@@ -840,7 +840,7 @@ function getFallbackDeveloperRecommendations(developerMetrics: any): Recommendat
       ]
     },
     {
-      id: "swos-dev-threat",
+      id: "SWOT-dev-threat",
       title: "Threat: Context Drift",
       description: "Using old prompts for new architecture patterns.",
       impact: "medium",

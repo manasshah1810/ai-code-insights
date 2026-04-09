@@ -376,14 +376,14 @@ export default function OverviewPage() {
         />
       </div>
 
-      {/* SWOS Analysis Section */}
+      {/* SWOT Analysis Section */}
       {(currentRole === "Admin" || currentRole === "Manager" || currentRole === "Developer") && (
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
               <Lightbulb className="h-5 w-5 text-amber-500" />
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase tracking-tighter cursor-default">SWOS Analysis</h2>
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase tracking-tighter cursor-default">SWOT Analysis</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {loadingRecommendations ? (
@@ -395,7 +395,7 @@ export default function OverviewPage() {
                 >
                   <div className="text-center space-y-4">
                     <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
-                    <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Running SWOS Engine...</p>
+                    <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Running SWOT Engine...</p>
                   </div>
                 </motion.div>
                 <motion.div
@@ -446,7 +446,7 @@ export default function OverviewPage() {
               ))
             ) : (
               <div className="md:col-span-2 rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center border-dashed">
-                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No Critical SWOS Events Detected</p>
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No Critical SWOT Events Detected</p>
               </div>
             )}
           </div>
