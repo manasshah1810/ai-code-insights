@@ -60,7 +60,8 @@ export async function getAICompletion(prompt: string, maxTokens: number = 300): 
     // Attempt direct Anthropic via proxy if key exists
     if (ANTHROPIC_API_KEY) {
       try {
-        const response = await fetch("/anthropic-api/messages", {
+        const endpoint = import.meta.env.DEV ? "/anthropic-api/messages" : "https://api.anthropic.com/v1/messages";
+        const response = await fetch(endpoint, {
           method: "POST",
           headers: {
             "x-api-key": ANTHROPIC_API_KEY,

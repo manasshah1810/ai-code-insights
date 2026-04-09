@@ -55,12 +55,14 @@ Result:`;
             // Attempt direct Anthropic via proxy if key exists
             if (ANTHROPIC_API_KEY) {
                 try {
-                    const response = await fetch("/anthropic-api/messages", {
+                    const endpoint = import.meta.env.DEV ? "/anthropic-api/messages" : "https://api.anthropic.com/v1/messages";
+                    const response = await fetch(endpoint, {
                         method: "POST",
                         headers: {
                             "x-api-key": ANTHROPIC_API_KEY,
                             "anthropic-version": "2023-06-01",
                             "Content-Type": "application/json",
+                            "anthropic-dangerous-direct-browser-access": "true",
                         },
                         body: JSON.stringify({
                             model: "claude-sonnet-4-6",

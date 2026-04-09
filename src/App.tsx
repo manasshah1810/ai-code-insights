@@ -27,6 +27,15 @@ const queryClient = new QueryClient();
 function BrandManager() {
   useEffect(() => {
     document.title = currentBrand.name;
+
+    // Dynamically update favicon
+    let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = currentBrand.favicon;
   }, []);
 
   return null;
