@@ -173,8 +173,7 @@ export class ChatEngine {
         const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
         try {
-            const endpoint = import.meta.env.DEV ? "/anthropic-api/messages" : "https://api.anthropic.com/v1/messages";
-            const response = await fetch(endpoint, {
+            const response = await fetch("/anthropic-api/messages", {
                 method: "POST",
                 headers: {
                     "x-api-key": ANTHROPIC_API_KEY,

@@ -208,13 +208,13 @@ export function AppSidebar() {
                                 : "text-slate-400 hover:bg-white/5 hover:text-white"
                               : isActive
                                 ? "bg-indigo-100/80 text-indigo-900 shadow-sm"
-                                : "text-slate-500 hover:bg-indigo-50 hover:text-indigo-800"
+                                : "text-slate-500 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-800 dark:hover:text-slate-200"
                           )}
                         >
                           <item.icon className={cn(
                             "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
                             isDark
-                              ? isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"
+                              ? isActive ? "text-indigo-400" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-300"
                               : isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-indigo-500"
                           )} />
                           {!isCollapsed && (
@@ -269,12 +269,12 @@ export function AppSidebar() {
               )}>{personaInfo.name}</span>
               <span className={cn(
                 "text-[10px] truncate",
-                isDark ? "text-slate-500" : "text-indigo-400"
+                isDark ? "text-slate-500 dark:text-slate-400" : "text-indigo-400"
               )}>{personaInfo.email}</span>
             </div>
             <button className={cn(
               "ml-auto transition-colors",
-              isDark ? "text-slate-500 hover:text-white" : "text-slate-400 hover:text-indigo-600"
+              isDark ? "text-slate-500 dark:text-slate-400 hover:text-white" : "text-slate-400 hover:text-indigo-600"
             )}>
               <LogOut className="h-4 w-4" />
             </button>

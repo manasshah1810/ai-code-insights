@@ -76,7 +76,12 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
     const labelColor = isDark ? '#94a3b8' : '#64748b';
 
     const renderChart = () => {
-        const chartMargin = { top: 10, right: 10, left: yAxisLabel ? 20 : 0, bottom: xAxisLabel ? 20 : 0 };
+        const chartMargin = {
+            top: 20,
+            right: 30,
+            left: yAxisLabel ? 40 : 10,
+            bottom: xAxisLabel ? 40 : 10
+        };
 
         switch (type) {
             case 'area':
@@ -95,31 +100,33 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                             dataKey={index}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: tickColor, fontSize: 12 }}
-                            dy={10}
+                            tick={{ fill: tickColor, fontSize: 10 }}
+                            height={50}
+                            interval={0}
                         >
                             {xAxisLabel && (
                                 <Label
                                     value={xAxisLabel}
-                                    offset={-10}
+                                    offset={-5}
                                     position="insideBottom"
-                                    style={{ fill: tickColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}
                                 />
                             )}
                         </XAxis>
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: tickColor, fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 10 }}
                             tickFormatter={valueFormatter}
+                            width={yAxisLabel ? 70 : 40}
                         >
                             {yAxisLabel && (
                                 <Label
                                     value={yAxisLabel}
                                     angle={-90}
                                     position="insideLeft"
-                                    offset={10}
-                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
+                                    offset={0}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, textAnchor: 'middle', letterSpacing: '0.1em' }}
                                 />
                             )}
                         </YAxis>
@@ -147,31 +154,33 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                             dataKey={index}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: tickColor, fontSize: 12 }}
-                            dy={10}
+                            tick={{ fill: tickColor, fontSize: 10 }}
+                            height={60}
+                            interval={0}
                         >
                             {xAxisLabel && (
                                 <Label
                                     value={xAxisLabel}
-                                    offset={-10}
+                                    offset={0}
                                     position="insideBottom"
-                                    style={{ fill: tickColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}
                                 />
                             )}
                         </XAxis>
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: tickColor, fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 10 }}
                             tickFormatter={valueFormatter}
+                            width={80}
                         >
                             {yAxisLabel && (
                                 <Label
                                     value={yAxisLabel}
                                     angle={-90}
                                     position="insideLeft"
-                                    offset={10}
-                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
+                                    offset={-5}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, textAnchor: 'middle', letterSpacing: '0.1em' }}
                                 />
                             )}
                         </YAxis>
@@ -198,31 +207,33 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                             dataKey={index}
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: tickColor, fontSize: 12 }}
-                            dy={10}
+                            tick={{ fill: tickColor, fontSize: 10 }}
+                            height={50}
+                            interval={0}
                         >
                             {xAxisLabel && (
                                 <Label
                                     value={xAxisLabel}
-                                    offset={-10}
+                                    offset={-5}
                                     position="insideBottom"
-                                    style={{ fill: tickColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }}
                                 />
                             )}
                         </XAxis>
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: tickColor, fontSize: 12 }}
+                            tick={{ fill: tickColor, fontSize: 10 }}
                             tickFormatter={valueFormatter}
+                            width={yAxisLabel ? 70 : 40}
                         >
                             {yAxisLabel && (
                                 <Label
                                     value={yAxisLabel}
                                     angle={-90}
                                     position="insideLeft"
-                                    offset={10}
-                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, textAnchor: 'middle', letterSpacing: '0.05em' }}
+                                    offset={0}
+                                    style={{ fill: labelColor, fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, textAnchor: 'middle', letterSpacing: '0.1em' }}
                                 />
                             )}
                         </YAxis>

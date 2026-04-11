@@ -113,12 +113,12 @@ export default function AIToolsPage() {
         {
             header: "Team",
             accessorKey: "team",
-            cell: (val: string) => <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">{val}</span>,
+            cell: (val: string) => <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">{val}</span>,
         },
         {
             header: "AI LoC",
             accessorKey: "totalAiLoC",
-            cell: (val: number) => <span className="font-bold font-metric text-slate-700">{formatNumber(val)}</span>,
+            cell: (val: number) => <span className="font-bold font-metric text-slate-700 dark:text-slate-300">{formatNumber(val)}</span>,
             align: "right" as const,
         },
         {
@@ -138,7 +138,7 @@ export default function AIToolsPage() {
                             />
                         ))}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 ml-1">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-1">
                         {val[0]?.percent}% {aiTools.find(a => a.id === val[0]?.toolId)?.shortName}
                     </span>
                 </div>
@@ -172,7 +172,7 @@ export default function AIToolsPage() {
                     <h1 className="text-4xl font-extrabold tracking-tighter text-slate-900 md:text-5xl">
                         AI Tools <span className="text-violet-600">Intelligence</span>
                     </h1>
-                    <p className="text-base text-slate-500 mt-2 font-medium">
+                    <p className="text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">
                         Decomposing which AI models and tools generated every line of code across your organization
                     </p>
                 </div>
@@ -183,7 +183,7 @@ export default function AIToolsPage() {
                     <div className="relative">
                         <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                         <Select value={teamFilter} onValueChange={setTeamFilter}>
-                            <SelectTrigger className="w-[200px] h-11 rounded-xl pl-9 font-bold bg-white border-slate-200 text-slate-700">
+                            <SelectTrigger className="w-[200px] h-11 rounded-xl pl-9 font-bold bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                                 <SelectValue placeholder="All Teams" />
                             </SelectTrigger>
                             <SelectContent className="rounded-xl border-slate-100">
@@ -368,7 +368,7 @@ export default function AIToolsPage() {
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <span className="text-xs font-black text-white font-metric">{formatNumber(tool.totalLoC)}</span>
-                                    <span className="text-[10px] font-bold text-slate-500">{tool.percentOfAI}%</span>
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{tool.percentOfAI}%</span>
                                 </div>
                             </div>
                         ))}
@@ -384,13 +384,13 @@ export default function AIToolsPage() {
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-xl font-black tracking-tight text-slate-900">LoC Generation by AI Engine</h3>
-                            <p className="text-sm text-slate-500 mt-1">8-month output trend per tool</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">8-month output trend per tool</p>
                         </div>
                         <div className="flex items-center gap-3 flex-wrap">
                             {aiTools.map(t => (
                                 <div key={t.id} className="flex items-center gap-1.5">
                                     <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: t.color }} />
-                                    <span className="text-[10px] font-black text-slate-500 uppercase">{t.shortName}</span>
+                                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase">{t.shortName}</span>
                                 </div>
                             ))}
                         </div>
@@ -419,7 +419,7 @@ export default function AIToolsPage() {
                             <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
                                 <Shield className="h-5 w-5 text-violet-500" /> Quality Radar
                             </h3>
-                            <p className="text-sm text-slate-500 mt-1">Multi-dimensional code quality comparison</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Multi-dimensional code quality comparison</p>
                         </div>
                     </div>
 
@@ -466,7 +466,7 @@ export default function AIToolsPage() {
                         {aiTools.map(t => (
                             <div key={t.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-100">
                                 <div className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
-                                <span className="text-[10px] font-bold text-slate-600">{t.shortName}</span>
+                                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{t.shortName}</span>
                             </div>
                         ))}
                     </div>
@@ -479,7 +479,7 @@ export default function AIToolsPage() {
                             <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
                                 <Target className="h-5 w-5 text-violet-500" /> Detailed Quality Metrics
                             </h3>
-                            <p className="text-sm text-slate-500 mt-1">Per-tool code quality and security analysis</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Per-tool code quality and security analysis</p>
                         </div>
                     </div>
 
@@ -547,7 +547,7 @@ export default function AIToolsPage() {
                                                             style={{ width: `${quality?.testCoverage}%`, backgroundColor: tool.color }}
                                                         />
                                                     </div>
-                                                    <span className="font-bold font-metric text-slate-700 text-xs">{quality?.testCoverage}%</span>
+                                                    <span className="font-bold font-metric text-slate-700 dark:text-slate-300 text-xs">{quality?.testCoverage}%</span>
                                                 </div>
                                             </td>
                                             <td className="py-4 px-3 text-right">
@@ -561,7 +561,7 @@ export default function AIToolsPage() {
                                                 </Badge>
                                             </td>
                                             <td className="py-4 px-3 text-right">
-                                                <span className="font-bold font-metric text-slate-600">{tool.avgCycleTime}m</span>
+                                                <span className="font-bold font-metric text-slate-600 dark:text-slate-400">{tool.avgCycleTime}m</span>
                                             </td>
                                         </motion.tr>
                                     );
@@ -579,7 +579,7 @@ export default function AIToolsPage() {
                         <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
                             <BarChart3 className="h-5 w-5 text-violet-500" /> Team × Tool Matrix
                         </h3>
-                        <p className="text-sm text-slate-500 mt-1">How each squad leverages AI engines</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">How each squad leverages AI engines</p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                         {aiTools.map(t => (

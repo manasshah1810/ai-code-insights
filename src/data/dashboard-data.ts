@@ -78,16 +78,16 @@ export const formatNumber = (n: number): string => {
 // --- DATA GENERATION ---
 
 export const teams: Team[] = [
-  { id: "platform", name: "Platform Engineering", headCount: 12, aiUsers: 10, aiCodePercent: 68.4, aiMergeRate: 84.2, primaryTool: "Cursor", totalTokens: 8420000, totalLoC: 245000, aiLoC: 167580, manualLoC: 77420, members: [], lastSyncDate: "Mar 21" },
+  { id: "platform", name: "Platform Engineering", headCount: 12, aiUsers: 10, aiCodePercent: 68.4, aiMergeRate: 84.2, primaryTool: "Claude", totalTokens: 8420000, totalLoC: 245000, aiLoC: 167580, manualLoC: 77420, members: [], lastSyncDate: "Mar 21" },
   { id: "frontend", name: "Frontend Core", headCount: 15, aiUsers: 14, aiCodePercent: 72.1, aiMergeRate: 78.5, primaryTool: "Cursor", totalTokens: 9200000, totalLoC: 312000, aiLoC: 224952, manualLoC: 87048, members: [], lastSyncDate: "Mar 21" },
-  { id: "data-ml", name: "Data & ML", headCount: 10, aiUsers: 8, aiCodePercent: 42.5, aiMergeRate: 62.1, primaryTool: "Copilot", totalTokens: 4150000, totalLoC: 184000, aiLoC: 78200, manualLoC: 105800, members: [], lastSyncDate: "Mar 20" },
+  { id: "data-ml", name: "Data & ML", headCount: 10, aiUsers: 8, aiCodePercent: 42.5, aiMergeRate: 62.1, primaryTool: "Gemini", totalTokens: 4150000, totalLoC: 184000, aiLoC: 78200, manualLoC: 105800, members: [], lastSyncDate: "Mar 20" },
   { id: "security", name: "Cyber Security", headCount: 8, aiUsers: 6, aiCodePercent: 35.2, aiMergeRate: 91.0, primaryTool: "Copilot", totalTokens: 2800000, totalLoC: 92000, aiLoC: 32384, manualLoC: 59616, members: [], lastSyncDate: "Mar 21" },
   { id: "mobile", name: "Mobile App", headCount: 14, aiUsers: 12, aiCodePercent: 58.0, aiMergeRate: 75.4, primaryTool: "Cursor", totalTokens: 6700000, totalLoC: 198000, aiLoC: 114840, manualLoC: 83160, members: [], lastSyncDate: "Mar 19" },
-  { id: "infra", name: "Infrastructure/SRE", headCount: 9, aiUsers: 9, aiCodePercent: 81.5, aiMergeRate: 88.0, primaryTool: "Cursor", totalTokens: 7100000, totalLoC: 145000, aiLoC: 118175, manualLoC: 26825, members: [], lastSyncDate: "Mar 21" },
+  { id: "infra", name: "Infrastructure/SRE", headCount: 9, aiUsers: 9, aiCodePercent: 81.5, aiMergeRate: 88.0, primaryTool: "Claude", totalTokens: 7100000, totalLoC: 145000, aiLoC: 118175, manualLoC: 26825, members: [], lastSyncDate: "Mar 21" },
   { id: "devtools", name: "Developer Experience", headCount: 7, aiUsers: 7, aiCodePercent: 92.0, aiMergeRate: 94.5, primaryTool: "Cursor", totalTokens: 5200000, totalLoC: 112000, aiLoC: 103040, manualLoC: 8960, members: [], lastSyncDate: "Mar 21" },
   { id: "product-api", name: "Product API", headCount: 11, aiUsers: 9, aiCodePercent: 54.6, aiMergeRate: 71.2, primaryTool: "Copilot", totalTokens: 4800000, totalLoC: 176000, aiLoC: 96096, manualLoC: 79904, members: [], lastSyncDate: "Mar 18" },
-  { id: "growth", name: "Growth & Experiments", headCount: 6, aiUsers: 6, aiCodePercent: 65.4, aiMergeRate: 68.9, primaryTool: "Cursor", totalTokens: 3100000, totalLoC: 78000, aiLoC: 51012, manualLoC: 26988, members: [], lastSyncDate: "Mar 20" },
-  { id: "qa-aut", name: "QA Automation", headCount: 8, aiUsers: 8, aiCodePercent: 88.2, aiMergeRate: 82.1, primaryTool: "Copilot", totalTokens: 3900000, totalLoC: 84000, aiLoC: 74088, manualLoC: 9912, members: [], lastSyncDate: "Mar 21" },
+  { id: "growth", name: "Growth & Experiments", headCount: 6, aiUsers: 6, aiCodePercent: 65.4, aiMergeRate: 68.9, primaryTool: "Claude", totalTokens: 3100000, totalLoC: 78000, aiLoC: 51012, manualLoC: 26988, members: [], lastSyncDate: "Mar 20" },
+  { id: "qa-aut", name: "QA Automation", headCount: 8, aiUsers: 8, aiCodePercent: 88.2, aiMergeRate: 82.1, primaryTool: "ChatGPT", totalTokens: 3900000, totalLoC: 84000, aiLoC: 74088, manualLoC: 9912, members: [], lastSyncDate: "Mar 21" },
 ];
 
 const firstNames = ["James", "Mary", "Robert", "Patricia", "John", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle", "Kenneth", "Dorothy", "Kevin", "Carol", "Brian", "Amanda", "George", "Melissa", "Edward", "Deborah", "Ronald", "Stephanie"];

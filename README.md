@@ -29,7 +29,7 @@ Designed for diverse enterprise deployments, the platform supports multiple bran
 
 ### 🏳️ Supported Brands:
 - **Company AI (Default)**: Standard "ACI" branding.
-- **Persistant AI**: Personalized logo and color theme for Persistant.
+- **persistent AI**: Personalized logo and color theme for persistent.
 - **Cogniify AI**: Personalized logo and name mapping for Cogniify.
 
 ---
@@ -44,7 +44,7 @@ Add the following to your environment configuration:
 
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
-| `NEXT_PUBLIC_BRAND` | Set the active brand mode | `persistant` / `cogniify` / `company` |
+| `NEXT_PUBLIC_BRAND` | Set the active brand mode | `persistent` / `cogniify` / `company` |
 | `VITE_ANTHROPIC_API_KEY` | Your Anthropic Claude API Key | `sk-ant-api03-...` |
 
 **Verification**: To ensure you are using the correct secret, verify the last few characters of your active Anthropic key: **`...0J-1jwAA`**

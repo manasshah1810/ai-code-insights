@@ -47,7 +47,7 @@ function PriorityBadge({ priority }: { priority: 1 | 2 }) {
       "font-bold rounded-lg px-3 py-1 ring-1 border",
       priority === 1
         ? "bg-indigo-100 text-indigo-700 border-indigo-200"
-        : "bg-slate-100 text-slate-700 border-slate-200"
+        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
     )}>
       {priority === 1 ? "🔥 Priority 1" : "Priority 2"}
     </Badge>
@@ -61,7 +61,7 @@ function SWOTBadge({ id }: { id: string }) {
   const isThreat = id.toLowerCase().includes("threat");
 
   const label = isStrength ? "STRENGTH" : isWeakness ? "WEAKNESS" : isOpportunity ? "OPPORTUNITY" : isThreat ? "THREAT" : "INSIGHT";
-  const colors = isStrength ? "bg-emerald-500 text-white" : isWeakness ? "bg-slate-500 text-white" : isOpportunity ? "bg-indigo-500 text-white" : isThreat ? "bg-rose-500 text-white" : "bg-slate-200 text-slate-700";
+  const colors = isStrength ? "bg-emerald-500 text-white" : isWeakness ? "bg-slate-500 text-white" : isOpportunity ? "bg-indigo-500 text-white" : isThreat ? "bg-rose-500 text-white" : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
 
   return (
     <Badge className={cn("font-black px-4 py-1.5 rounded-full text-[12px] shadow-sm tracking-widest border-0", colors)}>
@@ -163,7 +163,7 @@ export default function AISummaryPage() {
           <h1 className="text-4xl font-extrabold tracking-tighter text-slate-900 md:text-5xl uppercase">
             {roleTitle}
           </h1>
-          <p className="text-base text-slate-500 mt-2 font-medium">
+          <p className="text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">
             Tactical analysis of Strengths, Weaknesses, Opportunities, and Threats across your engineering operations.
           </p>
         </div>
@@ -190,7 +190,7 @@ export default function AISummaryPage() {
             <Loader2 className="h-10 w-10 text-indigo-600 animate-spin" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-2 font-mono uppercase tracking-tighter">Running Anthropic Claude Engine...</h3>
-          <p className="text-slate-600">Our Claude Sonnet 4.6 model is performing a detailed SWOT analysis (Strengths, Weakness, Opportunities, Threats) on your operational metadata.</p>
+          <p className="text-slate-600 dark:text-slate-400">Our Claude Sonnet 4.6 model is performing a detailed SWOT analysis (Strengths, Weakness, Opportunities, Threats) on your operational metadata.</p>
         </div>
       )}
 
@@ -218,7 +218,7 @@ export default function AISummaryPage() {
             <CheckCircle2 className="h-10 w-10 text-emerald-500" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-2 uppercase tracking-tighter">Analysis Complete: No Critical Threats</h3>
-          <p className="text-slate-600">Operations are stable and metrics are within safe bands. No immediate SWOT interventions required.</p>
+          <p className="text-slate-600 dark:text-slate-400">Operations are stable and metrics are within safe bands. No immediate SWOT interventions required.</p>
         </div>
       )}
 
@@ -249,7 +249,7 @@ export default function AISummaryPage() {
                             <h3 className="text-xl font-black tracking-tight text-slate-900 uppercase">
                               {rec.title}
                             </h3>
-                            <p className="text-sm text-slate-600 mt-1 line-clamp-2 italic">
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2 italic">
                               {rec.description}
                             </p>
                           </div>
@@ -259,7 +259,7 @@ export default function AISummaryPage() {
                         <div className="flex flex-wrap items-center gap-2 mt-4">
                           <ImpactBadge impact={rec.impact} />
                           <PriorityBadge priority={rec.priority} />
-                          <Badge className="bg-slate-100 text-slate-700 font-bold rounded-lg px-3 py-1 ring-1 ring-slate-200 flex items-center gap-1">
+                          <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold rounded-lg px-3 py-1 ring-1 ring-slate-200 dark:ring-slate-700 flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {rec.timeframe}
                           </Badge>
@@ -293,7 +293,7 @@ export default function AISummaryPage() {
                             <h4 className="text-sm font-black text-slate-400 uppercase tracking-wider mb-2">
                               Detailed Context
                             </h4>
-                            <p className="text-slate-700 leading-relaxed">
+                            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                               {rec.description}
                             </p>
                           </div>
@@ -322,7 +322,7 @@ export default function AISummaryPage() {
                                             : "bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200"
                                     )}
                                   >
-                                    <p className="text-xs font-bold text-slate-600 mb-2 line-clamp-1">
+                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 line-clamp-1">
                                       {viz.label}
                                     </p>
                                     {viz.type === "progress" ? (
@@ -333,7 +333,7 @@ export default function AISummaryPage() {
                                               ? Math.round((viz.value / viz.target) * 100)
                                               : 0}
                                           </span>
-                                          <span className="text-xs text-slate-600">%</span>
+                                          <span className="text-xs text-slate-600 dark:text-slate-400">%</span>
                                         </div>
                                         <div className="w-full bg-slate-200 rounded-full h-2">
                                           <div
@@ -352,7 +352,7 @@ export default function AISummaryPage() {
                                           <span className="text-2xl font-black text-slate-900">
                                             {viz.value}
                                           </span>
-                                          <span className="text-xs text-slate-600">{viz.unit}</span>
+                                          <span className="text-xs text-slate-600 dark:text-slate-400">{viz.unit}</span>
                                         </div>
                                         <div className="w-full bg-slate-200 rounded-full h-1.5">
                                           <div
@@ -387,7 +387,7 @@ export default function AISummaryPage() {
                                             : viz.value}
                                         </div>
                                         {viz.target && (
-                                          <div className="text-xs text-slate-600">
+                                          <div className="text-xs text-slate-600 dark:text-slate-400">
                                             Target: {typeof viz.target === "number"
                                               ? parseFloat(viz.target.toFixed(2)).toLocaleString()
                                               : viz.target}
@@ -419,7 +419,7 @@ export default function AISummaryPage() {
                                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 flex-shrink-0 mt-0.5">
                                     <span className="text-xs font-bold text-indigo-600">{i + 1}</span>
                                   </div>
-                                  <span className="text-slate-700 pt-0.5">{item}</span>
+                                  <span className="text-slate-700 dark:text-slate-300 pt-0.5">{item}</span>
                                 </motion.li>
                               ))}
                             </ul>

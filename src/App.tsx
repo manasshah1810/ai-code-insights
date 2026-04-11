@@ -15,6 +15,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import GlossaryPage from "@/pages/GlossaryPage";
 import AIToolsPage from "@/pages/AIToolsPage";
 import SWOTAnalysisPage from "@/pages/SWOTAnalysisPage";
+import AISummaryPage from "@/pages/AISummaryPage";
 import DeveloperDashboard from "@/pages/DeveloperDashboard";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import NotFound from "@/pages/NotFound";
@@ -27,15 +28,6 @@ const queryClient = new QueryClient();
 function BrandManager() {
   useEffect(() => {
     document.title = currentBrand.name;
-
-    // Dynamically update favicon
-    let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    link.href = currentBrand.favicon;
   }, []);
 
   return null;
@@ -93,6 +85,7 @@ const App = () => (
             <Route path="/code-breakdown" element={<CodeBreakdownPage />} />
             <Route path="/ai-tools" element={<AIToolsPage />} />
             <Route path="/swot-analysis" element={<SWOTAnalysisPage />} />
+            <Route path="/ai-summary" element={<AISummaryPage />} />
             <Route path="/merge-analytics" element={<MergeAnalyticsPage />} />
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/teams/:teamId" element={<TeamsPage />} />

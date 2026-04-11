@@ -78,7 +78,7 @@ export default function UserProfilePage() {
           <Lock className="h-10 w-10" />
         </motion.div>
         <div className="space-y-2">
-          <h2 className="text-3xl font-black tracking-tight text-slate-900">Access Restricted</h2>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Access Restricted</h2>
           <p className="max-w-md text-slate-500 font-medium leading-relaxed">
             {reason}
           </p>
@@ -106,7 +106,7 @@ export default function UserProfilePage() {
     {
       header: "Pull Request Title",
       accessorKey: "title",
-      cell: (val: string) => <span className="font-bold text-slate-900">{val}</span>
+      cell: (val: string) => <span className="font-bold text-slate-900 dark:text-slate-100">{val}</span>
     },
     {
       header: "AI Contribution",
@@ -178,7 +178,7 @@ export default function UserProfilePage() {
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-black tracking-tighter text-slate-900">{user.name}</h1>
+              <h1 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-slate-100">{user.name}</h1>
               <StatusBadge status={user.status} size="md" />
             </div>
             <p className="text-base text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2">
@@ -190,7 +190,7 @@ export default function UserProfilePage() {
         <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
           <div className="text-right">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Primary Engine</p>
-            <p className="text-sm font-black text-slate-900">{user.primaryTool}</p>
+            <p className="text-sm font-black text-slate-900 dark:text-slate-100">{user.primaryTool}</p>
           </div>
           <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 shadow-sm">
             <Cpu className="h-5 w-5 text-indigo-500" />
@@ -230,7 +230,7 @@ export default function UserProfilePage() {
       <div className="grid lg:grid-cols-12 gap-8">
         {/* Composition Chart */}
         <div className="lg:col-span-5 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <h3 className="text-xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-2">
+          <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-8 flex items-center gap-2">
             <MousePointer2 className="h-5 w-5 text-indigo-500" /> Craftsmanship vs. AI
           </h3>
           <div className="flex flex-col items-center">
@@ -266,7 +266,7 @@ export default function UserProfilePage() {
               </div>
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Human Written</p>
-                <p className="text-xl font-black text-slate-700 font-metric">{formatNumber(user.manualLoC)}</p>
+                <p className="text-xl font-black text-slate-700 dark:text-slate-300 font-metric">{formatNumber(user.manualLoC)}</p>
               </div>
             </div>
           </div>
@@ -337,7 +337,7 @@ export default function UserProfilePage() {
       {/* PR Table */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
-          <h3 className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+          <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Code2 className="h-6 w-6 text-indigo-500" /> Recent Pull Requests
           </h3>
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{user.recentPRs.length} SUBMISSIONS</span>

@@ -6,17 +6,14 @@ export const BRAND_CONFIG = {
     company: {
         name: "Company AI-Code-Insights",
         logo: "ACI",
-        favicon: "/placeholder.svg",
     },
-    persistant: {
-        name: "Persistant AI-Code-Insights",
-        logo: "/Persistant Logo.png",
-        favicon: "/Persistant Logo.png",
+    persistent: {
+        name: "persistent AI-Code-Insights",
+        logo: "/persistent-logo.png",
     },
     cogniify: {
         name: "Cogniify AI-Code-Insights",
-        logo: "/Cogniify Logo.png",
-        favicon: "/Cogniify Logo.png",
+        logo: "/cogniify-logo.png",
     }
 };
 
@@ -39,5 +36,4 @@ const brand = rawBrand.toLowerCase();
 export const currentBrand = (BRAND_CONFIG[brand as BrandKey] || BRAND_CONFIG.company) as {
     name: string;
     logo: string;
-    favicon: string;
 };

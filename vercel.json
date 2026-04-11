@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/anthropic-api/:path*",
+            "destination": "https://api.anthropic.com/v1/:path*"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

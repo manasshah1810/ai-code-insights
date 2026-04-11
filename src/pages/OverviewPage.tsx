@@ -62,7 +62,7 @@ const weekDateRanges = weeklyTrend.map((w) => {
 
 export default function OverviewPage() {
   const navigate = useNavigate();
-  const { monthlySeatCost, manualHourlyRate, liveEvents, addLiveEvent, currentRole, managerTeamId, developerUserId } = useAppStore();
+  const { monthlySeatCost, manualHourlyRate, liveEvents, addLiveEvent, currentRole, managerTeamId, developerUserId, theme } = useAppStore();
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [dateFilterStr, setDateFilterStr] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
@@ -110,8 +110,16 @@ export default function OverviewPage() {
     const aiLoC = currentUsers.reduce((acc, u) => acc + u.aiLoC, 0) * scaleFactor;
     const totalLoC = currentUsers.reduce((acc, u) => acc + u.totalLoC, 0) * scaleFactor;
     const tokens = currentUsers.reduce((acc, u) => acc + u.tokensUsed, 0) * scaleFactor;
-    const cost = aiTools.filter(t => platformFilter === "all" || t.shortName === platformFilter)
-      .reduce((acc, t) => acc + (t.totalTokens * t.costPer1kTokens / 1000), 0) * scaleFactor;
+
+    // Aggregate data from tools
+    const activeTools = aiTools.filter(t => platformFilter === "all" || t.shortName === platformFilter);
+    const cost = activeTools.reduce((acc, t) => acc + (t.totalTokens * t.costPer1kTokens / 1000), 0) * scaleFactor;
+    const avgCycleTimeByTool = activeTools.length > 0
+      ? activeTools.reduce((acc, t) => acc + t.avgCycleTime, 0) / activeTools.length
+      : productivityData.aiCycleTimeAvg;
+
+    const velocityBoost = ((productivityData.manualCycleTimeAvg - avgCycleTimeByTool) / productivityData.manualCycleTimeAvg) * 100;
+    const timeSaved = (productivityData.timeSavedHours * (aiLoC / Math.max(1, orgData.aiLoC)));
 
     return {
       aiLoC,
@@ -121,7 +129,10 @@ export default function OverviewPage() {
       aiAdoptionRate: currentUsers.length > 0 ? parseFloat(((currentUsers.filter(u => u.aiPercent > 0).length / currentUsers.length) * 100).toFixed(1)) : 0,
       totalTokens: tokens,
       totalAiCost: cost,
-      avgTokensPerLine: aiLoC > 0 ? parseFloat((tokens / aiLoC).toFixed(2)) : 0
+      avgTokensPerLine: aiLoC > 0 ? parseFloat((tokens / aiLoC).toFixed(2)) : 0,
+      velocityBoost: parseFloat(velocityBoost.toFixed(1)),
+      aiCycleTime: Math.round(avgCycleTimeByTool),
+      timeSavedHours: Math.round(timeSaved)
     };
   }, [platformFilter, dateRange, users, aiTools]);
 
@@ -326,7 +337,7 @@ export default function OverviewPage() {
             sustained <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.aiCodePercent}% output share</span>.
             Efficiency stands at <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.avgTokensPerLine} tokens per line</span>,
             driving a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">${formatNumber(filteredMetrics.totalAiCost)} monthly investment</span> in AI {platformFilter !== 'all' ? platformFilter : 'tooling'}.
-            Velocity has seen a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">72.1% net improvement</span> over manual baseline.
+            Velocity has seen a <span className="text-white font-black underline decoration-indigo-300 underline-offset-4">{filteredMetrics.velocityBoost}% net improvement</span> over manual baseline.
           </p>
         </div>
       </div>
@@ -360,7 +371,7 @@ export default function OverviewPage() {
         />
         <MetricCard
           title="Velocity Boost"
-          value={productivityData.velocityBoostPercent}
+          value={filteredMetrics.velocityBoost}
           suffix="%"
           gradient="success"
           icon={<TrendingUp className="h-6 w-6" />}
@@ -679,12 +690,12 @@ export default function OverviewPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center pr-1">
                   <span className="text-xs font-bold text-indigo-300 uppercase tracking-widest">AI Assisted</span>
-                  <span className="text-xl font-black text-white font-metric">{productivityData.aiCycleTimeAvg}m</span>
+                  <span className="text-xl font-black text-white font-metric">{filteredMetrics.aiCycleTime}m</span>
                 </div>
                 <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${(productivityData.aiCycleTimeAvg / productivityData.manualCycleTimeAvg) * 100}%` }}
+                    animate={{ width: `${(filteredMetrics.aiCycleTime / productivityData.manualCycleTimeAvg) * 100}%` }}
                     className="h-full bg-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.5)]"
                   />
                 </div>
@@ -708,7 +719,7 @@ export default function OverviewPage() {
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 backdrop-blur-sm">
                   <p className="text-xs font-bold text-indigo-300 uppercase tracking-tighter mb-1">Impact Summary</p>
                   <p className="text-3xl font-black text-white tracking-tighter">
-                    {productivityData.velocityBoostPercent}% <span className="text-lg font-bold text-indigo-400 uppercase tracking-normal">Faster Delivery</span>
+                    {filteredMetrics.velocityBoost}% <span className="text-lg font-bold text-indigo-400 uppercase tracking-normal">Faster Delivery</span>
                   </p>
                 </div>
               </div>
@@ -779,7 +790,7 @@ export default function OverviewPage() {
                 <Activity className="h-5 w-5 text-indigo-500" />
               </div>
               <div>
-                <h3 className="text-xl font-black tracking-tight text-slate-900">Real-time Telemetry</h3>
+                <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">Real-time Telemetry</h3>
                 <p className="text-sm text-slate-500 font-medium">Streaming global AI events from VCS webhooks • Click a commit for details</p>
               </div>
             </div>
@@ -813,11 +824,11 @@ export default function OverviewPage() {
                       {event.source === 'AI' ? <Zap className="h-5 w-5" /> : event.source === 'Hybrid' ? <Layers className="h-5 w-5" /> : <Code2 className="h-5 w-5 text-slate-400" />}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate">{event.commitHeading}</p>
+                      <p className="text-sm font-bold text-slate-900 truncate" title={event.commitHeading}>{event.commitHeading}</p>
                       <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">
-                        <span className="truncate">{event.authorName}</span>
+                        <span className="truncate" title={event.authorName}>{event.authorName}</span>
                         <span>•</span>
-                        <span className="truncate">{event.repository}</span>
+                        <span className="truncate" title={event.repository}>{event.repository}</span>
                         <span>•</span>
                         <span className="flex-shrink-0">{new Date(event.timestamp).toLocaleTimeString()}</span>
                       </div>
@@ -930,98 +941,114 @@ export default function OverviewPage() {
               className="relative z-10 w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
             >
               {/* Modal Header */}
-              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 px-8 py-6 relative overflow-hidden">
+              <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 px-8 py-10 relative overflow-hidden">
                 <div className="absolute -top-10 -right-10 h-32 w-32 bg-white/5 rounded-full blur-2xl" />
                 <div className="absolute -bottom-16 -left-16 h-40 w-40 bg-white/5 rounded-full blur-3xl" />
                 <div className="relative z-10">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                        <GitCommitHorizontal className="h-5 w-5 text-white" />
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <GitCommitHorizontal className="h-6 w-6 text-white" />
                       </div>
-                      <div>
-                        <h2 className="text-lg font-black text-white tracking-tight">Commit Detail</h2>
-                        <p className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest">Real-time Telemetry Event</p>
+                      <div className="space-y-1.5">
+                        <h2 className="text-2xl font-black text-white tracking-tight leading-none">Commit Details</h2>
+                        <p className="text-xs font-bold text-indigo-100 uppercase tracking-widest">Real-time Telemetry Event</p>
                       </div>
                     </div>
                     <button
                       onClick={() => setCommitDialogOpen(false)}
-                      className="h-9 w-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                      className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0"
                     >
-                      <X className="h-4 w-4 text-white" />
+                      <X className="h-5 w-5 text-white" />
                     </button>
                   </div>
-                  <div className="mt-4">
-                    <p className="text-white font-bold text-base">{selectedCommit.commitHeading}</p>
-                    <p className="text-indigo-200 text-sm mt-1 leading-relaxed">{selectedCommit.commitDescription}</p>
+                  <div className="mt-6 pt-4 border-t border-white/20">
+                    <p className="text-white font-extrabold text-2xl leading-tight mb-2">{selectedCommit.commitHeading}</p>
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-white/20 text-white border-none hover:bg-white/30 transition-colors">
+                        <Hash className="h-3 w-3 mr-1" />
+                        {selectedCommit.commitId.substring(0, 7)}
+                      </Badge>
+                      <Badge className="bg-white/20 text-white border-none hover:bg-white/30 transition-colors">
+                        <Activity className="h-3 w-3 mr-1" />
+                        {selectedCommit.source}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Modal Body — Scrollable */}
               <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                {/* Commit Description Callout */}
+                <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Commit Description</h4>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {selectedCommit.commitDescription}
+                  </p>
+                </div>
                 {/* KPI Cards Row */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Hash className="h-4 w-4 text-slate-400" />
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Commit ID</span>
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Hash className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                      <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Commit ID</span>
                     </div>
-                    <p className="text-sm font-mono font-bold text-slate-900 truncate" title={selectedCommit.commitId}>
+                    <p className="text-sm font-mono font-bold text-slate-900 dark:text-slate-100 truncate" title={selectedCommit.commitId}>
                       {selectedCommit.commitId.substring(0, 12)}...
                     </p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 mb-3">
                       <User className="h-4 w-4 text-blue-400" />
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Author</span>
+                      <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Author</span>
                     </div>
-                    <p className="text-sm font-bold text-slate-900">{selectedCommit.authorName}</p>
-                    <p className="text-[10px] text-slate-500 font-medium">{selectedCommit.authorRole}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug">{selectedCommit.authorName}</p>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium mt-1.5">{selectedCommit.authorRole}</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 mb-3">
                       <Users className="h-4 w-4 text-emerald-400" />
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Team</span>
+                      <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Team</span>
                     </div>
-                    <p className="text-sm font-bold text-slate-900">{selectedCommit.teamName}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{selectedCommit.teamName}</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 mb-3">
                       <FolderGit2 className="h-4 w-4 text-violet-400" />
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Repository</span>
+                      <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Repository</span>
                     </div>
-                    <p className="text-sm font-bold text-slate-900 truncate">{selectedCommit.repository}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{selectedCommit.repository}</p>
                   </div>
                 </div>
 
                 {/* Metrics KPIs */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100">
-                    <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Lines Added</p>
-                    <p className="text-3xl font-black text-indigo-600 font-metric">{selectedCommit.linesAdded}</p>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/50">
+                    <p className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mb-2.5">Lines Added</p>
+                    <p className="text-3xl font-black text-indigo-600 dark:text-indigo-400 font-metric leading-none">{selectedCommit.linesAdded}</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50 border border-violet-100">
-                    <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">AI Generated</p>
-                    <p className="text-3xl font-black text-violet-600 font-metric">{selectedCommit.linesAI}</p>
-                    <p className="text-[10px] text-violet-400 font-bold mt-0.5">{selectedCommit.aiPercent}% of total</p>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-950/40 dark:to-fuchsia-950/40 border border-violet-100 dark:border-violet-900/50">
+                    <p className="text-[10px] font-black text-violet-500 dark:text-violet-400 uppercase tracking-widest mb-2.5">AI Generated</p>
+                    <p className="text-3xl font-black text-violet-600 dark:text-violet-400 font-metric leading-none">{selectedCommit.linesAI}</p>
+                    <p className="text-[10px] text-violet-600 dark:text-violet-300 font-bold mt-2.5 leading-snug">{selectedCommit.aiPercent}% of total</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Manual Lines</p>
-                    <p className="text-3xl font-black text-slate-700 font-metric">{selectedCommit.linesManual}</p>
-                    <p className="text-[10px] text-slate-400 font-bold mt-0.5">{100 - selectedCommit.aiPercent}% of total</p>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700/50 border border-slate-200 dark:border-slate-700">
+                    <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2.5">Manual Lines</p>
+                    <p className="text-3xl font-black text-slate-700 dark:text-slate-300 font-metric leading-none">{selectedCommit.linesManual}</p>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400 font-bold mt-2.5 leading-snug">{100 - selectedCommit.aiPercent}% of total</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100">
-                    <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">Tokens Used</p>
-                    <p className="text-3xl font-black text-amber-600 font-metric">{formatNumber(selectedCommit.tokensUsed)}</p>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-100 dark:border-amber-900/50">
+                    <p className="text-[10px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-widest mb-2.5">Tokens Used</p>
+                    <p className="text-3xl font-black text-amber-600 dark:text-amber-400 font-metric leading-none">{formatNumber(selectedCommit.tokensUsed)}</p>
                   </div>
                 </div>
 
                 {/* Charts Row */}
                 <div className="grid md:grid-cols-2 gap-8">
                   {/* AI Tool Split — Doughnut Chart */}
-                  <div className="rounded-2xl border border-slate-200 p-6 bg-white">
-                    <h4 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-6 bg-white dark:bg-slate-800">
+                    <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-indigo-500" />
                       AI Tool Attribution
                     </h4>
@@ -1047,13 +1074,14 @@ export default function OverviewPage() {
                             <RechartsTooltip
                               formatter={(value: any, name: any) => [`${value}%`, name]}
                               contentStyle={{
-                                backgroundColor: '#1e293b',
+                                backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
                                 border: 'none',
                                 borderRadius: '12px',
-                                color: '#f8fafc',
+                                color: theme === 'dark' ? '#f8fafc' : '#1e293b',
                                 fontSize: '12px',
                                 fontWeight: 700,
                                 padding: '8px 14px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                               }}
                             />
                           </PieChart>
@@ -1065,10 +1093,10 @@ export default function OverviewPage() {
                             <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: tool.color }} />
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-center">
-                                <span className="text-xs font-bold text-slate-700">{tool.icon} {tool.tool}</span>
-                                <span className="text-xs font-black text-slate-900 font-metric">{tool.percent}%</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{tool.icon} {tool.tool}</span>
+                                <span className="text-xs font-black text-slate-900 dark:text-slate-100 font-metric">{tool.percent}%</span>
                               </div>
-                              <p className="text-[10px] text-slate-400 font-medium">{tool.lines} lines</p>
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{tool.lines} lines</p>
                             </div>
                           </div>
                         ))}
@@ -1077,8 +1105,8 @@ export default function OverviewPage() {
                   </div>
 
                   {/* AI vs Manual — Bar Chart */}
-                  <div className="rounded-2xl border border-slate-200 p-6 bg-white">
-                    <h4 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-6 bg-white dark:bg-slate-800">
+                    <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                       <Code2 className="h-4 w-4 text-emerald-500" />
                       Code Composition
                     </h4>
@@ -1091,19 +1119,20 @@ export default function OverviewPage() {
                         layout="vertical"
                         margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }} />
-                        <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fontWeight: 700, fill: '#64748b' }} width={95} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#334155' : '#f1f5f9'} horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 11, fontWeight: 700, fill: theme === 'dark' ? '#cbd5e1' : '#94a3b8' }} />
+                        <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fontWeight: 700, fill: theme === 'dark' ? '#cbd5e1' : '#64748b' }} width={95} />
                         <RechartsTooltip
                           formatter={(value: any) => [`${value} lines`]}
                           contentStyle={{
-                            backgroundColor: '#1e293b',
+                            backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
                             border: 'none',
                             borderRadius: '12px',
-                            color: '#f8fafc',
+                            color: theme === 'dark' ? '#f8fafc' : '#1e293b',
                             fontSize: '12px',
                             fontWeight: 700,
                             padding: '8px 14px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                           }}
                         />
                         <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={28}>
@@ -1121,9 +1150,9 @@ export default function OverviewPage() {
                     <div className="mt-4">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-black text-indigo-500 uppercase tracking-wider">AI: {selectedCommit.aiPercent}%</span>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Manual: {100 - selectedCommit.aiPercent}%</span>
+                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Manual: {100 - selectedCommit.aiPercent}%</span>
                       </div>
-                      <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                      <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${selectedCommit.aiPercent}%` }}

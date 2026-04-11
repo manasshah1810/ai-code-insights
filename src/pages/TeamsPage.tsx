@@ -51,7 +51,7 @@ export default function TeamsPage() {
           >
             <UserAvatar name={val} size="sm" />
             <div>
-              <p className="font-bold text-slate-900 group-hover/user:text-indigo-600 transition-colors leading-tight">{val}</p>
+              <p className="font-bold text-slate-900 dark:text-slate-100 group-hover/user:text-indigo-600 dark:group-hover/user:text-indigo-400 transition-colors leading-tight">{val}</p>
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{row.role}</p>
             </div>
           </div>
@@ -77,14 +77,14 @@ export default function TeamsPage() {
         header: "Merge Rate",
         accessorKey: "aiMergeRate",
         cell: (val: number) => (
-          <span className="font-bold text-slate-700 font-metric">{val}%</span>
+          <span className="font-bold text-slate-700 dark:text-slate-300 font-metric">{val}%</span>
         )
       },
       {
         header: "Commits",
         accessorKey: "commits",
         cell: (val: number) => (
-          <span className="font-bold text-slate-600 font-metric">{val}</span>
+          <span className="font-bold text-slate-600 dark:text-slate-400 font-metric">{val}</span>
         )
       },
       {
@@ -122,8 +122,8 @@ export default function TeamsPage() {
               <ChevronLeft className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" />
               All Teams
             </button>
-            <h1 className="text-4xl font-black tracking-tighter text-slate-900">{team.name}</h1>
-            <p className="text-slate-500 font-medium tracking-tight">Team metrics as of <span className="text-slate-900 font-bold">{team.lastSyncDate}</span> — Tracking engineer breakdown</p>
+            <h1 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-slate-100">{team.name}</h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Team metrics as of <span className="text-slate-900 dark:text-slate-100 font-bold">{team.lastSyncDate}</span> — Tracking engineer breakdown</p>
           </div>
           <div className="flex gap-3">
             <Button
@@ -154,7 +154,7 @@ export default function TeamsPage() {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between px-2">
-            <h3 className="text-lg font-black tracking-tight text-slate-900">Engineer Breakdown</h3>
+            <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-slate-100">Engineer Breakdown</h3>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{teamMembers.length} ACTIVE DEVELOPERS</span>
           </div>
           <DataTable
@@ -175,7 +175,7 @@ export default function TeamsPage() {
     >
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter text-slate-900">Engineering <span className="text-indigo-600">Squads</span></h1>
+          <h1 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-slate-100">Engineering <span className="text-indigo-600 dark:text-indigo-400">Squads</span></h1>
           <p className="text-base text-slate-500 mt-2 font-medium">Team-level AI deployment and efficiency benchmarking</p>
         </div>
       </div>
@@ -189,7 +189,7 @@ export default function TeamsPage() {
             className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm text-left hover:border-indigo-100 transition-all group relative overflow-hidden"
           >
             <div className="flex items-center justify-between mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 text-slate-900 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-900 dark:text-slate-100 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                 <UsersIcon className="h-6 w-6" />
               </div>
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{team.headCount} MEMBERS</span>
@@ -197,7 +197,7 @@ export default function TeamsPage() {
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{team.name}</h3>
+                <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{team.name}</h3>
                 <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">{team.primaryTool}</p>
               </div>
 
@@ -215,11 +215,11 @@ export default function TeamsPage() {
                 <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 bg-opacity-50">
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Merge Rate</p>
-                    <p className="text-sm font-black font-metric text-slate-900">{team.aiMergeRate}%</p>
+                    <p className="text-sm font-black font-metric text-slate-900 dark:text-slate-100">{team.aiMergeRate}%</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Output</p>
-                    <p className="text-sm font-black font-metric text-slate-900">{formatNumber(team.aiLoC)} LoC</p>
+                    <p className="text-sm font-black font-metric text-slate-900 dark:text-slate-100">{formatNumber(team.aiLoC)} LoC</p>
                   </div>
                 </div>
               </div>

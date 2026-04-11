@@ -13,57 +13,48 @@ export default function CodeBreakdownPage() {
   const [teamFilter, setTeamFilter] = useState("all");
   const [toolFilter, setToolFilter] = useState("all");
 
-  const filteredRepos = repositories.filter(r => {
-    if (teamFilter !== "all" && r.team !== teamFilter) return false;
-    if (toolFilter !== "all") {
-      if (toolFilter === "Cursor" && r.primaryTool !== "Cursor") return false;
-      if (toolFilter === "Copilot" && r.primaryTool !== "Copilot") return false;
-    }
-    return true;
-  });
-
-  const teamChartData = useMemo(() => {
-    let filteredTeams = teams;
-    if (teamFilter !== "all") {
-      filteredTeams = teams.filter(t => t.name === teamFilter);
-    }
-    return filteredTeams.map(t => ({
-      name: t.name.replace(" Engineering", " Eng.").replace(" Product", " Prod."),
-      aiLoC: t.aiLoC,
-      manualLoC: t.manualLoC,
-    }));
-  }, [teamFilter]);
+  const filteredRepos = useMemo(() => {
+    return repositories.filter(r => {
+      if (teamFilter !== "all" && r.team !== teamFilter) return false;
+      if (toolFilter !== "all" && r.primaryTool !== toolFilter) return false;
+      return true;
+    });
+  }, [teamFilter, toolFilter]);
 
   const filteredMetrics = useMemo(() => {
-    let totalAiLoC = 0;
-    let totalManualLoC = 0;
-
-    if (teamFilter !== "all") {
-      // Show selected team's metrics
-      const selectedTeam = teams.find(t => t.name === teamFilter);
-      if (selectedTeam) {
-        totalAiLoC = selectedTeam.aiLoC;
-        totalManualLoC = selectedTeam.manualLoC;
-      }
-    } else if (toolFilter !== "all") {
-      // Show filtered repos metrics by tool
-      totalAiLoC = filteredRepos.reduce((sum, r) => sum + (r.aiLoC || 0), 0);
-      totalManualLoC = filteredRepos.reduce((sum, r) => sum + (r.manualLoC || 0), 0);
-    } else {
-      // Show organization metrics
-      totalAiLoC = orgData.aiLoC;
-      totalManualLoC = orgData.manualLoC;
-    }
-
-    const totalLoC = totalAiLoC + totalManualLoC;
-    const aiCodePercent = totalLoC > 0 ? parseFloat(((totalAiLoC / totalLoC) * 100).toFixed(1)) : 0;
+    const aiLoC = filteredRepos.reduce((sum, r) => sum + (r.totalLoC * r.aiPercent / 100), 0);
+    const totalLoC = filteredRepos.reduce((sum, r) => sum + r.totalLoC, 0);
+    const manualLoC = totalLoC - aiLoC;
+    const aiCodePercent = totalLoC > 0 ? parseFloat(((aiLoC / totalLoC) * 100).toFixed(1)) : 0;
 
     return {
-      aiLoC: totalAiLoC,
-      manualLoC: totalManualLoC,
+      aiLoC,
+      manualLoC,
       aiCodePercent,
     };
-  }, [teamFilter, toolFilter, filteredRepos]);
+  }, [filteredRepos]);
+
+  const teamChartData = useMemo(() => {
+    // Group filteredRepos by squad to ensure chart reflects active filters
+    const squadGroups: Record<string, { aiLoC: number; manualLoC: number }> = {};
+
+    filteredRepos.forEach(r => {
+      if (!squadGroups[r.team]) {
+        squadGroups[r.team] = { aiLoC: 0, manualLoC: 0 };
+      }
+      const ai = (r.totalLoC * r.aiPercent / 100);
+      squadGroups[r.team].aiLoC += ai;
+      squadGroups[r.team].manualLoC += (r.totalLoC - ai);
+    });
+
+    return Object.entries(squadGroups)
+      .map(([name, data]) => ({
+        name: name.replace(" Engineering", "").replace(" Product", ""),
+        aiLoC: Math.round(data.aiLoC),
+        manualLoC: Math.round(data.manualLoC),
+      }))
+      .sort((a, b) => (b.aiLoC + b.manualLoC) - (a.aiLoC + a.manualLoC));
+  }, [filteredRepos]);
 
   const pieData = useMemo(() => [
     { name: "AI Code", value: filteredMetrics.aiLoC },
@@ -89,7 +80,7 @@ export default function CodeBreakdownPage() {
     {
       header: "Total Output",
       accessorKey: "totalLoC",
-      cell: (val: number) => <span className="font-bold font-metric text-slate-600">{formatNumber(val)} LoC</span>,
+      cell: (val: number) => <span className="font-bold font-metric text-slate-600 dark:text-slate-400">{formatNumber(val)} LoC</span>,
       align: 'right' as const
     },
     {
@@ -117,7 +108,7 @@ export default function CodeBreakdownPage() {
       cell: (val: string) => (
         <span className={cn(
           "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md",
-          val === 'Cursor' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-100 text-slate-600 border border-slate-200'
+          val === 'Cursor' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
         )}>
           {val}
         </span>
@@ -145,7 +136,7 @@ export default function CodeBreakdownPage() {
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <Select value={teamFilter} onValueChange={setTeamFilter}>
-              <SelectTrigger className="w-[200px] h-11 rounded-xl pl-9 font-bold bg-white border-slate-200 text-slate-700">
+              <SelectTrigger className="w-[200px] h-11 rounded-xl pl-9 font-bold bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 <SelectValue placeholder="Filter by Team" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-100">
@@ -158,13 +149,14 @@ export default function CodeBreakdownPage() {
           <div className="relative">
             <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <Select value={toolFilter} onValueChange={setToolFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl pl-9 font-bold bg-white border-slate-200 text-slate-700">
+              <SelectTrigger className="w-[180px] h-11 rounded-xl pl-9 font-bold bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 <SelectValue placeholder="Filter by Engine" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-100">
                 <SelectItem value="all" className="font-bold">All AI Engines</SelectItem>
                 <SelectItem value="Cursor" className="font-medium">Cursor IDE</SelectItem>
                 <SelectItem value="Copilot" className="font-medium">GitHub Copilot</SelectItem>
+                <SelectItem value="None" className="font-medium">Legacy / None</SelectItem>
               </SelectContent>
             </Select>
           </div>

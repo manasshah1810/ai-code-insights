@@ -193,19 +193,7 @@ export default function GlossaryPage() {
                 </Accordion>
             </div>
 
-            {/* Footer Info */}
-            <div className="mt-16 p-8 rounded-[2rem] bg-indigo-50 border border-indigo-100 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-                <div className="h-16 w-16 rounded-[1.25rem] bg-indigo-600 flex items-center justify-center text-white shrink-0 shadow-xl">
-                    <HelpCircle className="h-8 w-8" />
-                </div>
-                <div>
-                    <h4 className="text-lg font-black text-slate-900 tracking-tight mb-1">Still have questions?</h4>
-                    <p className="text-slate-500 font-medium">Reach out to the Engineering Excellence team or check the internal documentation for a deeper technical deep-dive into the data pipeline.</p>
-                </div>
-                <Button className="md:ml-auto h-12 px-8 rounded-xl font-black bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 flex items-center gap-2">
-                    Contact Ops <Target className="h-4 w-4" />
-                </Button>
-            </div>
+
         </motion.div>
     );
 }

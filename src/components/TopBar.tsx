@@ -47,17 +47,8 @@ export function TopBar() {
   return (
     <header className="flex h-20 items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl px-8 sticky top-0 z-50">
       <div className="flex items-center gap-6">
-        <SidebarTrigger className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors h-10 w-10 rounded-xl hover:bg-indigo-50 dark:hover:bg-slate-800" />
-        <div className="hidden lg:flex items-center gap-4">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors" />
-            <input
-              type="text"
-              placeholder="Search metrics, teams, or engineers..."
-              className="h-11 w-80 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all text-sm font-medium"
-            />
-          </div>
-        </div>
+
+
       </div>
 
       <div className="flex items-center gap-4">
@@ -129,16 +120,14 @@ export function TopBar() {
 
             {/* Sun Icon */}
             <div className={`
-              relative z-10 h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-300
-              ${theme === 'light' ? 'text-white' : 'text-slate-500'}
+              relative z-10 h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-300 ${theme === 'light' ? 'text-indigo-500' : 'text-slate-400'}
             `}>
               <Sun className="h-4 w-4" />
             </div>
 
             {/* Moon Icon */}
             <div className={`
-              relative z-10 h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-300
-              ${theme === 'dark' ? 'text-white' : 'text-slate-400'}
+              relative z-10 h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-300 ${theme === 'dark' ? 'text-indigo-400' : 'text-slate-400'}
             `}>
               <Moon className="h-4 w-4" />
             </div>
@@ -152,7 +141,7 @@ export function TopBar() {
           <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
 
           <Select value={currentRole} onValueChange={(v) => setRole(v as any)}>
-            <SelectTrigger className="w-[120px] h-10 rounded-xl border-none shadow-none bg-transparent hover:bg-white dark:hover:bg-slate-800 font-bold text-xs dark:text-slate-100 text-slate-700 transition-all">
+            <SelectTrigger className="w-[120px] h-10 rounded-xl border-none shadow-none bg-transparent hover:bg-white dark:hover:bg-slate-800 font-bold text-xs text-slate-700 dark:text-slate-300 transition-all">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-slate-100 dark:border-slate-800 dark:bg-slate-900">

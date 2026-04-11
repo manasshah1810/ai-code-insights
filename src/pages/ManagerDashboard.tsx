@@ -151,7 +151,7 @@ export default function ManagerDashboard() {
         {
             header: "LoC Output",
             accessorKey: "totalLoC",
-            cell: (val: number) => <span className="font-bold font-metric text-slate-700">{formatNumber(Math.round(val * scaleFactor))}</span>,
+            cell: (val: number) => <span className="font-bold font-metric text-slate-700 dark:text-slate-300">{formatNumber(Math.round(val * scaleFactor))}</span>,
             align: "right" as const,
         },
         {
@@ -478,8 +478,8 @@ export default function ManagerDashboard() {
                             <span className="text-sm font-black font-metric text-indigo-700">{teamAiPercent}%</span>
                         </div>
                         <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                            <span className="text-xs font-black text-slate-600 uppercase">Hand Crafted</span>
-                            <span className="text-sm font-black font-metric text-slate-600">{teamManualPercent}%</span>
+                            <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase">Hand Crafted</span>
+                            <span className="text-sm font-black font-metric text-slate-600 dark:text-slate-400">{teamManualPercent}%</span>
                         </div>
                     </div>
                 </div>

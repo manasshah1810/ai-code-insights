@@ -157,7 +157,7 @@ export default function MergeAnalyticsPage() {
                 index="name"
                 categories={['count']}
                 colors={['#f43f5e']}
-                valueFormatter={(v) => `${v} incidents`}
+                valueFormatter={(v) => `${v}`}
                 height={260}
                 xAxisLabel="Rejection Reason"
                 yAxisLabel="Occurrence Count"

@@ -293,7 +293,7 @@ export default function DeveloperDashboard() {
                             </div>
                             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hand-crafted</p>
-                                <p className="text-lg font-black text-slate-700 font-metric">{formatNumber(scaledManualLoC)} LoC</p>
+                                <p className="text-lg font-black text-slate-700 dark:text-slate-300 font-metric">{formatNumber(scaledManualLoC)} LoC</p>
                             </div>
                         </div>
                     </div>
@@ -383,7 +383,7 @@ export default function DeveloperDashboard() {
                                     <span className="text-sm font-bold text-slate-900">{tool.name}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-xs font-black font-metric text-slate-600">{formatNumber(tool.loC)}</span>
+                                    <span className="text-xs font-black font-metric text-slate-600 dark:text-slate-400">{formatNumber(tool.loC)}</span>
                                     <Badge className="text-[9px] px-1.5 font-black" style={{ backgroundColor: `${tool.color}15`, color: tool.color, border: `1px solid ${tool.color}30` }}>
                                         {tool.percent}%
                                     </Badge>
@@ -419,7 +419,7 @@ export default function DeveloperDashboard() {
                                     </div>
                                     <Badge className={cn(
                                         "text-[9px] font-black px-2 rounded-md",
-                                        repo.primaryTool === "Cursor" ? "bg-violet-50 text-violet-600 border-violet-200" : "bg-slate-100 text-slate-600 border-slate-200"
+                                        repo.primaryTool === "Cursor" ? "bg-violet-50 text-violet-600 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700"
                                     )}>
                                         {repo.primaryTool}
                                     </Badge>

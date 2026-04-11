@@ -227,7 +227,7 @@ export function ChatBot() {
                                             <Sparkles className="h-4 w-4" />
                                         </div>
                                         <div className="flex-1 p-4 rounded-2xl rounded-tl-md bg-slate-50 border border-slate-100">
-                                            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+                                            <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                                                 Hi! I'm <strong>AI Code Insights Assistant</strong>. I can help you with:
                                             </p>
                                             <div className="mt-3 space-y-2">
@@ -264,7 +264,7 @@ export function ChatBot() {
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         transition={{ delay: i * 0.05 }}
                                                         onClick={() => sendMessage(s)}
-                                                        className="text-xs px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-all active:scale-95"
+                                                        className="text-xs px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-100 transition-all active:scale-95"
                                                     >
                                                         {s}
                                                     </motion.button>
@@ -300,7 +300,7 @@ export function ChatBot() {
                                         "max-w-[80%] p-3.5 rounded-2xl",
                                         message.role === "user"
                                             ? `bg-gradient-to-br ${config.color} text-white rounded-tr-md`
-                                            : "bg-slate-50 border border-slate-100 text-slate-700 rounded-tl-md"
+                                            : "bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-tl-md"
                                     )}>
                                         {/* Category Badge */}
                                         {message.role === "assistant" && message.category && (
@@ -320,7 +320,7 @@ export function ChatBot() {
                                         <div
                                             className={cn(
                                                 "text-sm leading-relaxed font-medium",
-                                                message.role === "user" ? "text-white" : "text-slate-700"
+                                                message.role === "user" ? "text-white" : "text-slate-700 dark:text-slate-300"
                                             )}
                                             dangerouslySetInnerHTML={{ __html: formatMarkdown(message.content) }}
                                         />

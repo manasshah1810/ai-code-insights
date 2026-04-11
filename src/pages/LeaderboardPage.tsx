@@ -30,9 +30,9 @@ export default function LeaderboardPage() {
           <Trophy className="h-12 w-12" />
         </motion.div>
         <div className="space-y-2">
-          <h2 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Leaderboard Locked</h2>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 uppercase">Leaderboard Locked</h2>
           <p className="max-w-md text-slate-500 font-medium leading-relaxed mx-auto">
-            Strict Privacy Mode is <span className="text-slate-900 font-bold">Activated</span>.
+            Strict Privacy Mode is <span className="text-slate-900 dark:text-slate-100 font-bold">Activated</span>.
             The competitive rankings are hidden until developers manually opt-in from their profile control center.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function LeaderboardPage() {
         >
           <UserAvatar name={strictPrivacyMode ? "?" : val} size="sm" />
           <div>
-            <p className="font-bold text-slate-900 group-hover/user:text-indigo-600 transition-colors">
+            <p className="font-bold text-slate-900 dark:text-slate-100 group-hover/user:text-indigo-600 dark:group-hover/user:text-indigo-400 transition-colors">
               {strictPrivacyMode ? `Engineer # ${anonymizeIdSync(row.id)}` : val}
             </p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{row.team}</p>
@@ -150,7 +150,7 @@ export default function LeaderboardPage() {
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Rank #2</p>
             <div className="relative inline-block mb-4">
               <UserAvatar name={strictPrivacyMode ? "?" : sorted[1].name} size="lg" className="ring-4 ring-slate-100" />
-              <div className="absolute -top-3 -right-3 h-8 w-8 rounded-xl bg-slate-300 flex items-center justify-center text-slate-700 font-black shadow-lg border-2 border-white">
+              <div className="absolute -top-3 -right-3 h-8 w-8 rounded-xl bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-100 font-black shadow-lg border-2 border-white">
                 2
               </div>
             </div>
@@ -252,7 +252,7 @@ export default function LeaderboardPage() {
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
             <h3 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Fleet Rankings</h3>
-            <Badge className="bg-slate-100 text-slate-600 font-bold border-slate-200">{sorted.length} ACTIVE DEVS</Badge>
+            <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold border-slate-200 dark:border-slate-700">{sorted.length} ACTIVE DEVS</Badge>
           </div>
           {strictPrivacyMode && (
             <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-tighter bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100">
