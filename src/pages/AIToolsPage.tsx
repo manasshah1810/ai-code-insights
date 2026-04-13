@@ -25,6 +25,8 @@ import {
 
 import { useAppStore } from "@/store/app-store";
 
+const CountUpComponent = (CountUp as any).default || CountUp;
+
 const toolColorMap: Record<string, string> = {
     claude: "#D97706",
     copilot: "#6366F1",
@@ -46,19 +48,58 @@ export default function AIToolsPage() {
     const [selectedTool, setSelectedTool] = useState<string>("all");
     const [teamFilter, setTeamFilter] = useState<string>("all");
 
-    const topTool = aiTools.reduce((a, b) => a.totalLoC > b.totalLoC ? a : b);
-    const bestMerge = aiTools.reduce((a, b) => a.mergeRate > b.mergeRate ? a : b);
-    const totalAIUsers = aiTools.reduce((a, b) => a + b.activeUsers, 0);
+    // Calculate reactive tools data based on team filter
+    const filteredAiTools = useMemo(() => {
+        if (teamFilter === "all") return aiTools;
 
-    // Pie data for global tool distribution
-    const pieData = aiTools.map(t => ({
+        const teamUsage = teamToolUsage.find(t => t.teamName === teamFilter);
+        if (!teamUsage) return aiTools;
+
+        const team = teams.find(t => t.name === teamFilter);
+
+        return aiTools.map(tool => {
+            const usage = teamUsage.tools.find(t => t.toolId === tool.id);
+            if (!usage) return { ...tool, totalLoC: 0, percentOfAI: 0, activeUsers: 0 };
+
+            // Approximate active users for this tool in this team
+            const teamToolUsers = Math.max(1, Math.round((team?.aiUsers || 0) * (usage.percent / 100)));
+
+            return {
+                ...tool,
+                totalLoC: usage.loC,
+                percentOfAI: usage.percent,
+                activeUsers: teamToolUsers
+            };
+        });
+    }, [teamFilter]);
+
+    // Filter tools further if a specific tool is selected for detailed view
+    const statsTools = useMemo(() => {
+        if (selectedTool === "all") return filteredAiTools;
+        return filteredAiTools.filter(t => t.id === selectedTool);
+    }, [filteredAiTools, selectedTool]);
+
+    const topTool = useMemo(() =>
+        filteredAiTools.reduce((a, b) => a.totalLoC > b.totalLoC ? a : b),
+        [filteredAiTools]);
+
+    const bestMerge = useMemo(() =>
+        filteredAiTools.reduce((a, b) => a.mergeRate > b.mergeRate ? a : b),
+        [filteredAiTools]);
+
+    const totalAIUsers = useMemo(() =>
+        filteredAiTools.reduce((a, b) => a + b.activeUsers, 0),
+        [filteredAiTools]);
+
+    // Pie data for global tool distribution - reactive to team
+    const pieData = useMemo(() => filteredAiTools.map(t => ({
         name: t.shortName,
         value: t.totalLoC,
         color: t.color,
-    }));
+    })), [filteredAiTools]);
 
-    // Radar chart data for quality comparison
-    const radarData = [
+    // Radar chart data for quality comparison - reactive highlight
+    const radarData = useMemo(() => [
         { metric: "Merge Rate", ...Object.fromEntries(aiTools.map(t => [t.shortName, t.mergeRate])) },
         { metric: "Accept Rate", ...Object.fromEntries(aiTools.map(t => [t.shortName, t.avgAcceptRate])) },
         { metric: "Confidence", ...Object.fromEntries(aiTools.map(t => [t.shortName, t.avgConfidence])) },
@@ -76,28 +117,39 @@ export default function AIToolsPage() {
                 return [tool?.shortName || "", q.testCoverage];
             })),
         },
-    ];
+    ], []);
 
-    // Filtered repo data
+    // Filtered repo data - FIX: Filter to repos where tool is dominant or present
     const filteredRepos = useMemo(() => {
-        let repos = repoToolAttribution;
+        let repos = [...repoToolAttribution];
         if (teamFilter !== "all") {
             repos = repos.filter(r => r.team === teamFilter);
         }
         if (selectedTool !== "all") {
-            repos = repos.filter(r => r.tools.some(t => t.toolId === selectedTool));
+            // Filter for repos where this tool is the PRIMARY engine
+            repos = repos.filter(r => {
+                const sortedTools = [...r.tools].sort((a, b) => b.percent - a.percent);
+                return sortedTools[0].toolId === selectedTool;
+            });
         }
         return repos;
     }, [teamFilter, selectedTool]);
 
-    // Stacked bar data for team-level tool usage
-    const teamToolData = teamToolUsage.map(t => ({
-        name: t.teamName.replace(" Engineering", " Eng.").replace(" Automation", " Auto."),
-        ...Object.fromEntries(t.tools.map(tool => {
-            const at = aiTools.find(a => a.id === tool.toolId);
-            return [at?.shortName || tool.toolId, tool.loC];
-        })),
-    }));
+    // Stacked bar data for team-level tool usage - reactive highlighting
+    const teamToolData = useMemo(() => {
+        let usage = teamToolUsage;
+        if (teamFilter !== "all") {
+            usage = usage.filter(t => t.teamName === teamFilter);
+        }
+
+        return usage.map(t => ({
+            name: t.teamName.replace(" Engineering", " Eng.").replace(" Automation", " Auto."),
+            ...Object.fromEntries(t.tools.map(tool => {
+                const at = aiTools.find(a => a.id === tool.toolId);
+                return [at?.shortName || tool.toolId, tool.loC];
+            })),
+        }));
+    }, [teamFilter]);
 
     const repoColumns = [
         {
@@ -124,25 +176,31 @@ export default function AIToolsPage() {
         {
             header: "Tool Mix",
             accessorKey: "tools",
-            cell: (val: { toolId: string; percent: number }[]) => (
-                <div className="flex items-center gap-1">
-                    <div className="flex h-2 w-24 rounded-full overflow-hidden">
-                        {val.map((t, i) => (
-                            <div
-                                key={t.toolId}
-                                className="h-full transition-all"
-                                style={{
-                                    width: `${t.percent}%`,
-                                    backgroundColor: toolColorMap[t.toolId] || "#cbd5e1",
-                                }}
-                            />
-                        ))}
+            cell: (val: { toolId: string; percent: number }[]) => {
+                const sortedTools = [...val].sort((a, b) => b.percent - a.percent);
+                const primary = sortedTools[0];
+                const primaryTool = aiTools.find(a => a.id === primary?.toolId);
+
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className="flex h-2 w-24 rounded-full overflow-hidden bg-slate-100">
+                            {sortedTools.map((t) => (
+                                <div
+                                    key={t.toolId}
+                                    className="h-full transition-all"
+                                    style={{
+                                        width: `${t.percent}%`,
+                                        backgroundColor: toolColorMap[t.toolId] || "#cbd5e1",
+                                    }}
+                                />
+                            ))}
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                            {primary?.percent}% {primaryTool?.shortName}
+                        </span>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-1">
-                        {val[0]?.percent}% {aiTools.find(a => a.id === val[0]?.toolId)?.shortName}
-                    </span>
-                </div>
-            ),
+                );
+            },
         },
     ];
 
@@ -182,6 +240,18 @@ export default function AIToolsPage() {
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <Select value={selectedTool} onValueChange={setSelectedTool}>
+                            <SelectTrigger className="w-[200px] h-11 rounded-xl pl-9 font-bold bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                                <SelectValue placeholder="All Tools" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100">
+                                <SelectItem value="all" className="font-bold">All AI Tools</SelectItem>
+                                {aiTools.map(t => <SelectItem key={t.id} value={t.id} className="font-medium">{t.shortName}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="relative">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                         <Select value={teamFilter} onValueChange={setTeamFilter}>
                             <SelectTrigger className="w-[200px] h-11 rounded-xl pl-9 font-bold bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                                 <SelectValue placeholder="All Teams" />
@@ -214,11 +284,11 @@ export default function AIToolsPage() {
                     subtitle={`${bestMerge.shortName} leads merge quality`}
                 />
                 <MetricCard
-                    title="AI Engines Tracked"
-                    value={aiTools.length}
+                    title="AI Engines"
+                    value={filteredAiTools.filter(t => t.totalLoC > 0).length}
                     decimals={0}
                     icon={<Bot className="h-6 w-6" />}
-                    subtitle="Distinct code generation sources"
+                    subtitle={teamFilter === "all" ? "Distinct code generation sources" : `Active in ${teamFilter}`}
                 />
                 <MetricCard
                     title="Active AI Users"
@@ -226,87 +296,93 @@ export default function AIToolsPage() {
                     decimals={0}
                     gradient="warning"
                     icon={<Users className="h-6 w-6" />}
-                    subtitle="Unique users across all tools"
+                    subtitle={teamFilter === "all" ? "Unique users across all tools" : `AI users in ${teamFilter}`}
                 />
             </div>
 
             {/* Tool Cards (Horizontal) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
-                {aiTools.map((tool, idx) => (
-                    <motion.div
-                        key={tool.id}
-                        custom={idx}
-                        initial="hidden"
-                        animate="visible"
-                        variants={cardVariants}
-                        whileHover={{ y: -6, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
-                        className={cn(
-                            "relative rounded-2xl border p-6 bg-white overflow-hidden group cursor-pointer transition-all",
-                            selectedTool === tool.id
-                                ? `ring-2 shadow-lg ${tool.borderColor}`
-                                : "border-slate-200 hover:border-slate-300"
-                        )}
-                        onClick={() => setSelectedTool(selectedTool === tool.id ? "all" : tool.id)}
-                    >
-                        {/* Glow */}
-                        <div
-                            className="absolute -top-6 -right-6 h-20 w-20 rounded-full blur-3xl opacity-30 group-hover:opacity-50 transition-opacity"
-                            style={{ backgroundColor: tool.color }}
-                        />
+                {filteredAiTools.map((tool, idx) => {
+                    const isSelected = selectedTool === tool.id;
+                    const isDimmed = selectedTool !== "all" && !isSelected;
 
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <div
-                                    className="h-12 w-12 rounded-xl flex items-center justify-center text-xl shadow-sm"
-                                    style={{ backgroundColor: `${tool.color}15`, border: `1px solid ${tool.color}30` }}
-                                >
-                                    {tool.icon}
+                    return (
+                        <motion.div
+                            key={tool.id}
+                            custom={idx}
+                            initial="hidden"
+                            animate="visible"
+                            variants={cardVariants}
+                            whileHover={{ y: -6, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
+                            className={cn(
+                                "relative rounded-2xl border p-6 bg-white overflow-hidden group cursor-pointer transition-all",
+                                isSelected
+                                    ? `ring-2 shadow-lg ${tool.borderColor}`
+                                    : "border-slate-200 hover:border-slate-300",
+                                isDimmed ? "opacity-50 grayscale-[0.5]" : "opacity-100"
+                            )}
+                            onClick={() => setSelectedTool(selectedTool === tool.id ? "all" : tool.id)}
+                        >
+                            {/* Glow */}
+                            <div
+                                className="absolute -top-6 -right-6 h-20 w-20 rounded-full blur-3xl opacity-30 group-hover:opacity-50 transition-opacity"
+                                style={{ backgroundColor: tool.color }}
+                            />
+
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div
+                                        className="h-12 w-12 rounded-xl flex items-center justify-center text-xl shadow-sm"
+                                        style={{ backgroundColor: `${tool.color}15`, border: `1px solid ${tool.color}30` }}
+                                    >
+                                        {tool.icon}
+                                    </div>
+                                    <Badge
+                                        className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5"
+                                        style={{ backgroundColor: `${tool.color}15`, color: tool.color, border: `1px solid ${tool.color}30` }}
+                                    >
+                                        {tool.activeUsers} users
+                                    </Badge>
                                 </div>
-                                <Badge
-                                    className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5"
-                                    style={{ backgroundColor: `${tool.color}15`, color: tool.color, border: `1px solid ${tool.color}30` }}
-                                >
-                                    {tool.activeUsers} users
-                                </Badge>
-                            </div>
 
-                            <h4 className="text-sm font-black text-slate-900 mb-1 truncate">{tool.name}</h4>
+                                <h4 className="text-sm font-black text-slate-900 mb-1 truncate">{tool.name}</h4>
 
-                            <div className="flex items-baseline gap-1.5 mb-3">
-                                <span className="text-3xl font-black font-metric" style={{ color: tool.color }}>
-                                    {(() => {
-                                        const CountUpComponent: any = (CountUp as any).default || CountUp;
-                                        return <CountUpComponent end={tool.percentOfAI} decimals={1} duration={1.5} />;
-                                    })()}
-                                    %
-                                </span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">of AI code</span>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-[10px]">
-                                <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
-                                    <p className="font-bold text-slate-400 uppercase tracking-wider">Merge</p>
-                                    <p className="font-black text-slate-900 font-metric text-sm">{tool.mergeRate}%</p>
+                                <div className="flex items-baseline gap-1.5 mb-3">
+                                    <span className="text-3xl font-black font-metric" style={{ color: tool.color }}>
+                                        {(() => {
+                                            const CountUpComponent: any = (CountUp as any).default || CountUp;
+                                            return <CountUpComponent end={tool.percentOfAI} decimals={1} duration={1.5} />;
+                                        })()}
+                                        %
+                                    </span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">of {teamFilter === "all" ? "AI" : "Team"} code</span>
                                 </div>
-                                <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
-                                    <p className="font-bold text-slate-400 uppercase tracking-wider">LoC</p>
-                                    <p className="font-black text-slate-900 font-metric text-sm">{formatNumber(tool.totalLoC)}</p>
+
+                                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                                    <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                        <p className="font-bold text-slate-400 uppercase tracking-wider">Merge</p>
+                                        <p className="font-black text-slate-900 font-metric text-sm">{tool.mergeRate}%</p>
+                                    </div>
+                                    <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                        <p className="font-bold text-slate-400 uppercase tracking-wider">LoC</p>
+                                        <p className="font-black text-slate-900 font-metric text-sm">{formatNumber(tool.totalLoC)}</p>
+                                    </div>
+                                </div>
+
+                                {/* Progress ring */}
+                                <div className="mt-4 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${tool.percentOfAI}%` }}
+                                        transition={{ duration: 1.2, ease: "circOut", delay: idx * 0.1 }}
+                                        className="h-full rounded-full"
+                                        style={{ backgroundColor: tool.color }}
+                                    />
                                 </div>
                             </div>
-
-                            {/* Progress ring */}
-                            <div className="mt-4 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${tool.percentOfAI}%` }}
-                                    transition={{ duration: 1.2, ease: "circOut", delay: idx * 0.1 }}
-                                    className="h-full rounded-full"
-                                    style={{ backgroundColor: tool.color }}
-                                />
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
+                        </motion.div>
+                    );
+                })}
             </div>
 
             {/* Main Analysis Grid */}
@@ -353,15 +429,23 @@ export default function AIToolsPage() {
                         </ResponsiveContainer>
 
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <p className="text-lg font-black text-white font-metric">{aiTools.length}</p>
-                            <p className="text-[8px] font-black text-violet-400 uppercase tracking-widest">AI Engines</p>
+                            <p className="text-lg font-black text-white font-metric">{filteredAiTools.filter(t => t.totalLoC > 0).length}</p>
+                            <p className="text-[8px] font-black text-violet-400 uppercase tracking-widest">{teamFilter === "all" ? "AI Engines" : "Team Engines"}</p>
                         </div>
                     </div>
 
                     {/* Legend */}
                     <div className="space-y-3 w-full relative z-10">
-                        {aiTools.map((tool) => (
-                            <div key={tool.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        {filteredAiTools.map((tool) => (
+                            <div
+                                key={tool.id}
+                                className={cn(
+                                    "flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer",
+                                    selectedTool === tool.id ? "ring-1 ring-violet-500 bg-white/10" : "",
+                                    selectedTool !== "all" && selectedTool !== tool.id ? "opacity-30" : ""
+                                )}
+                                onClick={() => setSelectedTool(selectedTool === tool.id ? "all" : tool.id)}
+                            >
                                 <div className="flex items-center gap-3">
                                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: tool.color }} />
                                     <span className="text-xs font-bold text-slate-300">{tool.shortName}</span>
@@ -436,17 +520,22 @@ export default function AIToolsPage() {
                                     domain={[0, 100]}
                                     tick={{ fill: chartTickColor, fontSize: 10 }}
                                 />
-                                {aiTools.map((tool) => (
-                                    <Radar
-                                        key={tool.id}
-                                        name={tool.shortName}
-                                        dataKey={tool.shortName}
-                                        stroke={tool.color}
-                                        fill={tool.color}
-                                        fillOpacity={0.08}
-                                        strokeWidth={2}
-                                    />
-                                ))}
+                                {aiTools.map((tool) => {
+                                    const isSelected = selectedTool === tool.id;
+                                    const isDimmed = selectedTool !== "all" && !isSelected;
+                                    return (
+                                        <Radar
+                                            key={tool.id}
+                                            name={tool.shortName}
+                                            dataKey={tool.shortName}
+                                            stroke={tool.color}
+                                            fill={tool.color}
+                                            fillOpacity={isDimmed ? 0 : 0.08}
+                                            strokeWidth={isSelected ? 4 : isDimmed ? 0.5 : 2}
+                                            strokeOpacity={isDimmed ? 0.2 : 1}
+                                        />
+                                    );
+                                })}
                                 <RechartsTooltip
                                     contentStyle={{
                                         backgroundColor: tooltipBg,
@@ -497,14 +586,21 @@ export default function AIToolsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {aiTools.map((tool) => {
+                                {filteredAiTools.map((tool) => {
                                     const quality = aiToolQualityMetrics.find(q => q.toolId === tool.id);
+                                    const isSelected = selectedTool === tool.id;
+                                    const isDimmed = selectedTool !== "all" && !isSelected;
+
                                     return (
                                         <motion.tr
                                             key={tool.id}
                                             initial={{ opacity: 0, x: -16 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group"
+                                            className={cn(
+                                                "border-b border-slate-50 hover:bg-slate-50/50 transition-colors group",
+                                                isSelected ? "bg-violet-50/20" : "",
+                                                isDimmed ? "opacity-30 grayscale-[0.5]" : ""
+                                            )}
                                         >
                                             <td className="py-4 px-3">
                                                 <div className="flex items-center gap-3">
@@ -616,12 +712,18 @@ export default function AIToolsPage() {
                                     </td>
                                     {team.tools.map((toolUsage) => {
                                         const at = aiTools.find(a => a.id === toolUsage.toolId);
+                                        const isSelected = selectedTool === toolUsage.toolId;
+                                        const isDimmed = selectedTool !== "all" && !isSelected;
                                         const intensity = toolUsage.percent / 45; // normalize to 0-1 range
+
                                         return (
-                                            <td key={toolUsage.toolId} className="text-center py-4 px-3">
+                                            <td key={toolUsage.toolId} className={cn("text-center py-4 px-3 transition-opacity", isDimmed ? "opacity-20" : "opacity-100")}>
                                                 <div className="flex flex-col items-center gap-1">
                                                     <div
-                                                        className="h-10 w-10 rounded-lg flex items-center justify-center text-xs font-black transition-transform hover:scale-110"
+                                                        className={cn(
+                                                            "h-10 w-10 rounded-lg flex items-center justify-center text-xs font-black transition-transform hover:scale-110",
+                                                            isSelected ? "ring-2 ring-violet-500 ring-offset-2" : ""
+                                                        )}
                                                         style={{
                                                             backgroundColor: `${at?.color || "#94a3b8"}${Math.round(intensity * 40 + 10).toString(16).padStart(2, "0")}`,
                                                             color: intensity > 0.5 ? at?.color : "#94a3b8",
@@ -684,71 +786,80 @@ export default function AIToolsPage() {
                     <h3 className="text-xl font-black tracking-tight text-white mb-8 flex items-center gap-2">
                         <Clock className="h-6 w-6 text-violet-400" /> Efficiency by AI Engine
                     </h3>
-
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                        {aiTools.map((tool, idx) => (
-                            <motion.div
-                                key={tool.id}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
-                            >
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div
-                                        className="h-10 w-10 rounded-lg flex items-center justify-center text-lg group-hover:scale-110 transition-transform"
-                                        style={{ backgroundColor: `${tool.color}20` }}
-                                    >
-                                        {tool.icon}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-black text-white">{tool.shortName}</p>
-                                        <p className="text-[10px] text-slate-500 font-bold">{tool.activeUsers} devs</p>
-                                    </div>
-                                </div>
+                        {filteredAiTools.map((tool, idx) => {
+                            const isSelected = selectedTool === tool.id;
+                            const isDimmed = selectedTool !== "all" && !isSelected;
 
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="flex justify-between mb-1.5">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cycle Time</span>
-                                            <span className="text-sm font-black text-white font-metric">{tool.avgCycleTime}m</span>
+                            return (
+                                <motion.div
+                                    key={tool.id}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className={cn(
+                                        "p-5 rounded-2xl bg-white/5 border transition-all group",
+                                        isSelected ? "bg-white/10 border-violet-500 shadow-lg scale-105 z-10" : "border-white/10",
+                                        isDimmed ? "opacity-30 grayscale-[0.5]" : "opacity-100"
+                                    )}
+                                    onClick={() => setSelectedTool(selectedTool === tool.id ? "all" : tool.id)}
+                                >
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div
+                                            className="h-10 w-10 rounded-lg flex items-center justify-center text-lg group-hover:scale-110 transition-transform"
+                                            style={{ backgroundColor: `${tool.color}20` }}
+                                        >
+                                            {tool.icon}
                                         </div>
-                                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                            <motion.div
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${(tool.avgCycleTime / 55) * 100}%` }}
-                                                transition={{ duration: 1.2, ease: "circOut" }}
-                                                className="h-full rounded-full"
-                                                style={{ backgroundColor: tool.color }}
-                                            />
+                                        <div>
+                                            <p className="text-sm font-black text-white">{tool.shortName}</p>
+                                            <p className="text-[10px] text-slate-500 font-bold">{tool.activeUsers} devs</p>
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <div className="flex justify-between mb-1.5">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Accept Rate</span>
-                                            <span className="text-sm font-black font-metric" style={{ color: tool.color }}>{tool.avgAcceptRate}%</span>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="flex justify-between mb-1.5">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cycle Time</span>
+                                                <span className="text-sm font-black text-white font-metric">{tool.avgCycleTime}m</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${(tool.avgCycleTime / 55) * 100}%` }}
+                                                    transition={{ duration: 1.2, ease: "circOut" }}
+                                                    className="h-full rounded-full"
+                                                    style={{ backgroundColor: tool.color }}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                            <motion.div
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${tool.avgAcceptRate}%` }}
-                                                transition={{ duration: 1.2, ease: "circOut" }}
-                                                className="h-full rounded-full"
-                                                style={{ backgroundColor: tool.color, opacity: 0.7 }}
-                                            />
-                                        </div>
-                                    </div>
 
-                                    <div className="pt-2 border-t border-white/10">
-                                        <div className="flex justify-between">
-                                            <span className="text-[10px] font-bold text-slate-500 uppercase">Confidence</span>
-                                            <span className="text-sm font-black text-white font-metric">{tool.avgConfidence}%</span>
+                                        <div>
+                                            <div className="flex justify-between mb-1.5">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Accept Rate</span>
+                                                <span className="text-sm font-black font-metric" style={{ color: tool.color }}>{tool.avgAcceptRate}%</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${tool.avgAcceptRate}%` }}
+                                                    transition={{ duration: 1.2, ease: "circOut" }}
+                                                    className="h-full rounded-full"
+                                                    style={{ backgroundColor: tool.color, opacity: 0.7 }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-2 border-t border-white/10">
+                                            <div className="flex justify-between">
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase">Confidence</span>
+                                                <span className="text-sm font-black text-white font-metric">{tool.avgConfidence}%</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            );
+                            })}
                     </div>
                 </div>
             </div>
